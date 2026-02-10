@@ -1,0 +1,620 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Основи CSS</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><style>* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor-container.hidden {
+            display: none;
+        }
+
+        #editor-header {
+            background: #2d3748;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor-header h2 {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #editor-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        #markdown-input {
+            flex: 1;
+            padding: 2rem;
+            background: #1a202c;
+            color: #e2e8f0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        #markdown-input:focus {
+            outline: none;
+        }
+
+        .slide-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .slide h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h2 {
+            color: #764ba2;
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide pre {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .slide pre code {
+            background: transparent;
+            color: #abb2bf;
+        }
+
+        .slide code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .slide h1 code, .slide h2 code, .slide h3 code {
+            font-size: 0.85em;
+            background: rgba(237, 242, 247, 0.5);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .slide p code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .slide blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        .slide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .slide th, .slide td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .slide th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .slide tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .note {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #c53030;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .warning strong {
+            color: #c05621;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .info strong {
+            color: #2c5282;
+        }
+
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #22543d;
+        }
+
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .danger strong {
+            color: #742a2a;
+        }
+
+        .tip {
+            background: #fefcbf;
+            border-left: 4px solid #ecc94b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #744210;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            transition: width 0.3s;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        #sidebar.open {
+            right: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #sidebar-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        #sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        #sidebar-close:hover {
+            color: #667eea;
+        }
+
+        .slide-thumbnail {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .slide-thumbnail:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .slide-thumbnail.active {
+            border-color: #667eea;
+            background: #f7faff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slide-thumbnail-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-thumbnail-content {
+            font-size: 0.85rem;
+            color: #2d3748;
+            line-height: 1.4;
+            max-height: 4.2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-thumbnail-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 1.4rem;
+            background: linear-gradient(to right, transparent, white);
+        }
+
+        .slide-thumbnail.active .slide-thumbnail-content::after {
+            background: linear-gradient(to right, transparent, #f7faff);
+        }
+
+        .slide-thumbnail-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+        }
+
+        #sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: visible; /* щоб не обрізати тіні / розширені ноди */
+        }
+
+        /* Запобігаємо обрізанню останньої літери в нодах Mermaid через зміну font-weight після розрахунку розміру */
+        .mermaid svg { overflow: visible !important; }
+        /* перестраховка проти обрізання foreignObject (на випадок інших діаграм) */
+        .mermaid svg foreignObject { overflow: visible !important; }
+
+        .plantuml-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        #help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #help-overlay kbd {
+            background: #2d3748;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .mermaid-error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #742a2a;
+            margin: 1.5rem 0;
+        }
+
+        .mermaid-error pre {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
+
+        /* Повноекранний режим - зберігаємо оригінальний фон */
+        #presentation-container:fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-webkit-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-moz-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-ms-fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+#presentation-container:fullscreen,#presentation-container:-webkit-full-screen,#presentation-container:-moz-full-screen,#presentation-container:-ms-fullscreen{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)!important;}</style></head><body><div id="presentation-container"><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><button id="sidebar-toggle" onclick="toggleSidebar()" title="Навігація слайдами (S)">☰</button><div id="sidebar"><div id="sidebar-header"><h3>📑 Слайди</h3><button id="sidebar-close" onclick="toggleSidebar()">✕</button></div><div id="sidebar-content"></div></div><div class="slide-container"><div class="slide" id="current-slide"></div></div><div class="controls"><button class="control-btn" onclick="previousSlide()" title="Попередній (←)">←</button><button class="control-btn" onclick="nextSlide()" title="Наступний (→)">→</button><button class="control-btn" onclick="toggleFullscreen()" title="Повноекранний режим (F)">⛶</button><button class="control-btn" onclick="toggleHelp()" title="Допомога (?)">?</button></div><div class="slide-number" id="slide-number">1 / 20</div><div id="help-overlay" class="hidden"><strong>Гарячі клавіші:</strong><br><kbd>←</kbd> <kbd>→</kbd> Навігація<br><kbd>F</kbd> Повноекранний режим<br><kbd>S</kbd> Sidebar<br><kbd>?</kbd> Допомога<br><kbd>Esc</kbd> Закрити</div></div><script>const slides=["<h1>Основи CSS</h1>\n<p><strong>Web-технології в автоматизованих системах</strong></p>\n<p>Лектор: Кобилянський Антон</p>\n","<h1>📋 План лекції</h1>\n<ol>\n<li>🎨 Що таке CSS та як його підключити</li>\n<li>🎯 Селектори: прості та комбіновані</li>\n<li>⚖️ Каскадність та специфічність</li>\n<li>🔤 Шрифти та текст</li>\n<li>🎨 Кольори та фони</li>\n<li>📐 Одиниці вимірювання</li>\n<li>🔧 CSS-змінні (Custom Properties)</li>\n<li>✅ Ключові висновки та контрольні питання</li>\n</ol>\n","<h1>🎨 Що таке CSS</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>CSS</strong> (Cascading Style Sheets / Каскадні таблиці стилів) — мова опису зовнішнього вигляду HTML-документа: кольори, шрифти, відступи, розміри, розташування елементів.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> HTML відповідає за структуру контенту, CSS — за його візуальне оформлення. Розділення структури та стилю — фундаментальний принцип веб-розробки, який дозволяє змінювати дизайн сайту, не торкаючись HTML-коду.</p>\n<h2>🏗️ Тріада веб-технологій</h2>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    HTML[📄 HTML] --&gt; |&quot;Структура та зміст&quot;| PAGE[🌐 Веб-сторінка]\n    CSS[🎨 CSS] --&gt; |&quot;Візуальне оформлення&quot;| PAGE\n    JS[⚡ JavaScript] --&gt; |&quot;Інтерактивна поведінка&quot;| PAGE\n    style HTML fill:#e3f2fd,stroke:#1565c0\n    style CSS fill:#fce4ec,stroke:#c2185b\n    style JS fill:#fff9c4,stroke:#f9a825\n    style PAGE fill:#e8f5e9,stroke:#388e3c\"><svg id=\"exp-1770708905046-2-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 569.796875px;\" viewBox=\"0 0 569.796875 260\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1770708905046-2-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1770708905046-2-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1770708905046-2-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1770708905046-2-0 .error-icon{fill:#552222;}#exp-1770708905046-2-0 .error-text{fill:#552222;stroke:#552222;}#exp-1770708905046-2-0 .edge-thickness-normal{stroke-width:1px;}#exp-1770708905046-2-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1770708905046-2-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1770708905046-2-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1770708905046-2-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1770708905046-2-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1770708905046-2-0 .marker{fill:#333333;stroke:#333333;}#exp-1770708905046-2-0 .marker.cross{stroke:#333333;}#exp-1770708905046-2-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1770708905046-2-0 p{margin:0;}#exp-1770708905046-2-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1770708905046-2-0 .cluster-label text{fill:#333;}#exp-1770708905046-2-0 .cluster-label span{color:#333;}#exp-1770708905046-2-0 .cluster-label span p{background-color:transparent;}#exp-1770708905046-2-0 .label text,#exp-1770708905046-2-0 span{fill:#333;color:#333;}#exp-1770708905046-2-0 .node rect,#exp-1770708905046-2-0 .node circle,#exp-1770708905046-2-0 .node ellipse,#exp-1770708905046-2-0 .node polygon,#exp-1770708905046-2-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1770708905046-2-0 .rough-node .label text,#exp-1770708905046-2-0 .node .label text,#exp-1770708905046-2-0 .image-shape .label,#exp-1770708905046-2-0 .icon-shape .label{text-anchor:middle;}#exp-1770708905046-2-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1770708905046-2-0 .rough-node .label,#exp-1770708905046-2-0 .node .label,#exp-1770708905046-2-0 .image-shape .label,#exp-1770708905046-2-0 .icon-shape .label{text-align:center;}#exp-1770708905046-2-0 .node.clickable{cursor:pointer;}#exp-1770708905046-2-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1770708905046-2-0 .arrowheadPath{fill:#333333;}#exp-1770708905046-2-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1770708905046-2-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1770708905046-2-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1770708905046-2-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1770708905046-2-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1770708905046-2-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1770708905046-2-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1770708905046-2-0 .cluster text{fill:#333;}#exp-1770708905046-2-0 .cluster span{color:#333;}#exp-1770708905046-2-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1770708905046-2-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1770708905046-2-0 rect.text{fill:none;stroke-width:0;}#exp-1770708905046-2-0 .icon-shape,#exp-1770708905046-2-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1770708905046-2-0 .icon-shape p,#exp-1770708905046-2-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1770708905046-2-0 .icon-shape rect,#exp-1770708905046-2-0 .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1770708905046-2-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1770708905046-2-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1770708905046-2-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1770708905046-2-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1770708905046-2-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1770708905046-2-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1770708905046-2-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1770708905046-2-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1770708905046-2-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M140.094,32L162.177,32C184.26,32,228.427,32,275.435,44.043C322.443,56.087,372.293,80.173,397.217,92.216L422.142,104.26\" id=\"L_HTML_PAGE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_HTML_PAGE_0\" data-points=\"W3sieCI6MTQwLjA5Mzc1LCJ5IjozMn0seyJ4IjoyNzIuNTkzNzUsInkiOjMyfSx7IngiOjQyNS43NDM3ODE4ODc3NTUxLCJ5IjoxMDZ9XQ==\" marker-end=\"url(#exp-1770708905046-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M133.625,130L156.786,130C179.948,130,226.271,130,268.172,130C310.073,130,347.552,130,366.292,130L385.031,130\" id=\"L_CSS_PAGE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_CSS_PAGE_0\" data-points=\"W3sieCI6MTMzLjYyNSwieSI6MTMwfSx7IngiOjI3Mi41OTM3NSwieSI6MTMwfSx7IngiOjM4OS4wMzEyNSwieSI6MTMwfV0=\" marker-end=\"url(#exp-1770708905046-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M156.156,228L175.563,228C194.969,228,233.781,228,278.112,215.957C322.443,203.913,372.293,179.827,397.217,167.784L422.142,155.74\" id=\"L_JS_PAGE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_JS_PAGE_0\" data-points=\"W3sieCI6MTU2LjE1NjI1LCJ5IjoyMjh9LHsieCI6MjcyLjU5Mzc1LCJ5IjoyMjh9LHsieCI6NDI1Ljc0Mzc4MTg4Nzc1NTEsInkiOjE1NH1d\" marker-end=\"url(#exp-1770708905046-2-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\" transform=\"translate(272.59375, 32)\"><g class=\"label\" data-id=\"L_HTML_PAGE_0\" transform=\"translate(-73.8046875, -11)\"><g><rect class=\"background\" style=\"\" x=\"-2\" y=\"-1\" width=\"147.609375\" height=\"22\"></rect><text y=\"-10.1\" style=\"\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">Структура</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> та</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> зміст</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(272.59375, 130)\"><g class=\"label\" data-id=\"L_CSS_PAGE_0\" transform=\"translate(-89.1171875, -11)\"><g><rect class=\"background\" style=\"\" x=\"-2\" y=\"-1\" width=\"178.234375\" height=\"22\"></rect><text y=\"-10.1\" style=\"\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">Візуальне</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> оформлення</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(272.59375, 228)\"><g class=\"label\" data-id=\"L_JS_PAGE_0\" transform=\"translate(-91.4375, -11)\"><g><rect class=\"background\" style=\"\" x=\"-2\" y=\"-1\" width=\"182.875\" height=\"22\"></rect><text y=\"-10.1\" style=\"\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">Інтерактивна</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> поведінка</tspan></tspan></text></g></g></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-HTML-0\" transform=\"translate(82.078125, 32)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-58.015625\" y=\"-24\" width=\"116.03125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-34.015625, -12)\"><rect></rect><foreignObject width=\"68.03125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📄 HTML</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-PAGE-1\" transform=\"translate(475.4140625, 130)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-86.3828125\" y=\"-24\" width=\"172.765625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-62.3828125, -12)\"><rect></rect><foreignObject width=\"124.765625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🌐 Веб-сторінка</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-CSS-2\" transform=\"translate(82.078125, 130)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-51.546875\" y=\"-24\" width=\"103.09375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-27.546875, -12)\"><rect></rect><foreignObject width=\"55.09375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🎨 CSS</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-JS-4\" transform=\"translate(82.078125, 228)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-74.078125\" y=\"-24\" width=\"148.15625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-50.078125, -12)\"><rect></rect><foreignObject width=\"100.15625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>⚡ JavaScript</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<h2>🔑 Навіщо окрема мова для стилів?</h2>\n<p>До появи CSS (1996) оформлення вбудовували безпосередньо в HTML-теги через атрибути <code>font</code>, <code>color</code>, <code>bgcolor</code>. Це призводило до дублювання коду на кожній сторінці сайту, і будь-яка зміна дизайну вимагала правити кожну сторінку вручну. CSS вирішив цю проблему, дозволивши описати всі стилі <strong>в одному місці</strong> та застосувати їх до будь-якої кількості HTML-сторінок одночасно.</p>\n<div class=\"tip\"><strong>💡 Практичне значення</strong> <p>Один CSS-файл може контролювати оформлення сотень HTML-сторінок. Це означає, що зміна кольору бренду на сайті з 500 сторінок — це зміна одного рядка в CSS, а не редагування 500 файлів.</p>\n</div>\n\n","<h1>🔗 Способи підключення CSS</h1>\n<p><strong>Головна ідея:</strong> Існує три способи підключення CSS до HTML. Зовнішній файл — найкращий підхід для реальних проєктів.</p>\n<h2>📋 Три способи</h2>\n\n<div class=\"mermaid\" data-source=\"graph TD\n    CSS[🎨 Підключення CSS] --&gt; INLINE[1️⃣ Inline]\n    CSS --&gt; INTERNAL[2️⃣ Internal]\n    CSS --&gt; EXTERNAL[3️⃣ External]\n    INLINE --&gt; |&quot;style='...'&quot;| LOW[❌ Найгірший варіант]\n    INTERNAL --&gt; |&quot;style тег в HTML&quot;| MID[⚠️ Для малих проєктів]\n    EXTERNAL --&gt; |&quot;Окремий .css файл&quot;| HIGH[✅ Рекомендовано]\n    style CSS fill:#fff9c4,stroke:#f9a825\n    style EXTERNAL fill:#e8f5e9,stroke:#388e3c\n    style INTERNAL fill:#fff3e0,stroke:#ef6c00\n    style INLINE fill:#fce4ec,stroke:#c2185b\"><svg id=\"exp-1770708905059-3-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 744.40625px;\" viewBox=\"0 0 744.40625 282\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1770708905059-3-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1770708905059-3-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1770708905059-3-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1770708905059-3-0 .error-icon{fill:#552222;}#exp-1770708905059-3-0 .error-text{fill:#552222;stroke:#552222;}#exp-1770708905059-3-0 .edge-thickness-normal{stroke-width:1px;}#exp-1770708905059-3-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1770708905059-3-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1770708905059-3-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1770708905059-3-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1770708905059-3-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1770708905059-3-0 .marker{fill:#333333;stroke:#333333;}#exp-1770708905059-3-0 .marker.cross{stroke:#333333;}#exp-1770708905059-3-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1770708905059-3-0 p{margin:0;}#exp-1770708905059-3-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1770708905059-3-0 .cluster-label text{fill:#333;}#exp-1770708905059-3-0 .cluster-label span{color:#333;}#exp-1770708905059-3-0 .cluster-label span p{background-color:transparent;}#exp-1770708905059-3-0 .label text,#exp-1770708905059-3-0 span{fill:#333;color:#333;}#exp-1770708905059-3-0 .node rect,#exp-1770708905059-3-0 .node circle,#exp-1770708905059-3-0 .node ellipse,#exp-1770708905059-3-0 .node polygon,#exp-1770708905059-3-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1770708905059-3-0 .rough-node .label text,#exp-1770708905059-3-0 .node .label text,#exp-1770708905059-3-0 .image-shape .label,#exp-1770708905059-3-0 .icon-shape .label{text-anchor:middle;}#exp-1770708905059-3-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1770708905059-3-0 .rough-node .label,#exp-1770708905059-3-0 .node .label,#exp-1770708905059-3-0 .image-shape .label,#exp-1770708905059-3-0 .icon-shape .label{text-align:center;}#exp-1770708905059-3-0 .node.clickable{cursor:pointer;}#exp-1770708905059-3-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1770708905059-3-0 .arrowheadPath{fill:#333333;}#exp-1770708905059-3-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1770708905059-3-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1770708905059-3-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1770708905059-3-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1770708905059-3-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1770708905059-3-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1770708905059-3-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1770708905059-3-0 .cluster text{fill:#333;}#exp-1770708905059-3-0 .cluster span{color:#333;}#exp-1770708905059-3-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1770708905059-3-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1770708905059-3-0 rect.text{fill:none;stroke-width:0;}#exp-1770708905059-3-0 .icon-shape,#exp-1770708905059-3-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1770708905059-3-0 .icon-shape p,#exp-1770708905059-3-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1770708905059-3-0 .icon-shape rect,#exp-1770708905059-3-0 .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1770708905059-3-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1770708905059-3-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1770708905059-3-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1770708905059-3-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1770708905059-3-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1770708905059-3-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1770708905059-3-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1770708905059-3-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1770708905059-3-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M279.992,50.847L252.523,55.873C225.055,60.898,170.117,70.949,142.648,79.475C115.18,88,115.18,95,115.18,98.5L115.18,102\" id=\"L_CSS_INLINE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_CSS_INLINE_0\" data-points=\"W3sieCI6Mjc5Ljk5MjE4NzUsInkiOjUwLjg0NzAzMzQyODYyMTQzfSx7IngiOjExNS4xNzk2ODc1LCJ5Ijo4MX0seyJ4IjoxMTUuMTc5Njg3NSwieSI6MTA2fV0=\" marker-end=\"url(#exp-1770708905059-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M383.008,56L383.008,60.167C383.008,64.333,383.008,72.667,383.008,80.333C383.008,88,383.008,95,383.008,98.5L383.008,102\" id=\"L_CSS_INTERNAL_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_CSS_INTERNAL_0\" data-points=\"W3sieCI6MzgzLjAwNzgxMjUsInkiOjU2fSx7IngiOjM4My4wMDc4MTI1LCJ5Ijo4MX0seyJ4IjozODMuMDA3ODEyNSwieSI6MTA2fV0=\" marker-end=\"url(#exp-1770708905059-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M486.023,51.639L511.691,56.533C537.359,61.426,588.695,71.213,614.363,79.607C640.031,88,640.031,95,640.031,98.5L640.031,102\" id=\"L_CSS_EXTERNAL_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_CSS_EXTERNAL_0\" data-points=\"W3sieCI6NDg2LjAyMzQzNzUsInkiOjUxLjYzOTMyMDM0NDA4MzQxfSx7IngiOjY0MC4wMzEyNSwieSI6ODF9LHsieCI6NjQwLjAzMTI1LCJ5IjoxMDZ9XQ==\" marker-end=\"url(#exp-1770708905059-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M115.18,154L115.18,160C115.18,166,115.18,178,115.18,189.333C115.18,200.667,115.18,211.333,115.18,216.667L115.18,222\" id=\"L_INLINE_LOW_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_INLINE_LOW_0\" data-points=\"W3sieCI6MTE1LjE3OTY4NzUsInkiOjE1NH0seyJ4IjoxMTUuMTc5Njg3NSwieSI6MTkwfSx7IngiOjExNS4xNzk2ODc1LCJ5IjoyMjZ9XQ==\" marker-end=\"url(#exp-1770708905059-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M383.008,154L383.008,160C383.008,166,383.008,178,383.008,189.333C383.008,200.667,383.008,211.333,383.008,216.667L383.008,222\" id=\"L_INTERNAL_MID_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_INTERNAL_MID_0\" data-points=\"W3sieCI6MzgzLjAwNzgxMjUsInkiOjE1NH0seyJ4IjozODMuMDA3ODEyNSwieSI6MTkwfSx7IngiOjM4My4wMDc4MTI1LCJ5IjoyMjZ9XQ==\" marker-end=\"url(#exp-1770708905059-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M640.031,154L640.031,160C640.031,166,640.031,178,640.031,189.333C640.031,200.667,640.031,211.333,640.031,216.667L640.031,222\" id=\"L_EXTERNAL_HIGH_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_EXTERNAL_HIGH_0\" data-points=\"W3sieCI6NjQwLjAzMTI1LCJ5IjoxNTR9LHsieCI6NjQwLjAzMTI1LCJ5IjoxOTB9LHsieCI6NjQwLjAzMTI1LCJ5IjoyMjZ9XQ==\" marker-end=\"url(#exp-1770708905059-3-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_CSS_INLINE_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_CSS_INTERNAL_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_CSS_EXTERNAL_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\" transform=\"translate(115.1796875, 190)\"><g class=\"label\" data-id=\"L_INLINE_LOW_0\" transform=\"translate(-33.703125, -11)\"><g><rect class=\"background\" style=\"\" x=\"-2\" y=\"-1\" width=\"67.40625\" height=\"22\"></rect><text y=\"-10.1\" style=\"\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">style='...'</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(383.0078125, 190)\"><g class=\"label\" data-id=\"L_INTERNAL_MID_0\" transform=\"translate(-63.4140625, -11)\"><g><rect class=\"background\" style=\"\" x=\"-2\" y=\"-1\" width=\"126.828125\" height=\"22\"></rect><text y=\"-10.1\" style=\"\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">style</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> тег</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> в</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> HTML</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(640.03125, 190)\"><g class=\"label\" data-id=\"L_EXTERNAL_HIGH_0\" transform=\"translate(-74.7734375, -11)\"><g><rect class=\"background\" style=\"\" x=\"-2\" y=\"-1\" width=\"149.546875\" height=\"22\"></rect><text y=\"-10.1\" style=\"\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">Окремий</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> .css</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> файл</tspan></tspan></text></g></g></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-CSS-0\" transform=\"translate(383.0078125, 32)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-103.015625\" y=\"-24\" width=\"206.03125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-79.015625, -12)\"><rect></rect><foreignObject width=\"158.03125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🎨 Підключення CSS</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-INLINE-1\" transform=\"translate(115.1796875, 130)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-55.203125\" y=\"-24\" width=\"110.40625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-31.203125, -12)\"><rect></rect><foreignObject width=\"62.40625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>1️⃣ Inline</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-INTERNAL-3\" transform=\"translate(383.0078125, 130)\"><rect class=\"basic label-container\" style=\"fill:#fff3e0 !important;stroke:#ef6c00 !important\" x=\"-63.3046875\" y=\"-24\" width=\"126.609375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-39.3046875, -12)\"><rect></rect><foreignObject width=\"78.609375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>2️⃣ Internal</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-EXTERNAL-5\" transform=\"translate(640.03125, 130)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-65.453125\" y=\"-24\" width=\"130.90625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-41.453125, -12)\"><rect></rect><foreignObject width=\"82.90625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>3️⃣ External</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-LOW-7\" transform=\"translate(115.1796875, 250)\"><rect class=\"basic label-container\" style=\"\" x=\"-107.1796875\" y=\"-24\" width=\"214.359375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-83.1796875, -12)\"><rect></rect><foreignObject width=\"166.359375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>❌ Найгірший варіант</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-MID-9\" transform=\"translate(383.0078125, 250)\"><rect class=\"basic label-container\" style=\"\" x=\"-110.6484375\" y=\"-24\" width=\"221.296875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-86.6484375, -12)\"><rect></rect><foreignObject width=\"173.296875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>⚠️ Для малих проєктів</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-HIGH-11\" transform=\"translate(640.03125, 250)\"><rect class=\"basic label-container\" style=\"\" x=\"-96.375\" y=\"-24\" width=\"192.75\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-72.375, -12)\"><rect></rect><foreignObject width=\"144.75\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>✅ Рекомендовано</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-comment\">&lt;!-- 1️⃣ Inline — прямо в атрибуті елемента --&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">p</span> <span class=\"hljs-attr\">style</span>=<span class=\"hljs-string\">\"color: red; font-size: 16px;\"</span>&gt;</span>Текст<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">p</span>&gt;</span>\n\n<span class=\"hljs-comment\">&lt;!-- 2️⃣ Internal — всередині &lt;style&gt; в &lt;head&gt; --&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">head</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">style</span>&gt;</span><span class=\"language-css\">\n    <span class=\"hljs-selector-tag\">p</span> {\n      <span class=\"hljs-attribute\">color</span>: red;\n      <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">16px</span>;\n    }\n  </span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">style</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">head</span>&gt;</span>\n\n<span class=\"hljs-comment\">&lt;!-- 3️⃣ External — окремий файл (✅ Найкращий підхід) --&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">head</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">link</span> <span class=\"hljs-attr\">rel</span>=<span class=\"hljs-string\">\"stylesheet\"</span> <span class=\"hljs-attr\">href</span>=<span class=\"hljs-string\">\"styles.css\"</span> /&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">head</span>&gt;</span></code></pre><div class=\"tip\"><strong>💡 Чому External — найкращий підхід?</strong> <p><strong>Повторне використання:</strong> один CSS-файл підключається до всіх сторінок сайту через <code>&lt;link&gt;</code>. Зміна кольору в одному місці оновлює весь сайт — це принцип <strong>DRY</strong> (Don't Repeat Yourself / Не повторюй себе).</p>\n<p><strong>Кешування браузером:</strong> при першому візиті браузер завантажує CSS-файл і зберігає його в кеші. При переході на іншу сторінку того ж сайту CSS вже не завантажується повторно — сторінка відкривається швидше.</p>\n<p><strong>Розділення відповідальності:</strong> HTML-файл містить тільки структуру, CSS-файл — тільки стилі. Це спрощує роботу в команді, де один розробник працює з розміткою, а інший — з дизайном.</p>\n</div>\n\n","<h1>🧱 Анатомія CSS-правила</h1>\n<p><strong>Головна ідея:</strong> Кожне CSS-правило складається з селектора (що стилізувати) та блоку оголошень (як стилізувати).</p>\n<h2>📐 Структура правила</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/*  селектор ─── вказує, ЩО стилізувати\n       │\n       ▼                                         */</span>\n<span class=\"hljs-selector-tag\">h1</span> {\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#1565c0</span>; <span class=\"hljs-comment\">/* оголошення = властивість + значення */</span>\n  <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">32px</span>; <span class=\"hljs-comment\">/* властивість: що змінюємо             */</span>\n  <span class=\"hljs-attribute\">text-align</span>: center; <span class=\"hljs-comment\">/* значення: яке нове значення          */</span>\n  <span class=\"hljs-attribute\">margin-bottom</span>: <span class=\"hljs-number\">16px</span>;\n}\n<span class=\"hljs-comment\">/*    ▲                ▲\n      │                │\n   властивість      значення\n      │                │\n      └── оголошення ──┘                         */</span></code></pre><p>Кожне CSS-правило починається з <strong>селектора</strong> — він вказує браузеру, до яких HTML-елементів застосувати стилі. Далі у фігурних дужках <code>{ }</code> йде один або кілька <strong>оголошень</strong> (declarations). Кожне оголошення — це пара з <strong>властивості</strong> (що змінюємо) та <strong>значення</strong> (на що змінюємо), розділених двокрапкою.</p>\n<div class=\"warning\"><strong>⚠️ Синтаксис</strong> <p>Кожне оголошення завершується крапкою з комою <code>;</code>. Пропуск <code>;</code> може призвести до того, що браузер проігнорує наступні властивості — причому без жодного повідомлення про помилку.</p>\n</div>\n\n","<h1>🎯 Прості селектори</h1>\n<p><strong>Головна ідея:</strong> Селектори визначають, до яких HTML-елементів застосовуються стилі. Від вибору правильного селектора залежить, наскільки точно та ефективно ви зможете стилізувати сторінку.</p>\n<h2>📊 Основні типи</h2>\n<table>\n<thead>\n<tr>\n<th>Селектор</th>\n<th>Синтаксис</th>\n<th>Що вибирає</th>\n<th>Приклад CSS</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Елемент (тег)</td>\n<td><code>tag</code></td>\n<td>Всі елементи з таким тегом</td>\n<td><code>p { color: gray; }</code></td>\n</tr>\n<tr>\n<td>Клас</td>\n<td><code>.class</code></td>\n<td>Елементи з атрибутом class</td>\n<td><code>.card { padding: 16px; }</code></td>\n</tr>\n<tr>\n<td>Ідентифікатор</td>\n<td><code>#id</code></td>\n<td>Один елемент з атрибутом id</td>\n<td><code>#header { height: 60px; }</code></td>\n</tr>\n<tr>\n<td>Універсальний</td>\n<td><code>*</code></td>\n<td>Абсолютно всі елементи</td>\n<td><code>* { margin: 0; }</code></td>\n</tr>\n</tbody></table>\n<p><strong>Селектор елемента</strong> (<code>p</code>, <code>h1</code>, <code>div</code>) — найширший: стилізує всі такі теги на сторінці. <strong>Селектор класу</strong> (<code>.card</code>) — найуживаніший у реальних проєктах, бо один клас можна призначити багатьом елементам. <strong>Селектор ID</strong> (<code>#header</code>) — найточніший, але обмежений одним елементом на сторінку.</p>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-comment\">&lt;!-- HTML --&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">h1</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"title\"</span>&gt;</span>Заголовок<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">h1</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">p</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"intro\"</span>&gt;</span>Перший абзац<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">p</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">p</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"intro highlight\"</span>&gt;</span>Другий абзац<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">p</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">p</span>&gt;</span>Звичайний абзац<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">p</span>&gt;</span></code></pre><pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Селектор елемента — стилізує ВСІ &lt;p&gt; */</span>\n<span class=\"hljs-selector-tag\">p</span> {\n  <span class=\"hljs-attribute\">line-height</span>: <span class=\"hljs-number\">1.6</span>;\n}\n\n<span class=\"hljs-comment\">/* Селектор класу — елементи з class=\"intro\" */</span>\n<span class=\"hljs-selector-class\">.intro</span> {\n  <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">18px</span>;\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#333</span>;\n}\n\n<span class=\"hljs-comment\">/* Кілька класів — елемент з ОБОМА класами */</span>\n<span class=\"hljs-selector-class\">.intro</span><span class=\"hljs-selector-class\">.highlight</span> {\n  <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-number\">#fff9c4</span>;\n}\n\n<span class=\"hljs-comment\">/* Селектор ID — лише ОДИН елемент */</span>\n<span class=\"hljs-selector-id\">#title</span> {\n  <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">36px</span>;\n}</code></pre><div class=\"warning\"><strong>⚠️ Важливо про ID</strong> <p>Ідентифікатор (<code>id</code>) має бути <strong>унікальним</strong> на сторінці. Для повторюваних стилів використовуйте класи.</p>\n</div>\n\n","<h1>🔗 Комбіновані селектори</h1>\n<p><strong>Головна ідея:</strong> Комбіновані селектори дозволяють точно вибирати елементи на основі їх розташування в HTML-дереві. Замість стилізації всіх посилань на сторінці, можна стилізувати лише посилання всередині навігації.</p>\n<h2>📋 Типи комбінаторів</h2>\n<table>\n<thead>\n<tr>\n<th>Комбінатор</th>\n<th>Синтаксис</th>\n<th>Що вибирає</th>\n<th>Приклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Нащадок</td>\n<td><code>A B</code></td>\n<td>B всередині A (на будь-якому рівні)</td>\n<td><code>nav a { ... }</code></td>\n</tr>\n<tr>\n<td>Дитина</td>\n<td><code>A &gt; B</code></td>\n<td>B — пряма дитина A</td>\n<td><code>ul &gt; li { ... }</code></td>\n</tr>\n<tr>\n<td>Сусід</td>\n<td><code>A + B</code></td>\n<td>B одразу після A</td>\n<td><code>h2 + p { ... }</code></td>\n</tr>\n<tr>\n<td>Загальний сусід</td>\n<td><code>A ~ B</code></td>\n<td>Всі B після A на тому ж рівні</td>\n<td><code>h2 ~ p { ... }</code></td>\n</tr>\n</tbody></table>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Нащадок: всі &lt;a&gt; всередині &lt;nav&gt;, навіть вкладені */</span>\n<span class=\"hljs-selector-tag\">nav</span> <span class=\"hljs-selector-tag\">a</span> {\n  <span class=\"hljs-attribute\">text-decoration</span>: none;\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#1565c0</span>;\n}\n\n<span class=\"hljs-comment\">/* Дитина: тільки прямі &lt;li&gt; всередині &lt;ul&gt; */</span>\n<span class=\"hljs-selector-tag\">ul</span> &gt; <span class=\"hljs-selector-tag\">li</span> {\n  <span class=\"hljs-attribute\">list-style-type</span>: square;\n}\n\n<span class=\"hljs-comment\">/* Сусід: перший &lt;p&gt; одразу після &lt;h2&gt; */</span>\n<span class=\"hljs-selector-tag\">h2</span> + <span class=\"hljs-selector-tag\">p</span> {\n  <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">18px</span>;\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#555</span>;\n}</code></pre><div class=\"tip\"><strong>💡 Групування селекторів</strong> <p>Якщо кілька селекторів мають однакові стилі, їх можна об'єднати через кому:</p>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-tag\">h1</span>,\n<span class=\"hljs-selector-tag\">h2</span>,\n<span class=\"hljs-selector-tag\">h3</span> {\n  <span class=\"hljs-attribute\">font-family</span>: <span class=\"hljs-string\">\"Arial\"</span>, sans-serif;\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#1a1a1a</span>;\n}</code></pre></div>\n\n","<h1>🎭 Псевдокласи та псевдоелементи</h1>\n<p><strong>Головна ідея:</strong> Звичайні селектори вибирають елементи за їх типом або класом, але що робити, якщо потрібно стилізувати елемент тільки при наведенні миші? Або лише перший елемент списку? Для цього існують псевдокласи — вони реагують на <strong>стан</strong> елемента або його <strong>позицію</strong> серед сусідів. Псевдоелементи, в свою чергу, дозволяють стилізувати <strong>частину</strong> елемента або додати контент, якого немає в HTML.</p>\n<h2>🖱️ Псевдокласи — стан елемента</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Наведення курсору */</span>\n<span class=\"hljs-selector-tag\">a</span><span class=\"hljs-selector-pseudo\">:hover</span> {\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#c2185b</span>;\n  <span class=\"hljs-attribute\">text-decoration</span>: underline;\n}\n\n<span class=\"hljs-comment\">/* Активне натискання */</span>\n<span class=\"hljs-selector-tag\">button</span><span class=\"hljs-selector-pseudo\">:active</span> {\n  <span class=\"hljs-attribute\">transform</span>: <span class=\"hljs-built_in\">scale</span>(<span class=\"hljs-number\">0.98</span>);\n}\n\n<span class=\"hljs-comment\">/* Фокус (клавіатурна навігація) */</span>\n<span class=\"hljs-selector-tag\">input</span><span class=\"hljs-selector-pseudo\">:focus</span> {\n  <span class=\"hljs-attribute\">border-color</span>: <span class=\"hljs-number\">#1565c0</span>;\n  <span class=\"hljs-attribute\">outline</span>: none;\n  <span class=\"hljs-attribute\">box-shadow</span>: <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">3px</span> <span class=\"hljs-built_in\">rgba</span>(<span class=\"hljs-number\">21</span>, <span class=\"hljs-number\">101</span>, <span class=\"hljs-number\">192</span>, <span class=\"hljs-number\">0.2</span>);\n}\n\n<span class=\"hljs-comment\">/* Структурні псевдокласи */</span>\n<span class=\"hljs-selector-tag\">li</span><span class=\"hljs-selector-pseudo\">:first</span>-child {\n  <span class=\"hljs-attribute\">font-weight</span>: bold;\n}\n<span class=\"hljs-selector-tag\">li</span><span class=\"hljs-selector-pseudo\">:last-child</span> {\n  <span class=\"hljs-attribute\">border-bottom</span>: none;\n}\n<span class=\"hljs-selector-tag\">tr</span><span class=\"hljs-selector-pseudo\">:nth-child</span>(even) {\n  <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-number\">#f5f5f5</span>;\n}</code></pre><h2>✨ Псевдоелементи — віртуальні частини</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Перша літера абзацу (буквиця) */</span>\n<span class=\"hljs-selector-tag\">p</span><span class=\"hljs-selector-pseudo\">::first-letter</span> {\n  <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">2em</span>;\n  <span class=\"hljs-attribute\">font-weight</span>: bold;\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#c2185b</span>;\n}\n\n<span class=\"hljs-comment\">/* Контент до/після елемента */</span>\n<span class=\"hljs-selector-class\">.required</span><span class=\"hljs-selector-pseudo\">::after</span> {\n  <span class=\"hljs-attribute\">content</span>: <span class=\"hljs-string\">\" *\"</span>;\n  <span class=\"hljs-attribute\">color</span>: red;\n}</code></pre><div class=\"note\"><strong>📝 Різниця в записі</strong> <p>Псевдокласи — одна двокрапка <code>:hover</code>, <code>:focus</code>.<br>Псевдоелементи — дві двокрапки <code>::before</code>, <code>::after</code>, <code>::first-letter</code>.</p>\n</div>\n\n","<h1>⚖️ Каскадність та специфічність</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Каскадність</strong> — механізм, за яким браузер визначає, які стилі застосувати, коли кілька правил конфліктують.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> На реальних сайтах до одного елемента часто застосовуються десятки CSS-правил з різних файлів. Коли два правила конфліктують (наприклад, одне каже <code>color: red</code>, інше — <code>color: blue</code>), браузер вирішує конфлікт за допомогою специфічності. Правило з вищою специфічністю перемагає. При однаковій специфічності виграє останнє правило в коді.</p>\n<h2>📊 Формула специфічності</h2>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    SPEC[⚖️ Специфічність] --&gt; A[&quot;(A) Inline style&lt;br&gt;style='...'&lt;br&gt;🏆 1,0,0,0&quot;]\n    SPEC --&gt; B[&quot;(B) ID&lt;br&gt;#header&lt;br&gt;🥈 0,1,0,0&quot;]\n    SPEC --&gt; C[&quot;(C) Class / Pseudo&lt;br&gt;.card, :hover&lt;br&gt;🥉 0,0,1,0&quot;]\n    SPEC --&gt; D[&quot;(D) Element&lt;br&gt;p, h1, div&lt;br&gt;0,0,0,1&quot;]\n    style SPEC fill:#fff9c4,stroke:#f9a825\n    style A fill:#fce4ec,stroke:#c2185b\n    style B fill:#fff3e0,stroke:#ef6c00\n    style C fill:#e3f2fd,stroke:#1565c0\n    style D fill:#e8f5e9,stroke:#388e3c\"><svg id=\"exp-1770708905074-8-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 429.28125px;\" viewBox=\"0 0 429.28125 550\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1770708905074-8-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1770708905074-8-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1770708905074-8-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1770708905074-8-0 .error-icon{fill:#552222;}#exp-1770708905074-8-0 .error-text{fill:#552222;stroke:#552222;}#exp-1770708905074-8-0 .edge-thickness-normal{stroke-width:1px;}#exp-1770708905074-8-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1770708905074-8-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1770708905074-8-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1770708905074-8-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1770708905074-8-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1770708905074-8-0 .marker{fill:#333333;stroke:#333333;}#exp-1770708905074-8-0 .marker.cross{stroke:#333333;}#exp-1770708905074-8-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1770708905074-8-0 p{margin:0;}#exp-1770708905074-8-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1770708905074-8-0 .cluster-label text{fill:#333;}#exp-1770708905074-8-0 .cluster-label span{color:#333;}#exp-1770708905074-8-0 .cluster-label span p{background-color:transparent;}#exp-1770708905074-8-0 .label text,#exp-1770708905074-8-0 span{fill:#333;color:#333;}#exp-1770708905074-8-0 .node rect,#exp-1770708905074-8-0 .node circle,#exp-1770708905074-8-0 .node ellipse,#exp-1770708905074-8-0 .node polygon,#exp-1770708905074-8-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1770708905074-8-0 .rough-node .label text,#exp-1770708905074-8-0 .node .label text,#exp-1770708905074-8-0 .image-shape .label,#exp-1770708905074-8-0 .icon-shape .label{text-anchor:middle;}#exp-1770708905074-8-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1770708905074-8-0 .rough-node .label,#exp-1770708905074-8-0 .node .label,#exp-1770708905074-8-0 .image-shape .label,#exp-1770708905074-8-0 .icon-shape .label{text-align:center;}#exp-1770708905074-8-0 .node.clickable{cursor:pointer;}#exp-1770708905074-8-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1770708905074-8-0 .arrowheadPath{fill:#333333;}#exp-1770708905074-8-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1770708905074-8-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1770708905074-8-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1770708905074-8-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1770708905074-8-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1770708905074-8-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1770708905074-8-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1770708905074-8-0 .cluster text{fill:#333;}#exp-1770708905074-8-0 .cluster span{color:#333;}#exp-1770708905074-8-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1770708905074-8-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1770708905074-8-0 rect.text{fill:none;stroke-width:0;}#exp-1770708905074-8-0 .icon-shape,#exp-1770708905074-8-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1770708905074-8-0 .icon-shape p,#exp-1770708905074-8-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1770708905074-8-0 .icon-shape rect,#exp-1770708905074-8-0 .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1770708905074-8-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1770708905074-8-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1770708905074-8-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1770708905074-8-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1770708905074-8-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1770708905074-8-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1770708905074-8-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1770708905074-8-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1770708905074-8-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M111.643,251L128.848,218.5C146.054,186,180.464,121,203.697,88.5C226.93,56,238.984,56,245.012,56L251.039,56\" id=\"L_SPEC_A_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_SPEC_A_0\" data-points=\"W3sieCI6MTExLjY0Mjk3OTQ1MjA1NDc5LCJ5IjoyNTF9LHsieCI6MjE0Ljg3NSwieSI6NTZ9LHsieCI6MjU1LjAzOTA2MjUsInkiOjU2fV0=\" marker-end=\"url(#exp-1770708905074-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M137.054,251L150.024,242.833C162.994,234.667,188.935,218.333,210.643,210.167C232.352,202,249.828,202,258.566,202L267.305,202\" id=\"L_SPEC_B_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_SPEC_B_0\" data-points=\"W3sieCI6MTM3LjA1MzkzODM1NjE2NDQsInkiOjI1MX0seyJ4IjoyMTQuODc1LCJ5IjoyMDJ9LHsieCI6MjcxLjMwNDY4NzUsInkiOjIwMn1d\" marker-end=\"url(#exp-1770708905074-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M137.054,299L150.024,307.167C162.994,315.333,188.935,331.667,205.405,339.833C221.875,348,228.875,348,232.375,348L235.875,348\" id=\"L_SPEC_C_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_SPEC_C_0\" data-points=\"W3sieCI6MTM3LjA1MzkzODM1NjE2NDQsInkiOjI5OX0seyJ4IjoyMTQuODc1LCJ5IjozNDh9LHsieCI6MjM5Ljg3NSwieSI6MzQ4fV0=\" marker-end=\"url(#exp-1770708905074-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M111.643,299L128.848,331.5C146.054,364,180.464,429,205.133,461.5C229.802,494,244.729,494,252.193,494L259.656,494\" id=\"L_SPEC_D_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_SPEC_D_0\" data-points=\"W3sieCI6MTExLjY0Mjk3OTQ1MjA1NDc5LCJ5IjoyOTl9LHsieCI6MjE0Ljg3NSwieSI6NDk0fSx7IngiOjI2My42NTYyNSwieSI6NDk0fV0=\" marker-end=\"url(#exp-1770708905074-8-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_SPEC_A_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_SPEC_B_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_SPEC_C_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_SPEC_D_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-SPEC-0\" transform=\"translate(98.9375, 275)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-90.9375\" y=\"-24\" width=\"181.875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-66.9375, -12)\"><rect></rect><foreignObject width=\"133.875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>⚖️ Специфічність</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-A-1\" transform=\"translate(330.578125, 56)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-75.5390625\" y=\"-48\" width=\"151.078125\" height=\"96\"></rect><g class=\"label\" style=\"\" transform=\"translate(-51.5390625, -36)\"><rect></rect><foreignObject width=\"103.078125\" height=\"72\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>(A) Inline style<br>style='...'<br>🏆 1,0,0,0</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-B-3\" transform=\"translate(330.578125, 202)\"><rect class=\"basic label-container\" style=\"fill:#fff3e0 !important;stroke:#ef6c00 !important\" x=\"-59.2734375\" y=\"-48\" width=\"118.546875\" height=\"96\"></rect><g class=\"label\" style=\"\" transform=\"translate(-35.2734375, -36)\"><rect></rect><foreignObject width=\"70.546875\" height=\"72\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>(B) ID<br>#header<br>🥈 0,1,0,0</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-C-5\" transform=\"translate(330.578125, 348)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-90.703125\" y=\"-48\" width=\"181.40625\" height=\"96\"></rect><g class=\"label\" style=\"\" transform=\"translate(-66.703125, -36)\"><rect></rect><foreignObject width=\"133.40625\" height=\"72\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>(C) Class / Pseudo<br>.card, :hover<br>🥉 0,0,1,0</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-D-7\" transform=\"translate(330.578125, 494)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-66.921875\" y=\"-48\" width=\"133.84375\" height=\"96\"></rect><g class=\"label\" style=\"\" transform=\"translate(-42.921875, -36)\"><rect></rect><foreignObject width=\"85.84375\" height=\"72\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>(D) Element<br>p, h1, div<br>0,0,0,1</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<h2>💻 Приклад обчислення</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-tag\">p</span> {\n  <span class=\"hljs-attribute\">color</span>: black;\n} <span class=\"hljs-comment\">/* 0,0,0,1 */</span>\n<span class=\"hljs-selector-class\">.text</span> {\n  <span class=\"hljs-attribute\">color</span>: blue;\n} <span class=\"hljs-comment\">/* 0,0,1,0 ← вища */</span>\n<span class=\"hljs-selector-tag\">p</span><span class=\"hljs-selector-class\">.text</span> {\n  <span class=\"hljs-attribute\">color</span>: green;\n} <span class=\"hljs-comment\">/* 0,0,1,1 ← ще вища */</span>\n<span class=\"hljs-selector-id\">#main</span> <span class=\"hljs-selector-class\">.text</span> {\n  <span class=\"hljs-attribute\">color</span>: red;\n} <span class=\"hljs-comment\">/* 0,1,1,0 ← найвища */</span></code></pre><div class=\"danger\"><strong>🚫 !important</strong> <p><code>!important</code> перевизначає будь-яку специфічність. Використовуйте його <strong>тільки</strong> як крайній захід — воно ускладнює підтримку коду.</p>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-tag\">p</span> {\n  <span class=\"hljs-attribute\">color</span>: red <span class=\"hljs-meta\">!important</span>;\n} <span class=\"hljs-comment\">/* Перемагає все */</span></code></pre></div>\n\n","<h1>🎨 Успадкування стилів</h1>\n<p><strong>Головна ідея:</strong> Якщо задати <code>color: #333</code> для <code>body</code>, весь текст на сторінці автоматично стане цього кольору — навіть параграфи, списки та посилання, для яких ви нічого окремо не писали. Це працює завдяки <strong>успадкуванню</strong>: дочірні елементи отримують деякі стилі від батьківських. Але не всі властивості успадковуються — наприклад, <code>border</code> та <code>margin</code> було б незручно отримувати автоматично.</p>\n<h2>✅ Успадковуються vs ❌ Не успадковуються</h2>\n<table>\n<thead>\n<tr>\n<th>✅ Успадковуються</th>\n<th>❌ Не успадковуються</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>color</code></td>\n<td><code>margin</code></td>\n</tr>\n<tr>\n<td><code>font-family</code></td>\n<td><code>padding</code></td>\n</tr>\n<tr>\n<td><code>font-size</code></td>\n<td><code>border</code></td>\n</tr>\n<tr>\n<td><code>line-height</code></td>\n<td><code>background</code></td>\n</tr>\n<tr>\n<td><code>text-align</code></td>\n<td><code>width</code> / <code>height</code></td>\n</tr>\n<tr>\n<td><code>visibility</code></td>\n<td><code>display</code></td>\n</tr>\n<tr>\n<td><code>cursor</code></td>\n<td><code>position</code></td>\n</tr>\n</tbody></table>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Встановлюємо стилі тексту на body —\n   вони успадкуються всіма елементами */</span>\n<span class=\"hljs-selector-tag\">body</span> {\n  <span class=\"hljs-attribute\">font-family</span>: <span class=\"hljs-string\">\"Segoe UI\"</span>, Arial, sans-serif;\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#333</span>;\n  <span class=\"hljs-attribute\">line-height</span>: <span class=\"hljs-number\">1.6</span>;\n}\n\n<span class=\"hljs-comment\">/* Окремий елемент може перевизначити успадковане */</span>\n<span class=\"hljs-selector-tag\">h1</span> {\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#1565c0</span>; <span class=\"hljs-comment\">/* Перевизначає color: #333 від body */</span>\n}</code></pre><div class=\"tip\"><strong>💡 Керування успадкуванням</strong> <p>Спеціальні значення дозволяють явно контролювати успадкування:</p>\n<ul>\n<li><code>inherit</code> — примусово успадкувати від батька</li>\n<li><code>initial</code> — повернути до значення за замовчуванням браузера</li>\n<li><code>unset</code> — скинути (успадкувати, якщо властивість успадковується; інакше — initial)</li>\n</ul>\n</div>\n\n","<h1>🔤 Шрифти та текст</h1>\n<p><strong>Головна ідея:</strong> Типографіка — один з найвпливовіших факторів візуального сприйняття веб-сторінки. Правильний вибір шрифту покращує читабельність та професійний вигляд.</p>\n<h2>🅰️ Основні властивості шрифту</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-tag\">body</span> {\n  <span class=\"hljs-comment\">/* Стек шрифтів: браузер обере перший доступний */</span>\n  <span class=\"hljs-attribute\">font-family</span>: <span class=\"hljs-string\">\"Segoe UI\"</span>, Roboto, Arial, sans-serif;\n\n  <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">16px</span>; <span class=\"hljs-comment\">/* Базовий розмір */</span>\n  <span class=\"hljs-attribute\">font-weight</span>: <span class=\"hljs-number\">400</span>; <span class=\"hljs-comment\">/* Товщина: 100-900, normal=400, bold=700 */</span>\n  <span class=\"hljs-attribute\">font-style</span>: normal; <span class=\"hljs-comment\">/* normal | italic | oblique */</span>\n  <span class=\"hljs-attribute\">line-height</span>: <span class=\"hljs-number\">1.5</span>; <span class=\"hljs-comment\">/* Міжрядковий інтервал */</span>\n}</code></pre><h2>📝 Властивості тексту</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-class\">.article</span> {\n  <span class=\"hljs-attribute\">text-align</span>: justify; <span class=\"hljs-comment\">/* left | center | right | justify */</span>\n  <span class=\"hljs-attribute\">text-decoration</span>: none; <span class=\"hljs-comment\">/* underline | line-through | none */</span>\n  <span class=\"hljs-attribute\">text-transform</span>: capitalize; <span class=\"hljs-comment\">/* uppercase | lowercase | capitalize */</span>\n  <span class=\"hljs-attribute\">letter-spacing</span>: <span class=\"hljs-number\">0.5px</span>; <span class=\"hljs-comment\">/* Відстань між літерами */</span>\n  <span class=\"hljs-attribute\">word-spacing</span>: <span class=\"hljs-number\">2px</span>; <span class=\"hljs-comment\">/* Відстань між словами */</span>\n  <span class=\"hljs-attribute\">text-indent</span>: <span class=\"hljs-number\">2em</span>; <span class=\"hljs-comment\">/* Відступ першого рядка */</span>\n}</code></pre><h2>🌐 Підключення Google Fonts</h2>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-comment\">&lt;!-- У &lt;head&gt; HTML-файлу --&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">link</span>\n  <span class=\"hljs-attr\">href</span>=<span class=\"hljs-string\">\"https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap\"</span>\n  <span class=\"hljs-attr\">rel</span>=<span class=\"hljs-string\">\"stylesheet\"</span>\n/&gt;</span></code></pre><pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-tag\">body</span> {\n  <span class=\"hljs-attribute\">font-family</span>: <span class=\"hljs-string\">\"Roboto\"</span>, sans-serif;\n}</code></pre><div class=\"tip\"><strong>💡 Категорії шрифтів</strong> <ul>\n<li><strong>serif</strong> — із засічками (Times New Roman) — для академічних текстів</li>\n<li><strong>sans-serif</strong> — без засічок (Arial, Roboto) — для веб-інтерфейсів</li>\n<li><strong>monospace</strong> — моноширинний (Courier, Fira Code) — для коду</li>\n</ul>\n</div>\n\n","<h1>🎨 Кольори в CSS</h1>\n<p><strong>Головна ідея:</strong> CSS підтримує кілька форматів запису кольорів. Кожен формат має свої переваги: HEX — компактний і найпоширеніший у веб-розробці, RGB — зручний для програмного генерування кольорів, HSL — інтуїтивно зрозумілий для дизайнерів, а RGBA/HSLA додають канал прозорості.</p>\n<h2>📊 Формати кольорів</h2>\n<table>\n<thead>\n<tr>\n<th>Формат</th>\n<th>Синтаксис</th>\n<th>Приклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Іменований</td>\n<td><code>color: назва</code></td>\n<td><code>color: tomato</code></td>\n</tr>\n<tr>\n<td>HEX</td>\n<td><code>#RRGGBB</code></td>\n<td><code>color: #1565c0</code></td>\n</tr>\n<tr>\n<td>HEX скор.</td>\n<td><code>#RGB</code></td>\n<td><code>color: #f00</code> (= <code>#ff0000</code>)</td>\n</tr>\n<tr>\n<td>RGB</td>\n<td><code>rgb(R, G, B)</code></td>\n<td><code>color: rgb(21, 101, 192)</code></td>\n</tr>\n<tr>\n<td>RGBA</td>\n<td><code>rgba(R, G, B, A)</code></td>\n<td><code>color: rgba(0, 0, 0, 0.5)</code></td>\n</tr>\n<tr>\n<td>HSL</td>\n<td><code>hsl(H, S%, L%)</code></td>\n<td><code>color: hsl(210, 80%, 42%)</code></td>\n</tr>\n</tbody></table>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Різні способи задати один колір */</span>\n<span class=\"hljs-selector-class\">.blue-text</span> {\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#1565c0</span>; <span class=\"hljs-comment\">/* HEX — найпоширеніший */</span>\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-built_in\">rgb</span>(<span class=\"hljs-number\">21</span>, <span class=\"hljs-number\">101</span>, <span class=\"hljs-number\">192</span>); <span class=\"hljs-comment\">/* RGB — зручний для обчислень */</span>\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-built_in\">hsl</span>(<span class=\"hljs-number\">210</span>, <span class=\"hljs-number\">80%</span>, <span class=\"hljs-number\">42%</span>); <span class=\"hljs-comment\">/* HSL — інтуїтивний для дизайнерів */</span>\n}\n\n<span class=\"hljs-comment\">/* RGBA — з прозорістю (alpha: 0 = прозорий, 1 = непрозорий) */</span>\n<span class=\"hljs-selector-class\">.overlay</span> {\n  <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-built_in\">rgba</span>(<span class=\"hljs-number\">0</span>, <span class=\"hljs-number\">0</span>, <span class=\"hljs-number\">0</span>, <span class=\"hljs-number\">0.7</span>); <span class=\"hljs-comment\">/* Чорний з 70% непрозорості */</span>\n}</code></pre><div class=\"note\"><strong>📝 Як читати HEX?</strong> <p><code>#1565c0</code> → <code>15</code> (Red) <code>65</code> (Green) <code>c0</code> (Blue). Кожна пара — число від 00 (0) до FF (255) у шістнадцятковій системі. Чим вище значення каналу — тим інтенсивніший цей колір.</p>\n</div>\n\n","<h1>🖼️ Фони</h1>\n<p><strong>Головна ідея:</strong> Фон — це не лише колір. CSS дозволяє використовувати зображення, градієнти та їх комбінації. Властивість <code>background</code> — одна з найбагатших у CSS, з кількома підвластивостями для точного контролю позиції, розміру та повторення фонового зображення.</p>\n<h2>🔧 Основні властивості</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Фоновий колір */</span>\n<span class=\"hljs-selector-class\">.section</span> {\n  <span class=\"hljs-attribute\">background-color</span>: <span class=\"hljs-number\">#f5f5f5</span>;\n}\n\n<span class=\"hljs-comment\">/* Фонове зображення */</span>\n<span class=\"hljs-selector-class\">.hero</span> {\n  <span class=\"hljs-attribute\">background-image</span>: <span class=\"hljs-built_in\">url</span>(<span class=\"hljs-string\">\"hero-bg.jpg\"</span>);\n  <span class=\"hljs-attribute\">background-size</span>: cover; <span class=\"hljs-comment\">/* cover | contain | 100px 200px */</span>\n  <span class=\"hljs-attribute\">background-position</span>: center; <span class=\"hljs-comment\">/* center | top left | 50% 50% */</span>\n  <span class=\"hljs-attribute\">background-repeat</span>: no-repeat; <span class=\"hljs-comment\">/* repeat | repeat-x | repeat-y | no-repeat */</span>\n}\n\n<span class=\"hljs-comment\">/* Скорочений запис */</span>\n<span class=\"hljs-selector-class\">.banner</span> {\n  <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-number\">#1565c0</span> <span class=\"hljs-built_in\">url</span>(<span class=\"hljs-string\">\"pattern.png\"</span>) center / cover no-repeat;\n}</code></pre><h2>🌈 Градієнти</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Лінійний градієнт */</span>\n<span class=\"hljs-selector-class\">.gradient-linear</span> {\n  <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-built_in\">linear-gradient</span>(<span class=\"hljs-number\">135deg</span>, <span class=\"hljs-number\">#667eea</span>, <span class=\"hljs-number\">#764ba2</span>);\n}\n\n<span class=\"hljs-comment\">/* Радіальний градієнт */</span>\n<span class=\"hljs-selector-class\">.gradient-radial</span> {\n  <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-built_in\">radial-gradient</span>(circle, <span class=\"hljs-number\">#fff9c4</span>, <span class=\"hljs-number\">#fff3e0</span>);\n}\n\n<span class=\"hljs-comment\">/* Градієнт з кількома кольорами */</span>\n<span class=\"hljs-selector-class\">.rainbow</span> {\n  <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-built_in\">linear-gradient</span>(to right, <span class=\"hljs-number\">#e3f2fd</span>, <span class=\"hljs-number\">#e8f5e9</span>, <span class=\"hljs-number\">#fff3e0</span>, <span class=\"hljs-number\">#fce4ec</span>);\n}</code></pre><div class=\"tip\"><strong>💡 Інструменти для градієнтів</strong> <p>Онлайн-генератори, такі як <strong>cssgradient.io</strong>, дозволяють візуально створити градієнт та отримати готовий CSS-код.</p>\n</div>\n\n","<h1>📐 Одиниці вимірювання</h1>\n<p><strong>Головна ідея:</strong> CSS має абсолютні та відносні одиниці вимірювання. Абсолютні (як <code>px</code>) завжди мають фіксований розмір, а відносні (як <code>rem</code>, <code>%</code>, <code>vw</code>) адаптуються залежно від контексту — розміру шрифту, батьківського елемента або вікна браузера. Для сучасних адаптивних сайтів, що мають однаково добре виглядати на телефоні та десктопі, переважно використовують відносні одиниці.</p>\n<h2>📊 Абсолютні vs Відносні</h2>\n<table>\n<thead>\n<tr>\n<th>Одиниця</th>\n<th>Тип</th>\n<th>Опис</th>\n<th>Використання</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>px</code></td>\n<td>Абсолютна</td>\n<td>Піксель екрану</td>\n<td>Рамки, тіні, точні розміри</td>\n</tr>\n<tr>\n<td><code>em</code></td>\n<td>Відносна</td>\n<td>Відносно <code>font-size</code> поточного елемента</td>\n<td>Відступи, margins</td>\n</tr>\n<tr>\n<td><code>rem</code></td>\n<td>Відносна</td>\n<td>Відносно <code>font-size</code> кореневого <code>&lt;html&gt;</code></td>\n<td>Шрифти, відступи</td>\n</tr>\n<tr>\n<td><code>%</code></td>\n<td>Відносна</td>\n<td>Відносно батьківського елемента</td>\n<td>Ширина, висота</td>\n</tr>\n<tr>\n<td><code>vw</code></td>\n<td>Відносна</td>\n<td>1% ширини вікна браузера</td>\n<td>Адаптивні секції</td>\n</tr>\n<tr>\n<td><code>vh</code></td>\n<td>Відносна</td>\n<td>1% висоти вікна браузера</td>\n<td>Повноекранні блоки</td>\n</tr>\n</tbody></table>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-tag\">html</span> {\n  <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">16px</span>; <span class=\"hljs-comment\">/* Базовий розмір (за замовчуванням) */</span>\n}\n\n<span class=\"hljs-selector-tag\">h1</span> {\n  <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">2rem</span>; <span class=\"hljs-comment\">/* 2 × 16px = 32px */</span>\n  <span class=\"hljs-attribute\">margin-bottom</span>: <span class=\"hljs-number\">1.5rem</span>; <span class=\"hljs-comment\">/* 1.5 × 16px = 24px */</span>\n}\n\n<span class=\"hljs-selector-class\">.container</span> {\n  <span class=\"hljs-attribute\">width</span>: <span class=\"hljs-number\">90%</span>; <span class=\"hljs-comment\">/* 90% ширини батька */</span>\n  <span class=\"hljs-attribute\">max-width</span>: <span class=\"hljs-number\">1200px</span>; <span class=\"hljs-comment\">/* Але не більше 1200px */</span>\n}\n\n<span class=\"hljs-selector-class\">.hero</span> {\n  <span class=\"hljs-attribute\">height</span>: <span class=\"hljs-number\">100vh</span>; <span class=\"hljs-comment\">/* Повна висота екрану */</span>\n}</code></pre><div class=\"warning\"><strong>⚠️ em vs rem</strong> <p><code>em</code> залежить від <code>font-size</code> <strong>поточного елемента</strong> (а для самої властивості <code>font-size</code> — від батька), тому може давати несподівані результати при вкладенні. <code>rem</code> завжди відноситься до кореневого елемента <code>&lt;html&gt;</code>, що робить його передбачуваним. Для більшості завдань рекомендовано <code>rem</code>.</p>\n</div>\n\n","<h1>🔧 CSS-змінні (Custom Properties)</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>CSS-змінні</strong> (Custom Properties) — механізм для зберігання значень, які можна повторно використовувати по всьому CSS-файлу.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Уявіть, що основний колір вашого сайту <code>#1565c0</code> використовується в 50 різних правилах: кнопки, посилання, заголовки, рамки. Якщо замовник попросить змінити колір, доведеться знайти та замінити всі 50 місць. CSS-змінні вирішують цю проблему — ви зберігаєте значення один раз та посилаєтесь на нього скрізь через <code>var()</code>.</p>\n<h2>📋 Синтаксис</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Оголошення змінних у :root (доступні глобально) */</span>\n<span class=\"hljs-selector-pseudo\">:root</span> {\n  <span class=\"hljs-attr\">--primary-color</span>: <span class=\"hljs-number\">#1565c0</span>;\n  <span class=\"hljs-attr\">--secondary-color</span>: <span class=\"hljs-number\">#c2185b</span>;\n  <span class=\"hljs-attr\">--text-color</span>: <span class=\"hljs-number\">#333333</span>;\n  <span class=\"hljs-attr\">--bg-color</span>: <span class=\"hljs-number\">#ffffff</span>;\n  <span class=\"hljs-attr\">--font-main</span>: <span class=\"hljs-string\">\"Segoe UI\"</span>, Arial, sans-serif;\n  <span class=\"hljs-attr\">--spacing-sm</span>: <span class=\"hljs-number\">8px</span>;\n  <span class=\"hljs-attr\">--spacing-md</span>: <span class=\"hljs-number\">16px</span>;\n  <span class=\"hljs-attr\">--spacing-lg</span>: <span class=\"hljs-number\">32px</span>;\n  <span class=\"hljs-attr\">--border-radius</span>: <span class=\"hljs-number\">8px</span>;\n}\n\n<span class=\"hljs-comment\">/* Використання змінних через var() */</span>\n<span class=\"hljs-selector-class\">.button</span> {\n  <span class=\"hljs-attribute\">background-color</span>: <span class=\"hljs-built_in\">var</span>(--primary-color);\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-built_in\">var</span>(--bg-color);\n  <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-built_in\">var</span>(--spacing-sm) <span class=\"hljs-built_in\">var</span>(--spacing-md);\n  <span class=\"hljs-attribute\">border-radius</span>: <span class=\"hljs-built_in\">var</span>(--border-radius);\n  <span class=\"hljs-attribute\">font-family</span>: <span class=\"hljs-built_in\">var</span>(--font-main);\n}\n\n<span class=\"hljs-comment\">/* Значення за замовчуванням (fallback) */</span>\n<span class=\"hljs-selector-class\">.card</span> {\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-built_in\">var</span>(--card-color, <span class=\"hljs-number\">#333</span>); <span class=\"hljs-comment\">/* Якщо --card-color не визначена */</span>\n}</code></pre><div class=\"tip\"><strong>💡 Перевага CSS-змінних</strong> <p>Щоб змінити основний колір <strong>всього сайту</strong>, достатньо змінити одне значення у <code>:root</code>. Всі елементи, що використовують <code>var(--primary-color)</code>, оновляться автоматично. Це також дозволяє легко реалізувати <strong>темну тему</strong> — перевизначаючи змінні для іншого контексту:</p>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-attr\">[data-theme=<span class=\"hljs-string\">\"dark\"</span>]</span> {\n  <span class=\"hljs-attr\">--bg-color</span>: <span class=\"hljs-number\">#1a1a2e</span>;\n  <span class=\"hljs-attr\">--text-color</span>: <span class=\"hljs-number\">#e0e0e0</span>;\n  <span class=\"hljs-attr\">--primary</span>: <span class=\"hljs-number\">#64b5f6</span>;\n}</code></pre></div>\n\n","<h1>🛠️ CSS Reset, Normalize та DevTools</h1>\n<p><strong>Головна ідея:</strong> Кожен браузер має свої стилі за замовчуванням: Chrome, Firefox та Safari по-різному відображають відступи, розміри шрифтів та стилі списків. CSS Reset або Normalize вирівнюють ці відмінності, щоб ваш сайт виглядав однаково в усіх браузерах. А DevTools — це ваш головний інструмент для інспектування та налагодження стилів у реальному часі.</p>\n<h2>🔄 Мінімальний CSS Reset</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\">*,\n*<span class=\"hljs-selector-pseudo\">::before</span>,\n*<span class=\"hljs-selector-pseudo\">::after</span> {\n  <span class=\"hljs-attribute\">margin</span>: <span class=\"hljs-number\">0</span>;\n  <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">0</span>;\n  <span class=\"hljs-attribute\">box-sizing</span>: border-box; <span class=\"hljs-comment\">/* Відступи включаються в розмір */</span>\n}\n\n<span class=\"hljs-selector-tag\">img</span> {\n  <span class=\"hljs-attribute\">max-width</span>: <span class=\"hljs-number\">100%</span>;\n  <span class=\"hljs-attribute\">display</span>: block;\n}</code></pre><div class=\"note\"><strong>📝 Reset vs Normalize</strong> <p><strong>Reset</strong> — прибирає всі стилі за замовчуванням (повний контроль із нуля). <strong>Normalize</strong> — вирівнює відмінності між браузерами, зберігаючи корисні стилі. Для промислових проєктів використовують бібліотеку <strong>Normalize.css</strong>.</p>\n</div>\n\n\n\n<h2>🔍 DevTools для CSS</h2>\n<table>\n<thead>\n<tr>\n<th>Дія</th>\n<th>Як виконати</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Відкрити DevTools</td>\n<td><code>F12</code> або <code>Ctrl + Shift + I</code></td>\n</tr>\n<tr>\n<td>Вибрати елемент на сторінці</td>\n<td><code>Ctrl + Shift + C</code> → клік</td>\n</tr>\n<tr>\n<td>Змінити CSS у реальному часі</td>\n<td>Клік на значення → редагування</td>\n</tr>\n<tr>\n<td>Перевірити специфічність</td>\n<td>Навести на селектор у Styles Panel</td>\n</tr>\n<tr>\n<td>Вимкнути властивість</td>\n<td>Зняти прапорець біля властивості</td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 Гарячі клавіші</strong> <p>Використовуйте <code>Ctrl + Shift + C</code> для швидкого вибору будь-якого елемента на сторінці та миттєвого перегляду його стилів.</p>\n</div>\n\n","<h1>✅ Ключові висновки</h1>\n<div class=\"success\"><strong>✅ Підсумок лекції</strong> <p><strong>📌 Що ми вивчили:</strong></p>\n<ol>\n<li><p>🎨 <strong>CSS</strong> — мова стилізації, що відокремлює оформлення від структури HTML</p>\n</li>\n<li><p>🔗 <strong>Підключення CSS:</strong> зовнішній файл (<code>&lt;link&gt;</code>) — найкращий підхід для реальних проєктів</p>\n</li>\n<li><p>🎯 <strong>Селектори:</strong> елемент, клас, ID, комбіновані, псевдокласи — різні рівні точності вибору</p>\n</li>\n<li><p>⚖️ <strong>Каскадність:</strong> при конфлікті стилів перемагає правило з вищою специфічністю (inline &gt; ID &gt; class &gt; element)</p>\n</li>\n<li><p>🔤 <strong>Шрифти та текст:</strong> <code>font-family</code>, <code>font-size</code>, <code>line-height</code> — основа типографіки</p>\n</li>\n<li><p>🎨 <strong>Кольори:</strong> HEX (<code>#1565c0</code>), RGB, RGBA, HSL — різні формати для різних задач</p>\n</li>\n<li><p>🔧 <strong>CSS-змінні:</strong> <code>var(--name)</code> зменшують дублювання та спрощують підтримку коду</p>\n</li>\n</ol>\n</div>\n\n","<h1>❓ Контрольні питання</h1>\n<ol>\n<li><p>🤔 Які три способи підключення CSS до HTML? Чому зовнішній файл є найкращим підходом?</p>\n</li>\n<li><p>🤔 Чим відрізняються селектори класу (<code>.class</code>) та ідентифікатора (<code>#id</code>)? Коли використовувати кожен?</p>\n</li>\n<li><p>🤔 Як працює специфічність CSS? Який порядок пріоритету селекторів?</p>\n</li>\n<li><p>🤔 Які CSS-властивості успадковуються дочірніми елементами, а які — ні?</p>\n</li>\n<li><p>🤔 У чому різниця між одиницями <code>em</code>, <code>rem</code>, <code>px</code> та <code>%</code>? Коли яку використовувати?</p>\n</li>\n<li><p>🤔 Що таке CSS-змінні та яку проблему вони вирішують? Як оголосити та використати змінну?</p>\n</li>\n<li><p>🤔 Яка різниця між псевдокласами та псевдоелементами? Наведіть по два приклади кожного.</p>\n</li>\n</ol>\n","<h1>📖 Глосарій термінів</h1>\n<table>\n<thead>\n<tr>\n<th>Термін</th>\n<th>English</th>\n<th>Визначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Селектор</td>\n<td>Selector</td>\n<td>Патерн, що визначає, до яких елементів застосовуються стилі</td>\n</tr>\n<tr>\n<td>Каскадність</td>\n<td>Cascade</td>\n<td>Механізм вирішення конфліктів між CSS-правилами</td>\n</tr>\n<tr>\n<td>Специфічність</td>\n<td>Specificity</td>\n<td>Числова вага селектора, що визначає його пріоритет</td>\n</tr>\n<tr>\n<td>Успадкування</td>\n<td>Inheritance</td>\n<td>Передача значень властивостей від батька до дочірніх елементів</td>\n</tr>\n<tr>\n<td>Псевдоклас</td>\n<td>Pseudo-class</td>\n<td>Селектор стану елемента (<code>:hover</code>, <code>:focus</code>, <code>:nth-child</code>)</td>\n</tr>\n<tr>\n<td>Псевдоелемент</td>\n<td>Pseudo-element</td>\n<td>Віртуальна частина елемента (<code>::before</code>, <code>::after</code>)</td>\n</tr>\n<tr>\n<td>CSS-змінна</td>\n<td>Custom Property</td>\n<td>Іменоване значення для повторного використання в стилях</td>\n</tr>\n<tr>\n<td>Градієнт</td>\n<td>Gradient</td>\n<td>Плавний перехід між двома або більше кольорами</td>\n</tr>\n<tr>\n<td>Типографіка</td>\n<td>Typography</td>\n<td>Мистецтво оформлення тексту: шрифти, розміри, інтервали</td>\n</tr>\n<tr>\n<td>Viewport</td>\n<td>Viewport</td>\n<td>Видима область вікна браузера</td>\n</tr>\n</tbody></table>\n","<h1>📖 Глосарій абревіатур</h1>\n<table>\n<thead>\n<tr>\n<th>Абревіатура</th>\n<th>Розшифровка</th>\n<th>Переклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>CSS</td>\n<td>Cascading Style Sheets</td>\n<td>Каскадні таблиці стилів</td>\n</tr>\n<tr>\n<td>HEX</td>\n<td>Hexadecimal</td>\n<td>Шістнадцяткова система числення</td>\n</tr>\n<tr>\n<td>RGB</td>\n<td>Red Green Blue</td>\n<td>Червоний Зелений Синій</td>\n</tr>\n<tr>\n<td>RGBA</td>\n<td>Red Green Blue Alpha</td>\n<td>RGB з каналом прозорості</td>\n</tr>\n<tr>\n<td>HSL</td>\n<td>Hue Saturation Lightness</td>\n<td>Відтінок Насиченість Яскравість</td>\n</tr>\n<tr>\n<td>DRY</td>\n<td>Don't Repeat Yourself</td>\n<td>Не повторюй себе (принцип розробки)</td>\n</tr>\n</tbody></table>\n"];let currentSlideIndex=0;
+function showSlide(i){if(i<0||i>=slides.length)return;currentSlideIndex=i;const el=document.getElementById("current-slide");el.innerHTML=slides[i];el.scrollTop=0;document.getElementById("progress-bar").style.width=((i+1)/slides.length*100)+"%";document.getElementById("slide-number").textContent=(i+1)+" / "+slides.length;updateSidebarActive();}
+function nextSlide(){if(currentSlideIndex<slides.length-1)showSlide(currentSlideIndex+1);}
+function previousSlide(){if(currentSlideIndex>0)showSlide(currentSlideIndex-1);}
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleHelp(){document.getElementById("help-overlay").classList.toggle("hidden");}
+function toggleFullscreen(){if(!document.fullscreenElement){const pc=document.getElementById("presentation-container");if(pc.requestFullscreen)pc.requestFullscreen();else if(pc.webkitRequestFullscreen)pc.webkitRequestFullscreen();else if(pc.msRequestFullscreen)pc.msRequestFullscreen();else if(pc.mozRequestFullScreen)pc.mozRequestFullScreen();}else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();else if(document.msExitFullscreen)document.msExitFullscreen();else if(document.mozCancelFullScreen)document.mozCancelFullScreen();}}
+function generateSidebar(){const sc=document.getElementById("sidebar-content");sc.innerHTML="";slides.forEach((html,idx)=>{const t=document.createElement("div");t.className="slide-thumbnail";if(idx===0)t.classList.add("active");const tmp=document.createElement("div");tmp.innerHTML=html;const title=tmp.querySelector("h1,h2");const titleText=title?title.textContent:("Слайд "+(idx+1));const textContent=tmp.textContent.replace(/s+/g," ").trim();const preview=textContent.substring(0,100)+(textContent.length>100?"...":"");t.innerHTML="<div class=\"slide-thumbnail-number\">"+(idx+1)+"</div><div class=\"slide-thumbnail-title\">"+titleText+"</div><div class=\"slide-thumbnail-content\">"+preview+"</div>";t.onclick=()=>{showSlide(idx);if(window.innerWidth<1024)toggleSidebar();};sc.appendChild(t);});}
+function updateSidebarActive(){document.querySelectorAll(".slide-thumbnail").forEach((th,idx)=>{if(idx===currentSlideIndex){th.classList.add("active");th.scrollIntoView({behavior:"smooth",block:"nearest"});}else th.classList.remove("active");});}
+document.addEventListener("keydown",e=>{switch(e.key){case"ArrowLeft":previousSlide();break;case"ArrowRight":case" ":e.preventDefault();nextSlide();break;case"f":case"F":toggleFullscreen();break;case"s":case"S":toggleSidebar();break;case"?":toggleHelp();break;case"Escape":const sb=document.getElementById("sidebar");const ho=document.getElementById("help-overlay");if(sb.classList.contains("open"))toggleSidebar();else if(!ho.classList.contains("hidden"))ho.classList.add("hidden");break;}});
+generateSidebar();showSlide(0);</script></body></html>
