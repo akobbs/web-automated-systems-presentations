@@ -1,0 +1,620 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Flexbox та адаптивний дизайн</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><style>* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor-container.hidden {
+            display: none;
+        }
+
+        #editor-header {
+            background: #2d3748;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor-header h2 {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #editor-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        #markdown-input {
+            flex: 1;
+            padding: 2rem;
+            background: #1a202c;
+            color: #e2e8f0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        #markdown-input:focus {
+            outline: none;
+        }
+
+        .slide-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .slide h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h2 {
+            color: #764ba2;
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide pre {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .slide pre code {
+            background: transparent;
+            color: #abb2bf;
+        }
+
+        .slide code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .slide h1 code, .slide h2 code, .slide h3 code {
+            font-size: 0.85em;
+            background: rgba(237, 242, 247, 0.5);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .slide p code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .slide blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        .slide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .slide th, .slide td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .slide th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .slide tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .note {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #c53030;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .warning strong {
+            color: #c05621;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .info strong {
+            color: #2c5282;
+        }
+
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #22543d;
+        }
+
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .danger strong {
+            color: #742a2a;
+        }
+
+        .tip {
+            background: #fefcbf;
+            border-left: 4px solid #ecc94b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #744210;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            transition: width 0.3s;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        #sidebar.open {
+            right: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #sidebar-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        #sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        #sidebar-close:hover {
+            color: #667eea;
+        }
+
+        .slide-thumbnail {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .slide-thumbnail:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .slide-thumbnail.active {
+            border-color: #667eea;
+            background: #f7faff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slide-thumbnail-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-thumbnail-content {
+            font-size: 0.85rem;
+            color: #2d3748;
+            line-height: 1.4;
+            max-height: 4.2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-thumbnail-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 1.4rem;
+            background: linear-gradient(to right, transparent, white);
+        }
+
+        .slide-thumbnail.active .slide-thumbnail-content::after {
+            background: linear-gradient(to right, transparent, #f7faff);
+        }
+
+        .slide-thumbnail-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+        }
+
+        #sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: visible; /* щоб не обрізати тіні / розширені ноди */
+        }
+
+        /* Запобігаємо обрізанню останньої літери в нодах Mermaid через зміну font-weight після розрахунку розміру */
+        .mermaid svg { overflow: visible !important; }
+        /* перестраховка проти обрізання foreignObject (на випадок інших діаграм) */
+        .mermaid svg foreignObject { overflow: visible !important; }
+
+        .plantuml-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        #help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #help-overlay kbd {
+            background: #2d3748;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .mermaid-error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #742a2a;
+            margin: 1.5rem 0;
+        }
+
+        .mermaid-error pre {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
+
+        /* Повноекранний режим - зберігаємо оригінальний фон */
+        #presentation-container:fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-webkit-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-moz-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-ms-fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+#presentation-container:fullscreen,#presentation-container:-webkit-full-screen,#presentation-container:-moz-full-screen,#presentation-container:-ms-fullscreen{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)!important;}</style></head><body><div id="presentation-container"><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><button id="sidebar-toggle" onclick="toggleSidebar()" title="Навігація слайдами (S)">☰</button><div id="sidebar"><div id="sidebar-header"><h3>📑 Слайди</h3><button id="sidebar-close" onclick="toggleSidebar()">✕</button></div><div id="sidebar-content"></div></div><div class="slide-container"><div class="slide" id="current-slide"></div></div><div class="controls"><button class="control-btn" onclick="previousSlide()" title="Попередній (←)">←</button><button class="control-btn" onclick="nextSlide()" title="Наступний (→)">→</button><button class="control-btn" onclick="toggleFullscreen()" title="Повноекранний режим (F)">⛶</button><button class="control-btn" onclick="toggleHelp()" title="Допомога (?)">?</button></div><div class="slide-number" id="slide-number">1 / 17</div><div id="help-overlay" class="hidden"><strong>Гарячі клавіші:</strong><br><kbd>←</kbd> <kbd>→</kbd> Навігація<br><kbd>F</kbd> Повноекранний режим<br><kbd>S</kbd> Sidebar<br><kbd>?</kbd> Допомога<br><kbd>Esc</kbd> Закрити</div></div><script>const slides=["<h1>Flexbox та адаптивний дизайн</h1>\n<p><strong>Web-технології в автоматизованих системах</strong></p>\n<p>Лектор: Кобилянський Антон</p>\n","<h1>📋 План лекції</h1>\n<ol>\n<li>📐 Чому з'явився Flexbox — проблеми до нього</li>\n<li>🧩 Основні поняття: flex-контейнер і flex-елементи</li>\n<li>↔️ Осі Flexbox — головна та перехресна</li>\n<li>🎛️ Властивості flex-контейнера</li>\n<li>📦 Властивості flex-елементів</li>\n<li>📱 Адаптивний дизайн та підходи до нього</li>\n<li>🔍 Media queries — синтаксис та практика</li>\n<li>✅ Ключові висновки та контрольні питання</li>\n</ol>\n","<h1>🤔 Навіщо з'явився Flexbox?</h1>\n<p><strong>Головна ідея:</strong> До Flexbox розробники змушені були використовувати обхідні шляхи для базових задач верстки, які здаються простими, але виявлялись складними.</p>\n<h2>😰 Задача 1: Вертикальне центрування</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* ❌ До Flexbox — громіздко, потрібно знати точний розмір елемента */</span>\n<span class=\"hljs-selector-class\">.parent</span> {\n  <span class=\"hljs-attribute\">position</span>: relative;\n  <span class=\"hljs-attribute\">height</span>: <span class=\"hljs-number\">200px</span>;\n}\n<span class=\"hljs-selector-class\">.child</span> {\n  <span class=\"hljs-attribute\">position</span>: absolute;\n  <span class=\"hljs-attribute\">top</span>: <span class=\"hljs-number\">50%</span>;\n  <span class=\"hljs-attribute\">left</span>: <span class=\"hljs-number\">50%</span>;\n  <span class=\"hljs-attribute\">transform</span>: <span class=\"hljs-built_in\">translate</span>(-<span class=\"hljs-number\">50%</span>, -<span class=\"hljs-number\">50%</span>);\n}\n\n<span class=\"hljs-comment\">/* ✅ З Flexbox — три рядки, жодних хаків */</span>\n<span class=\"hljs-selector-class\">.parent</span> {\n  <span class=\"hljs-attribute\">display</span>: flex;\n  <span class=\"hljs-attribute\">justify-content</span>: center;\n  <span class=\"hljs-attribute\">align-items</span>: center;\n  <span class=\"hljs-attribute\">height</span>: <span class=\"hljs-number\">200px</span>;\n}</code></pre><h2>😰 Задача 2: Колонки рівної висоти</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* ❌ До Flexbox — float зламує потік, висота колонок різна */</span>\n<span class=\"hljs-selector-class\">.col</span> {\n  <span class=\"hljs-attribute\">float</span>: left;\n  <span class=\"hljs-attribute\">width</span>: <span class=\"hljs-number\">33%</span>;\n}\n<span class=\"hljs-selector-class\">.container</span><span class=\"hljs-selector-pseudo\">::after</span> {\n  <span class=\"hljs-attribute\">content</span>: <span class=\"hljs-string\">\"\"</span>;\n  <span class=\"hljs-attribute\">display</span>: block;\n  <span class=\"hljs-attribute\">clear</span>: both;\n}\n\n<span class=\"hljs-comment\">/* ✅ З Flexbox — колонки автоматично однакової висоти */</span>\n<span class=\"hljs-selector-class\">.container</span> {\n  <span class=\"hljs-attribute\">display</span>: flex;\n  <span class=\"hljs-attribute\">gap</span>: <span class=\"hljs-number\">16px</span>;\n}\n<span class=\"hljs-selector-class\">.col</span> {\n  <span class=\"hljs-attribute\">flex</span>: <span class=\"hljs-number\">1</span>;\n}</code></pre><div class=\"note\"><strong>📝 Коли з'явився Flexbox</strong> <p>Специфікацію Flexbox було стандартизовано у 2012–2015 роках. Сьогодні він підтримується всіма сучасними браузерами і є стандартом для одновимірних макетів.</p>\n</div>\n\n","<h1>🧩 Flex-контейнер і flex-елементи</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Flexbox</strong> (Flexible Box Layout) — це модель розташування елементів в CSS, що дозволяє гнучко керувати розподілом простору та вирівнюванням елементів в одному напрямку — по рядку або по колонці.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Flexbox завжди складається з двох рівнів: <strong>контейнера</strong> (батько) та <strong>елементів</strong> (прямі дочірні).</p>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Активація Flexbox */</span>\n<span class=\"hljs-selector-class\">.container</span> {\n  <span class=\"hljs-attribute\">display</span>: flex; <span class=\"hljs-comment\">/* або display: inline-flex */</span>\n}</code></pre>\n<div class=\"mermaid\" data-source=\"graph TB\n    C[&quot;🟦 Flex-контейнер&lt;br/&gt;(display: flex)&quot;] --&gt; I1[&quot;📦 Flex-елемент 1&quot;]\n    C --&gt; I2[&quot;📦 Flex-елемент 2&quot;]\n    C --&gt; I3[&quot;📦 Flex-елемент 3&quot;]\n    style C fill:#e3f2fd,stroke:#1565c0\n    style I1 fill:#e8f5e9,stroke:#388e3c\n    style I2 fill:#e8f5e9,stroke:#388e3c\n    style I3 fill:#e8f5e9,stroke:#388e3c\"><svg id=\"exp-1772053294500-3-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 660.7265625px;\" viewBox=\"0 0 660.7265625 186\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1772053294500-3-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1772053294500-3-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1772053294500-3-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1772053294500-3-0 .error-icon{fill:#552222;}#exp-1772053294500-3-0 .error-text{fill:#552222;stroke:#552222;}#exp-1772053294500-3-0 .edge-thickness-normal{stroke-width:1px;}#exp-1772053294500-3-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1772053294500-3-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1772053294500-3-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1772053294500-3-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1772053294500-3-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1772053294500-3-0 .marker{fill:#333333;stroke:#333333;}#exp-1772053294500-3-0 .marker.cross{stroke:#333333;}#exp-1772053294500-3-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1772053294500-3-0 p{margin:0;}#exp-1772053294500-3-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1772053294500-3-0 .cluster-label text{fill:#333;}#exp-1772053294500-3-0 .cluster-label span{color:#333;}#exp-1772053294500-3-0 .cluster-label span p{background-color:transparent;}#exp-1772053294500-3-0 .label text,#exp-1772053294500-3-0 span{fill:#333;color:#333;}#exp-1772053294500-3-0 .node rect,#exp-1772053294500-3-0 .node circle,#exp-1772053294500-3-0 .node ellipse,#exp-1772053294500-3-0 .node polygon,#exp-1772053294500-3-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1772053294500-3-0 .rough-node .label text,#exp-1772053294500-3-0 .node .label text,#exp-1772053294500-3-0 .image-shape .label,#exp-1772053294500-3-0 .icon-shape .label{text-anchor:middle;}#exp-1772053294500-3-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1772053294500-3-0 .rough-node .label,#exp-1772053294500-3-0 .node .label,#exp-1772053294500-3-0 .image-shape .label,#exp-1772053294500-3-0 .icon-shape .label{text-align:center;}#exp-1772053294500-3-0 .node.clickable{cursor:pointer;}#exp-1772053294500-3-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1772053294500-3-0 .arrowheadPath{fill:#333333;}#exp-1772053294500-3-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1772053294500-3-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1772053294500-3-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1772053294500-3-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1772053294500-3-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1772053294500-3-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1772053294500-3-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1772053294500-3-0 .cluster text{fill:#333;}#exp-1772053294500-3-0 .cluster span{color:#333;}#exp-1772053294500-3-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1772053294500-3-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1772053294500-3-0 rect.text{fill:none;stroke-width:0;}#exp-1772053294500-3-0 .icon-shape,#exp-1772053294500-3-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1772053294500-3-0 .icon-shape p,#exp-1772053294500-3-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1772053294500-3-0 .icon-shape rect,#exp-1772053294500-3-0 .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1772053294500-3-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1772053294500-3-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1772053294500-3-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1772053294500-3-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1772053294500-3-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1772053294500-3-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1772053294500-3-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1772053294500-3-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1772053294500-3-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M236.832,68.346L213.69,74.455C190.548,80.564,144.264,92.782,121.122,102.391C97.98,112,97.98,119,97.98,122.5L97.98,126\" id=\"L_C_I1_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_C_I1_0\" data-points=\"W3sieCI6MjM2LjgzMjAzMTI1LCJ5Ijo2OC4zNDU5NjY1OTY3OTQ5MX0seyJ4Ijo5Ny45ODA0Njg3NSwieSI6MTA1fSx7IngiOjk3Ljk4MDQ2ODc1LCJ5IjoxMzB9XQ==\" marker-end=\"url(#exp-1772053294500-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M329.059,80L329.059,84.167C329.059,88.333,329.059,96.667,329.059,104.333C329.059,112,329.059,119,329.059,122.5L329.059,126\" id=\"L_C_I2_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_C_I2_0\" data-points=\"W3sieCI6MzI5LjA1ODU5Mzc1LCJ5Ijo4MH0seyJ4IjozMjkuMDU4NTkzNzUsInkiOjEwNX0seyJ4IjozMjkuMDU4NTkzNzUsInkiOjEzMH1d\" marker-end=\"url(#exp-1772053294500-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M421.285,68.209L444.645,74.341C468.004,80.473,514.723,92.736,538.082,102.368C561.441,112,561.441,119,561.441,122.5L561.441,126\" id=\"L_C_I3_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_C_I3_0\" data-points=\"W3sieCI6NDIxLjI4NTE1NjI1LCJ5Ijo2OC4yMDkyNzg4NzAzOTgzOH0seyJ4Ijo1NjEuNDQxNDA2MjUsInkiOjEwNX0seyJ4Ijo1NjEuNDQxNDA2MjUsInkiOjEzMH1d\" marker-end=\"url(#exp-1772053294500-3-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_C_I1_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_C_I2_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_C_I3_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-C-0\" transform=\"translate(329.05859375, 44)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-92.2265625\" y=\"-36\" width=\"184.453125\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-68.2265625, -24)\"><rect></rect><foreignObject width=\"136.453125\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🟦 Flex-контейнер<br>(display: flex)</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-I1-1\" transform=\"translate(97.98046875, 154)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-89.98046875\" y=\"-24\" width=\"179.9609375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-65.98046875, -12)\"><rect></rect><foreignObject width=\"131.9609375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📦 Flex-елемент 1</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-I2-3\" transform=\"translate(329.05859375, 154)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-91.09765625\" y=\"-24\" width=\"182.1953125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-67.09765625, -12)\"><rect></rect><foreignObject width=\"134.1953125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📦 Flex-елемент 2</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-I3-5\" transform=\"translate(561.44140625, 154)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-91.28515625\" y=\"-24\" width=\"182.5703125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-67.28515625, -12)\"><rect></rect><foreignObject width=\"134.5703125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📦 Flex-елемент 3</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<div class=\"warning\"><strong>⚠️ Важливо</strong> <p>Властивості Flexbox поділяються на дві групи: одні задаються на <strong>контейнері</strong>, інші — на <strong>елементах</strong>. Плутанина між цими групами — найпоширеніша помилка початківців.</p>\n</div>\n\n\n\n<table>\n<thead>\n<tr>\n<th>Рівень</th>\n<th>Елемент</th>\n<th>Властивості</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Контейнер</td>\n<td>Батько з <code>display: flex</code></td>\n<td><code>flex-direction</code>, <code>justify-content</code>, <code>align-items</code>, <code>align-content</code>, <code>flex-wrap</code>, <code>gap</code></td>\n</tr>\n<tr>\n<td>Елемент</td>\n<td>Прямі дочірні елементи</td>\n<td><code>flex-grow</code>, <code>flex-shrink</code>, <code>flex-basis</code>, <code>align-self</code>, <code>order</code></td>\n</tr>\n</tbody></table>\n","<h1>↔️ Осі Flexbox</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p>Flexbox оперує двома осями: <strong>головна вісь</strong> (main axis) — напрямок розташування елементів, та <strong>перехресна вісь</strong> (cross axis) — перпендикулярна до головної.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Розуміння осей є ключовим, адже <code>justify-content</code> і <code>align-items</code> діють по різних осях, і їх поведінка змінюється залежно від <code>flex-direction</code>.</p>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    R[&quot;flex-direction: row&quot;] --&gt; RM[&quot;→ Головна вісь&quot;]\n    R --&gt; RC[&quot;↓ Перехресна вісь&quot;]\n    C[&quot;flex-direction: column&quot;] --&gt; CM[&quot;↓ Головна вісь&quot;]\n    C --&gt; CC[&quot;→ Перехресна вісь&quot;]\n    style R fill:#fff9c4,stroke:#f9a825\n    style C fill:#fff9c4,stroke:#f9a825\n    style RM fill:#e3f2fd,stroke:#1565c0\n    style RC fill:#fce4ec,stroke:#c2185b\n    style CM fill:#e3f2fd,stroke:#1565c0\n    style CC fill:#fce4ec,stroke:#c2185b\"><svg id=\"exp-1772053294514-4-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 464.0078125px;\" viewBox=\"0 0 464.0078125 358\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1772053294514-4-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1772053294514-4-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1772053294514-4-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1772053294514-4-0 .error-icon{fill:#552222;}#exp-1772053294514-4-0 .error-text{fill:#552222;stroke:#552222;}#exp-1772053294514-4-0 .edge-thickness-normal{stroke-width:1px;}#exp-1772053294514-4-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1772053294514-4-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1772053294514-4-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1772053294514-4-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1772053294514-4-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1772053294514-4-0 .marker{fill:#333333;stroke:#333333;}#exp-1772053294514-4-0 .marker.cross{stroke:#333333;}#exp-1772053294514-4-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1772053294514-4-0 p{margin:0;}#exp-1772053294514-4-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1772053294514-4-0 .cluster-label text{fill:#333;}#exp-1772053294514-4-0 .cluster-label span{color:#333;}#exp-1772053294514-4-0 .cluster-label span p{background-color:transparent;}#exp-1772053294514-4-0 .label text,#exp-1772053294514-4-0 span{fill:#333;color:#333;}#exp-1772053294514-4-0 .node rect,#exp-1772053294514-4-0 .node circle,#exp-1772053294514-4-0 .node ellipse,#exp-1772053294514-4-0 .node polygon,#exp-1772053294514-4-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1772053294514-4-0 .rough-node .label text,#exp-1772053294514-4-0 .node .label text,#exp-1772053294514-4-0 .image-shape .label,#exp-1772053294514-4-0 .icon-shape .label{text-anchor:middle;}#exp-1772053294514-4-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1772053294514-4-0 .rough-node .label,#exp-1772053294514-4-0 .node .label,#exp-1772053294514-4-0 .image-shape .label,#exp-1772053294514-4-0 .icon-shape .label{text-align:center;}#exp-1772053294514-4-0 .node.clickable{cursor:pointer;}#exp-1772053294514-4-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1772053294514-4-0 .arrowheadPath{fill:#333333;}#exp-1772053294514-4-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1772053294514-4-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1772053294514-4-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1772053294514-4-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1772053294514-4-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1772053294514-4-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1772053294514-4-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1772053294514-4-0 .cluster text{fill:#333;}#exp-1772053294514-4-0 .cluster span{color:#333;}#exp-1772053294514-4-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1772053294514-4-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1772053294514-4-0 rect.text{fill:none;stroke-width:0;}#exp-1772053294514-4-0 .icon-shape,#exp-1772053294514-4-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1772053294514-4-0 .icon-shape p,#exp-1772053294514-4-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1772053294514-4-0 .icon-shape rect,#exp-1772053294514-4-0 .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1772053294514-4-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1772053294514-4-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1772053294514-4-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1772053294514-4-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1772053294514-4-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1772053294514-4-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1772053294514-4-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1772053294514-4-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1772053294514-4-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M173.81,57L184.701,52.833C195.592,48.667,217.374,40.333,234.352,36.167C251.331,32,263.505,32,269.592,32L275.68,32\" id=\"L_R_RM_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_R_RM_0\" data-points=\"W3sieCI6MTczLjgxMDI2Nzg1NzE0Mjg2LCJ5Ijo1N30seyJ4IjoyMzkuMTU2MjUsInkiOjMyfSx7IngiOjI3OS42Nzk2ODc1LCJ5IjozMn1d\" marker-end=\"url(#exp-1772053294514-4-0_flowchart-v2-pointEnd)\"></path><path d=\"M173.81,105L184.701,109.167C195.592,113.333,217.374,121.667,231.931,125.833C246.488,130,253.82,130,257.486,130L261.152,130\" id=\"L_R_RC_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_R_RC_0\" data-points=\"W3sieCI6MTczLjgxMDI2Nzg1NzE0Mjg2LCJ5IjoxMDV9LHsieCI6MjM5LjE1NjI1LCJ5IjoxMzB9LHsieCI6MjY1LjE1MjM0Mzc1LCJ5IjoxMzB9XQ==\" marker-end=\"url(#exp-1772053294514-4-0_flowchart-v2-pointEnd)\"></path><path d=\"M173.81,253L184.701,248.833C195.592,244.667,217.374,236.333,234.519,232.167C251.663,228,264.169,228,270.423,228L276.676,228\" id=\"L_C_CM_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_C_CM_0\" data-points=\"W3sieCI6MTczLjgxMDI2Nzg1NzE0Mjg2LCJ5IjoyNTN9LHsieCI6MjM5LjE1NjI1LCJ5IjoyMjh9LHsieCI6MjgwLjY3NTc4MTI1LCJ5IjoyMjh9XQ==\" marker-end=\"url(#exp-1772053294514-4-0_flowchart-v2-pointEnd)\"></path><path d=\"M173.81,301L184.701,305.167C195.592,309.333,217.374,317.667,231.765,321.833C246.156,326,253.156,326,256.656,326L260.156,326\" id=\"L_C_CC_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_C_CC_0\" data-points=\"W3sieCI6MTczLjgxMDI2Nzg1NzE0Mjg2LCJ5IjozMDF9LHsieCI6MjM5LjE1NjI1LCJ5IjozMjZ9LHsieCI6MjY0LjE1NjI1LCJ5IjozMjZ9XQ==\" marker-end=\"url(#exp-1772053294514-4-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_R_RM_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_R_RC_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_C_CM_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_C_CC_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\"><tspan class=\"text-outer-tspan\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\"></tspan></text></g></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-R-0\" transform=\"translate(111.078125, 81)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-89.71875\" y=\"-24\" width=\"179.4375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-65.71875, -12)\"><rect></rect><foreignObject width=\"131.4375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>flex-direction: row</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-RM-1\" transform=\"translate(360.08203125, 32)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-80.40234375\" y=\"-24\" width=\"160.8046875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-56.40234375, -12)\"><rect></rect><foreignObject width=\"112.8046875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>→ Головна вісь</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-RC-3\" transform=\"translate(360.08203125, 130)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-94.9296875\" y=\"-24\" width=\"189.859375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-70.9296875, -12)\"><rect></rect><foreignObject width=\"141.859375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>↓ Перехресна вісь</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-C-4\" transform=\"translate(111.078125, 277)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-103.078125\" y=\"-24\" width=\"206.15625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-79.078125, -12)\"><rect></rect><foreignObject width=\"158.15625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>flex-direction: column</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-CM-5\" transform=\"translate(360.08203125, 228)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-79.40625\" y=\"-24\" width=\"158.8125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-55.40625, -12)\"><rect></rect><foreignObject width=\"110.8125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>↓ Головна вісь</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-CC-7\" transform=\"translate(360.08203125, 326)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-95.92578125\" y=\"-24\" width=\"191.8515625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-71.92578125, -12)\"><rect></rect><foreignObject width=\"143.8515625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>→ Перехресна вісь</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-class\">.container</span> {\n  <span class=\"hljs-attribute\">display</span>: flex;\n  <span class=\"hljs-attribute\">flex-direction</span>: row; <span class=\"hljs-comment\">/* Елементи → зліва направо (за замовчуванням) */</span>\n  <span class=\"hljs-comment\">/* flex-direction: column;    Елементи ↓ зверху вниз */</span>\n  <span class=\"hljs-comment\">/* flex-direction: row-reverse;    Елементи ← справа наліво */</span>\n  <span class=\"hljs-comment\">/* flex-direction: column-reverse; Елементи ↑ знизу вгору */</span>\n}</code></pre><div class=\"tip\"><strong>💡 Як запам'ятати</strong> <p><code>justify-content</code> — вирівнює по <strong>головній</strong> осі (там, куди \"течуть\" елементи).<br><code>align-items</code> — вирівнює по <strong>перехресній</strong> осі (перпендикулярно до напрямку розташування).<br>Якщо <code>flex-direction: row</code> → <code>justify-content</code> керує горизонталлю, <code>align-items</code> — вертикаллю.</p>\n</div>\n\n","<h1>🎛️ Властивості flex-контейнера — вирівнювання</h1>\n<p><strong>Головна ідея:</strong> Контейнер керує тим, як елементи розподіляються по простору контейнера в обох напрямках.</p>\n<h2>↔️ <code>justify-content</code> — по головній осі</h2>\n<table>\n<thead>\n<tr>\n<th>Значення</th>\n<th>Поведінка</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>flex-start</code></td>\n<td>Елементи притиснуті до початку (за замовчуванням)</td>\n</tr>\n<tr>\n<td><code>flex-end</code></td>\n<td>Елементи притиснуті до кінця</td>\n</tr>\n<tr>\n<td><code>center</code></td>\n<td>Елементи по центру</td>\n</tr>\n<tr>\n<td><code>space-between</code></td>\n<td>Крайні елементи притиснуті до країв, рівні проміжки між рештою</td>\n</tr>\n<tr>\n<td><code>space-around</code></td>\n<td>Рівні проміжки навколо кожного елемента</td>\n</tr>\n<tr>\n<td><code>space-evenly</code></td>\n<td>Абсолютно рівні проміжки між усіма елементами</td>\n</tr>\n</tbody></table>\n<h2>↕️ <code>align-items</code> — по перехресній осі</h2>\n<table>\n<thead>\n<tr>\n<th>Значення</th>\n<th>Поведінка</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>stretch</code></td>\n<td>Елементи розтягуються по всій перехресній осі контейнера (за замовчуванням)</td>\n</tr>\n<tr>\n<td><code>flex-start</code></td>\n<td>Елементи вирівнюються по початку перехресної осі</td>\n</tr>\n<tr>\n<td><code>flex-end</code></td>\n<td>Елементи вирівнюються по кінцю перехресної осі</td>\n</tr>\n<tr>\n<td><code>center</code></td>\n<td>Елементи вирівнюються по центру перехресної осі</td>\n</tr>\n<tr>\n<td><code>baseline</code></td>\n<td>Елементи вирівнюються по базовій лінії тексту</td>\n</tr>\n</tbody></table>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Класичне центрування елементів — горизонтально і вертикально */</span>\n<span class=\"hljs-selector-class\">.centered-container</span> {\n  <span class=\"hljs-attribute\">display</span>: flex;\n  <span class=\"hljs-attribute\">justify-content</span>: center; <span class=\"hljs-comment\">/* По горизонталі (головна вісь при row) */</span>\n  <span class=\"hljs-attribute\">align-items</span>: center; <span class=\"hljs-comment\">/* По вертикалі (перехресна вісь при row) */</span>\n  <span class=\"hljs-attribute\">height</span>: <span class=\"hljs-number\">300px</span>;\n}</code></pre>","<h1>🎛️ Властивості flex-контейнера — перенос і відступи</h1>\n<p><strong>Головна ідея:</strong> <code>flex-wrap</code> і <code>gap</code> — дві властивості, що значно спрощують побудову адаптивних сіток.</p>\n<h2>🔄 <code>flex-wrap</code> — перенос елементів</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-class\">.container</span> {\n  <span class=\"hljs-attribute\">display</span>: flex;\n  <span class=\"hljs-attribute\">flex-wrap</span>: nowrap; <span class=\"hljs-comment\">/* За замовчуванням: всі в один рядок, можуть стискатись */</span>\n  <span class=\"hljs-comment\">/* flex-wrap: wrap;       Перенос на наступний рядок, коли не вміщуються */</span>\n  <span class=\"hljs-comment\">/* flex-wrap: wrap-reverse; Перенос у зворотному напрямку */</span>\n}</code></pre><h2>📏 <code>gap</code> — відступи між елементами</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-class\">.container</span> {\n  <span class=\"hljs-attribute\">display</span>: flex;\n  <span class=\"hljs-attribute\">gap</span>: <span class=\"hljs-number\">16px</span>; <span class=\"hljs-comment\">/* Однакові відступи між рядками та колонками */</span>\n  <span class=\"hljs-comment\">/* gap: 10px 20px;    Відступ між рядками 10px, між колонками 20px */</span>\n}</code></pre><div class=\"tip\"><strong>💡 Чому gap краще за margin</strong> <p><code>gap</code> додає відступи <strong>тільки між</strong> елементами — не перед першим і не після останнього. При використанні <code>margin</code> потрібно нейтралізувати відступи крайніх елементів, що ускладнює код.</p>\n</div>\n\n\n\n<h2>⚙️ Скорочення <code>flex-flow</code></h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-class\">.container</span> {\n  <span class=\"hljs-comment\">/* Замість двох окремих властивостей: */</span>\n  <span class=\"hljs-attribute\">flex-flow</span>: row wrap; <span class=\"hljs-comment\">/* flex-direction + flex-wrap */</span>\n}</code></pre><div class=\"note\"><strong>📝 <code>align-content</code> при переносі рядків</strong> <p>Коли <code>flex-wrap: wrap</code> і рядків стає кілька, з'являється <code>align-content</code> — аналог <code>justify-content</code>, але для вирівнювання <strong>рядків</strong> по перехресній осі. Значення ті самі: <code>flex-start</code>, <code>center</code>, <code>space-between</code> тощо. При одному рядку ця властивість не має ефекту.</p>\n</div>\n\n","<h1>📦 Властивості flex-елементів</h1>\n<p><strong>Головна ідея:</strong> Flex-елементи можуть гнучко визначати, скільки простору вони займуть, незалежно від фіксованих розмірів.</p>\n<h2>📐 <code>flex-grow</code> — розподіл вільного місця</h2>\n<p>Після того як усі елементи зайняли свій мінімальний розмір, у контейнері може залишитись <strong>вільне місце</strong>. <code>flex-grow</code> визначає, яку частку цього місця отримає елемент.</p>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Контейнер 600px, три елементи по 100px вмісту = 300px вільного місця */</span>\n<span class=\"hljs-selector-class\">.container</span> {\n  <span class=\"hljs-attribute\">display</span>: flex;\n  <span class=\"hljs-attribute\">width</span>: <span class=\"hljs-number\">600px</span>;\n}\n\n<span class=\"hljs-selector-class\">.sidebar</span> {\n  <span class=\"hljs-attribute\">flex-grow</span>: <span class=\"hljs-number\">1</span>;\n} <span class=\"hljs-comment\">/* отримає 1/4 від 300px = 75px зверху */</span>\n<span class=\"hljs-selector-class\">.content</span> {\n  <span class=\"hljs-attribute\">flex-grow</span>: <span class=\"hljs-number\">3</span>;\n} <span class=\"hljs-comment\">/* отримає 3/4 від 300px = 225px зверху */</span>\n<span class=\"hljs-comment\">/* Підсумок: sidebar = 175px, content = 325px */</span>\n\n<span class=\"hljs-selector-class\">.logo</span> {\n  <span class=\"hljs-attribute\">flex-grow</span>: <span class=\"hljs-number\">0</span>;\n} <span class=\"hljs-comment\">/* не росте — залишається розміром свого вмісту */</span></code></pre><h2>📐 <code>flex-shrink</code> — стискання при нестачі місця</h2>\n<p>Протилежна ситуація: елементи <strong>не вміщуються</strong> в контейнер. <code>flex-shrink</code> визначає, хто поступиться більше.</p>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Контейнер 500px, але елементи разом займають 700px */</span>\n<span class=\"hljs-selector-class\">.container</span> {\n  <span class=\"hljs-attribute\">display</span>: flex;\n  <span class=\"hljs-attribute\">width</span>: <span class=\"hljs-number\">500px</span>;\n}\n\n<span class=\"hljs-selector-class\">.a</span> {\n  <span class=\"hljs-attribute\">width</span>: <span class=\"hljs-number\">350px</span>;\n  <span class=\"hljs-attribute\">flex-shrink</span>: <span class=\"hljs-number\">1</span>;\n} <span class=\"hljs-comment\">/* стискається менше */</span>\n<span class=\"hljs-selector-class\">.b</span> {\n  <span class=\"hljs-attribute\">width</span>: <span class=\"hljs-number\">350px</span>;\n  <span class=\"hljs-attribute\">flex-shrink</span>: <span class=\"hljs-number\">2</span>;\n} <span class=\"hljs-comment\">/* стискається вдвічі більше */</span>\n\n<span class=\"hljs-selector-class\">.fixed</span> {\n  <span class=\"hljs-attribute\">flex-shrink</span>: <span class=\"hljs-number\">0</span>;\n} <span class=\"hljs-comment\">/* не стискається ніколи — може вийти за межі */</span></code></pre><h2>📐 <code>flex-basis</code> — початковий розмір елемента</h2>\n<p><code>flex-basis</code> задає розмір елемента <strong>до</strong> того, як спрацює <code>flex-grow</code> або <code>flex-shrink</code>. Це стартова точка для розрахунків.</p>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-class\">.item</span> {\n  <span class=\"hljs-attribute\">flex-basis</span>: <span class=\"hljs-number\">200px</span>;\n} <span class=\"hljs-comment\">/* стартує з 200px, далі може рости/стискатись */</span>\n<span class=\"hljs-selector-class\">.item</span> {\n  <span class=\"hljs-attribute\">flex-basis</span>: auto;\n} <span class=\"hljs-comment\">/* стартує з розміру вмісту (за замовчуванням) */</span>\n<span class=\"hljs-selector-class\">.item</span> {\n  <span class=\"hljs-attribute\">flex-basis</span>: <span class=\"hljs-number\">0%</span>;\n} <span class=\"hljs-comment\">/* стартує з нуля — весь розмір визначає flex-grow */</span></code></pre><h2>⚙️ Скорочення <code>flex: grow shrink basis</code></h2>\n<p>На практиці всі три властивості задають разом через скорочення <code>flex</code>:</p>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-class\">.item</span> {\n  <span class=\"hljs-attribute\">flex</span>: <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">1</span> auto;\n} <span class=\"hljs-comment\">/* за замовчуванням: не росте, стискається, розмір за вмістом */</span>\n<span class=\"hljs-selector-class\">.item</span> {\n  <span class=\"hljs-attribute\">flex</span>: <span class=\"hljs-number\">1</span>;\n} <span class=\"hljs-comment\">/* flex: 1 1 0% — рівномірно ділить увесь простір контейнера */</span>\n<span class=\"hljs-selector-class\">.item</span> {\n  <span class=\"hljs-attribute\">flex</span>: <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">200px</span>;\n} <span class=\"hljs-comment\">/* фіксований 200px: не росте і не стискається */</span></code></pre><table>\n<thead>\n<tr>\n<th>Значення</th>\n<th>Типове застосування</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>flex: 1</code></td>\n<td>Рівні колонки, що заповнюють весь рядок</td>\n</tr>\n<tr>\n<td><code>flex: 2</code> на одному елементі</td>\n<td>Один елемент займає вдвічі більше, ніж решта</td>\n</tr>\n<tr>\n<td><code>flex: 0 0 250px</code></td>\n<td>Фіксований sidebar поруч із гнучким контентом</td>\n</tr>\n</tbody></table>\n<h2>🔼 <code>align-self</code> та <code>order</code></h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-selector-class\">.special-item</span> {\n  <span class=\"hljs-attribute\">align-self</span>: flex-start; <span class=\"hljs-comment\">/* Перевизначає align-items для одного елемента */</span>\n  <span class=\"hljs-attribute\">order</span>: -<span class=\"hljs-number\">1</span>; <span class=\"hljs-comment\">/* Від'ємні числа — елемент іде першим (за замовчуванням: 0) */</span>\n}</code></pre><div class=\"note\"><strong>📝 Про <code>order</code></strong> <p><code>order</code> змінює <strong>візуальний</strong> порядок елементів, але не змінює порядок у DOM. Це важливо для доступності: screen readers читають DOM-порядок, а не візуальний.</p>\n</div>\n\n","<h1>🏗️ Практичний приклад — картки з Flexbox</h1>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-meta\">&lt;!DOCTYPE <span class=\"hljs-keyword\">html</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">html</span> <span class=\"hljs-attr\">lang</span>=<span class=\"hljs-string\">\"uk\"</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">head</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">meta</span> <span class=\"hljs-attr\">charset</span>=<span class=\"hljs-string\">\"UTF-8\"</span> /&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">title</span>&gt;</span>Картки Flexbox<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">title</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">style</span>&gt;</span><span class=\"language-css\">\n      <span class=\"hljs-comment\">/* Контейнер: рядок карток з переносом */</span>\n      <span class=\"hljs-selector-class\">.cards-container</span> {\n        <span class=\"hljs-attribute\">display</span>: flex;\n        <span class=\"hljs-attribute\">flex-wrap</span>: wrap; <span class=\"hljs-comment\">/* Перенос карток на наступний рядок */</span>\n        <span class=\"hljs-attribute\">gap</span>: <span class=\"hljs-number\">20px</span>; <span class=\"hljs-comment\">/* Відступи між картками */</span>\n        <span class=\"hljs-attribute\">justify-content</span>: center; <span class=\"hljs-comment\">/* Центрування по горизонталі */</span>\n        <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">20px</span>;\n      }\n\n      <span class=\"hljs-comment\">/* Картка */</span>\n      <span class=\"hljs-selector-class\">.card</span> {\n        <span class=\"hljs-attribute\">flex</span>: <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">280px</span>; <span class=\"hljs-comment\">/* Не росте, не стискається, базова ширина 280px */</span>\n        <span class=\"hljs-attribute\">display</span>: flex; <span class=\"hljs-comment\">/* Картка сама є flex-контейнером */</span>\n        <span class=\"hljs-attribute\">flex-direction</span>: column; <span class=\"hljs-comment\">/* Вміст картки — по колонці */</span>\n        <span class=\"hljs-attribute\">border</span>: <span class=\"hljs-number\">1px</span> solid <span class=\"hljs-number\">#e0e0e0</span>;\n        <span class=\"hljs-attribute\">border-radius</span>: <span class=\"hljs-number\">8px</span>;\n        <span class=\"hljs-attribute\">overflow</span>: hidden;\n      }\n\n      <span class=\"hljs-selector-class\">.card__body</span> {\n        <span class=\"hljs-attribute\">flex</span>: <span class=\"hljs-number\">1</span>; <span class=\"hljs-comment\">/* Тіло займає весь залишковий простір картки */</span>\n        <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">16px</span>;\n      }\n\n      <span class=\"hljs-selector-class\">.card__footer</span> {\n        <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">12px</span> <span class=\"hljs-number\">16px</span>;\n        <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-number\">#f5f5f5</span>;\n        <span class=\"hljs-comment\">/* footer завжди притиснутий донизу — завдяки flex: 1 на body */</span>\n      }\n    </span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">style</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">head</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">body</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"cards-container\"</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"card\"</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"card__body\"</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">h3</span>&gt;</span>Картка 1<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">h3</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">p</span>&gt;</span>Короткий текст.<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">p</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"card__footer\"</span>&gt;</span>Кнопка дії<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"card\"</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"card__body\"</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">h3</span>&gt;</span>Картка 2<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">h3</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">p</span>&gt;</span>\n            Значно довший текст, що займає більше рядків, але футер однаково\n            знаходиться внизу.\n          <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">p</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"card__footer\"</span>&gt;</span>Кнопка дії<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">body</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">html</span>&gt;</span></code></pre><div class=\"success\"><strong>✅ Що демонструє приклад</strong> <p>Картки різної висоти (через різний обсяг тексту), але <code>footer</code> у кожній завжди притиснутий донизу. Це класична задача, яку Flexbox вирішує елегантно: <code>flex-direction: column</code> + <code>flex: 1</code> на тілі картки.</p>\n</div>\n\n","<h1>📱 Адаптивний дизайн — що це і навіщо</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Адаптивний (responsive) дизайн</strong> — підхід до верстки, за якого сторінка автоматично змінює свій вигляд залежно від розміру екрана та характеристик пристрою, забезпечуючи зручне відображення на всіх пристроях.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Сьогодні понад 60% веб-трафіку генерують мобільні пристрої, і сторінка, що виглядає добре лише на десктопі, є неповноцінним продуктом.</p>\n<h2>📊 Типові контрольні точки розмірів</h2>\n<table>\n<thead>\n<tr>\n<th>Пристрій</th>\n<th>Діапазон ширини</th>\n<th>Типове використання</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>📱 Смартфони</td>\n<td>до 480px</td>\n<td>Мобільний перегляд</td>\n</tr>\n<tr>\n<td>📱 Великі смартфони</td>\n<td>481–767px</td>\n<td>Смартфони в ландшафті</td>\n</tr>\n<tr>\n<td>📟 Планшети</td>\n<td>768–1023px</td>\n<td>Планшетний перегляд</td>\n</tr>\n<tr>\n<td>💻 Ноутбуки</td>\n<td>1024–1279px</td>\n<td>Стандартний десктоп</td>\n</tr>\n<tr>\n<td>🖥️ Широкі екрани</td>\n<td>1280px+</td>\n<td>Великі монітори</td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 Підхід Mobile First</strong> <p>Замість того, щоб \"ламати\" десктопний макет під мобільний, <strong>mobile-first</strong> пропонує починати з мінімального мобільного дизайну і поступово додавати складність для ширших екранів. Це спрощує CSS і покращує продуктивність на мобільних.</p>\n</div>\n\n","<h1>🔍 Media Queries — синтаксис</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Media query</strong> (медіа-запит) — CSS-конструкція, що дозволяє застосовувати певні стилі лише тоді, коли характеристики пристрою або браузера відповідають заданим умовам.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Media queries — основний інструмент адаптивного дизайну, що дає змогу писати різний CSS для різних розмірів екрана в одному файлі.</p>\n<h2>📐 Базовий синтаксис</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Стилі застосуються, коли ширина вікна &gt;= 768px */</span>\n<span class=\"hljs-keyword\">@media</span> (<span class=\"hljs-attribute\">min-width</span>: <span class=\"hljs-number\">768px</span>) {\n  <span class=\"hljs-selector-class\">.container</span> {\n    <span class=\"hljs-attribute\">max-width</span>: <span class=\"hljs-number\">960px</span>;\n    <span class=\"hljs-attribute\">margin</span>: <span class=\"hljs-number\">0</span> auto;\n  }\n}\n\n<span class=\"hljs-comment\">/* Стилі застосуються, коли ширина вікна &lt;= 767px */</span>\n<span class=\"hljs-keyword\">@media</span> (<span class=\"hljs-attribute\">max-width</span>: <span class=\"hljs-number\">767px</span>) {\n  <span class=\"hljs-selector-class\">.nav</span> {\n    <span class=\"hljs-attribute\">display</span>: none; <span class=\"hljs-comment\">/* Приховати навігацію на мобільних */</span>\n  }\n}\n\n<span class=\"hljs-comment\">/* Комбінування умов */</span>\n<span class=\"hljs-keyword\">@media</span> (<span class=\"hljs-attribute\">min-width</span>: <span class=\"hljs-number\">768px</span>) <span class=\"hljs-keyword\">and</span> (<span class=\"hljs-attribute\">max-width</span>: <span class=\"hljs-number\">1023px</span>) {\n  <span class=\"hljs-comment\">/* Тільки для планшетів */</span>\n}</code></pre><div class=\"warning\"><strong>⚠️ Мета-тег viewport — обов'язковий</strong> <p>Без цього тегу media queries не працюють коректно на мобільних:</p>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">meta</span> <span class=\"hljs-attr\">name</span>=<span class=\"hljs-string\">\"viewport\"</span> <span class=\"hljs-attr\">content</span>=<span class=\"hljs-string\">\"width=device-width, initial-scale=1.0\"</span> /&gt;</span></code></pre><p>Браузер на мобільному за замовчуванням \"симулює\" широкий екран — viewport мета-тег вимикає цю поведінку.</p>\n</div>\n\n","<h1>📱 Mobile First на практиці</h1>\n<p><strong>Головна ідея:</strong> Mobile-first означає, що базові стилі (за межами <code>@media</code>) написані для мобільних, а <code>@media (min-width: ...)</code> поступово розширює дизайн для більших екранів.</p>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* 📱 Мобільний — базові стилі (без media query) */</span>\n<span class=\"hljs-selector-class\">.nav</span> {\n  <span class=\"hljs-attribute\">display</span>: flex;\n  <span class=\"hljs-attribute\">flex-direction</span>: column; <span class=\"hljs-comment\">/* Вертикальне меню на мобільних */</span>\n  <span class=\"hljs-attribute\">gap</span>: <span class=\"hljs-number\">8px</span>;\n}\n\n<span class=\"hljs-selector-class\">.cards-container</span> {\n  <span class=\"hljs-attribute\">display</span>: flex;\n  <span class=\"hljs-attribute\">flex-direction</span>: column; <span class=\"hljs-comment\">/* Картки в колонку на мобільних */</span>\n  <span class=\"hljs-attribute\">gap</span>: <span class=\"hljs-number\">16px</span>;\n  <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">16px</span>;\n}\n\n<span class=\"hljs-comment\">/* 📟 Планшет — від 768px */</span>\n<span class=\"hljs-keyword\">@media</span> (<span class=\"hljs-attribute\">min-width</span>: <span class=\"hljs-number\">768px</span>) {\n  <span class=\"hljs-selector-class\">.nav</span> {\n    <span class=\"hljs-attribute\">flex-direction</span>: row; <span class=\"hljs-comment\">/* Горизонтальне меню */</span>\n  }\n  <span class=\"hljs-selector-class\">.cards-container</span> {\n    <span class=\"hljs-attribute\">flex-direction</span>: row; <span class=\"hljs-comment\">/* Картки в рядок */</span>\n    <span class=\"hljs-attribute\">flex-wrap</span>: wrap;\n  }\n}\n\n<span class=\"hljs-comment\">/* 💻 Десктоп — від 1024px */</span>\n<span class=\"hljs-keyword\">@media</span> (<span class=\"hljs-attribute\">min-width</span>: <span class=\"hljs-number\">1024px</span>) {\n  <span class=\"hljs-selector-class\">.cards-container</span> {\n    <span class=\"hljs-attribute\">max-width</span>: <span class=\"hljs-number\">1200px</span>;\n    <span class=\"hljs-attribute\">margin</span>: <span class=\"hljs-number\">0</span> auto; <span class=\"hljs-comment\">/* Центрування на широких екранах */</span>\n  }\n}</code></pre><div class=\"note\"><strong>📝 Desktop First vs Mobile First</strong> <p><strong>Desktop-first</strong> використовує <code>max-width</code> у media queries (стилі для мобільних \"перевизначають\" десктопні). <strong>Mobile-first</strong> використовує <code>min-width</code> (стилі для широких екранів \"додають\" до мобільних). Mobile-first вважається сучасним стандартом і дає чистіший, менш надлишковий CSS.</p>\n</div>\n\n","<h1>🔄 Адаптивна навігація — повний приклад</h1>\n<div class=\"tip\"><strong>💡 Як перевірити адаптивність</strong> <p>Збережіть файл, відкрийте у браузері → натисніть <code>F12</code> → кнопка 📱 (Toggle device toolbar) → оберіть \"iPhone\" або вручну виставте ширину менше 900px. Макет переключиться на мобільний вигляд.</p>\n</div>\n\n\n\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-meta\">&lt;!DOCTYPE <span class=\"hljs-keyword\">html</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">html</span> <span class=\"hljs-attr\">lang</span>=<span class=\"hljs-string\">\"uk\"</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">head</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">meta</span> <span class=\"hljs-attr\">charset</span>=<span class=\"hljs-string\">\"UTF-8\"</span> /&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">meta</span> <span class=\"hljs-attr\">name</span>=<span class=\"hljs-string\">\"viewport\"</span> <span class=\"hljs-attr\">content</span>=<span class=\"hljs-string\">\"width=device-width, initial-scale=1.0\"</span> /&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">title</span>&gt;</span>Адаптивна навігація<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">title</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">style</span>&gt;</span><span class=\"language-css\">\n      * {\n        <span class=\"hljs-attribute\">box-sizing</span>: border-box;\n        <span class=\"hljs-attribute\">margin</span>: <span class=\"hljs-number\">0</span>;\n        <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">0</span>;\n      }\n      <span class=\"hljs-selector-tag\">body</span> {\n        <span class=\"hljs-attribute\">font-family</span>: sans-serif;\n      }\n\n      <span class=\"hljs-comment\">/* ── Шапка ── */</span>\n      <span class=\"hljs-selector-class\">.header</span> {\n        <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-number\">#1565c0</span>;\n        <span class=\"hljs-attribute\">color</span>: white;\n        <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">20px</span>;\n      }\n      <span class=\"hljs-selector-class\">.header-inner</span> {\n        <span class=\"hljs-attribute\">display</span>: flex;\n        <span class=\"hljs-attribute\">justify-content</span>: space-between;\n        <span class=\"hljs-attribute\">align-items</span>: center;\n        <span class=\"hljs-attribute\">min-height</span>: <span class=\"hljs-number\">60px</span>;\n        <span class=\"hljs-attribute\">flex-wrap</span>: wrap;\n        <span class=\"hljs-attribute\">gap</span>: <span class=\"hljs-number\">12px</span>;\n        <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">10px</span> <span class=\"hljs-number\">0</span>;\n      }\n      <span class=\"hljs-selector-class\">.nav</span> {\n        <span class=\"hljs-attribute\">display</span>: flex;\n        <span class=\"hljs-attribute\">gap</span>: <span class=\"hljs-number\">4px</span>;\n        <span class=\"hljs-attribute\">flex-wrap</span>: wrap;\n      }\n      <span class=\"hljs-selector-class\">.nav</span> <span class=\"hljs-selector-tag\">a</span> {\n        <span class=\"hljs-attribute\">color</span>: white;\n        <span class=\"hljs-attribute\">text-decoration</span>: none;\n        <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">8px</span> <span class=\"hljs-number\">14px</span>;\n        <span class=\"hljs-attribute\">border-radius</span>: <span class=\"hljs-number\">4px</span>;\n      }\n      <span class=\"hljs-selector-class\">.nav</span> <span class=\"hljs-selector-tag\">a</span><span class=\"hljs-selector-pseudo\">:hover</span> {\n        <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-built_in\">rgba</span>(<span class=\"hljs-number\">255</span>, <span class=\"hljs-number\">255</span>, <span class=\"hljs-number\">255</span>, <span class=\"hljs-number\">0.2</span>);\n      }\n\n      <span class=\"hljs-comment\">/* ── Макет: мобільний спочатку (колонка) ── */</span>\n      <span class=\"hljs-selector-class\">.layout</span> {\n        <span class=\"hljs-attribute\">display</span>: flex;\n        <span class=\"hljs-attribute\">flex-direction</span>: column;\n        <span class=\"hljs-attribute\">gap</span>: <span class=\"hljs-number\">20px</span>;\n        <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">20px</span>;\n      }\n\n      <span class=\"hljs-selector-class\">.sidebar</span> {\n        <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-number\">#f5f5f5</span>;\n        <span class=\"hljs-attribute\">border-radius</span>: <span class=\"hljs-number\">8px</span>;\n        <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">16px</span>;\n        <span class=\"hljs-attribute\">min-height</span>: <span class=\"hljs-number\">120px</span>; <span class=\"hljs-comment\">/* щоб sidebar був видний */</span>\n      }\n\n      <span class=\"hljs-selector-class\">.content</span> {\n        <span class=\"hljs-attribute\">background</span>: <span class=\"hljs-number\">#fff</span>;\n        <span class=\"hljs-attribute\">border</span>: <span class=\"hljs-number\">1px</span> solid <span class=\"hljs-number\">#e0e0e0</span>;\n        <span class=\"hljs-attribute\">border-radius</span>: <span class=\"hljs-number\">8px</span>;\n        <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">20px</span>;\n        <span class=\"hljs-attribute\">min-height</span>: <span class=\"hljs-number\">200px</span>;\n      }\n\n      <span class=\"hljs-comment\">/* ── Десктоп: від 900px — sidebar і контент поруч ── */</span>\n      <span class=\"hljs-keyword\">@media</span> (<span class=\"hljs-attribute\">min-width</span>: <span class=\"hljs-number\">900px</span>) {\n        <span class=\"hljs-selector-class\">.layout</span> {\n          <span class=\"hljs-attribute\">flex-direction</span>: row; <span class=\"hljs-comment\">/* колонка → рядок */</span>\n          <span class=\"hljs-attribute\">max-width</span>: <span class=\"hljs-number\">1100px</span>;\n          <span class=\"hljs-attribute\">margin</span>: <span class=\"hljs-number\">20px</span> auto;\n        }\n        <span class=\"hljs-selector-class\">.sidebar</span> {\n          <span class=\"hljs-attribute\">flex</span>: <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">0</span> <span class=\"hljs-number\">220px</span>;\n        } <span class=\"hljs-comment\">/* фіксована ширина */</span>\n        <span class=\"hljs-selector-class\">.content</span> {\n          <span class=\"hljs-attribute\">flex</span>: <span class=\"hljs-number\">1</span>;\n        } <span class=\"hljs-comment\">/* решта простору */</span>\n      }\n    </span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">style</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">head</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">body</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">header</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"header\"</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"header-inner\"</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">strong</span>&gt;</span>🌐 Мій сайт<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">strong</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">nav</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"nav\"</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">a</span> <span class=\"hljs-attr\">href</span>=<span class=\"hljs-string\">\"#\"</span>&gt;</span>Головна<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">a</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">a</span> <span class=\"hljs-attr\">href</span>=<span class=\"hljs-string\">\"#\"</span>&gt;</span>Про нас<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">a</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">a</span> <span class=\"hljs-attr\">href</span>=<span class=\"hljs-string\">\"#\"</span>&gt;</span>Послуги<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">a</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">a</span> <span class=\"hljs-attr\">href</span>=<span class=\"hljs-string\">\"#\"</span>&gt;</span>Контакти<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">a</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">nav</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">header</span>&gt;</span>\n\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"layout\"</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">aside</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"sidebar\"</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">h3</span>&gt;</span>📂 Категорії<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">h3</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">ul</span> <span class=\"hljs-attr\">style</span>=<span class=\"hljs-string\">\"margin-top: 10px; padding-left: 18px;\"</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">li</span>&gt;</span>Новини<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">li</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">li</span>&gt;</span>Статті<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">li</span>&gt;</span>\n          <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">li</span>&gt;</span>Відео<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">li</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">ul</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">aside</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">main</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"content\"</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">h1</span>&gt;</span>Заголовок сторінки<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">h1</span>&gt;</span>\n        <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">p</span> <span class=\"hljs-attr\">style</span>=<span class=\"hljs-string\">\"margin-top: 12px; color: #555;\"</span>&gt;</span>\n          На екранах <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">strong</span>&gt;</span>вужчих за 900px<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">strong</span>&gt;</span> sidebar розташований\n          зверху, контент — знизу (flex-direction: column).<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">br</span> /&gt;</span><span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">br</span> /&gt;</span>\n          На екранах <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">strong</span>&gt;</span>900px і ширше<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">strong</span>&gt;</span> вони стоять поруч\n          (flex-direction: row). Змініть ширину вікна у DevTools, щоб побачити\n          різницю.\n        <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">p</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">main</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">body</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">html</span>&gt;</span></code></pre>","<h1>✅ Ключові висновки</h1>\n<div class=\"success\"><strong>✅ Підсумок лекції</strong> <p><strong>📌 Що ми вивчили:</strong></p>\n<ol>\n<li><p><strong>Flexbox</strong> — це CSS-модуль для одновимірного розташування елементів (рядок або колонка); активується через <code>display: flex</code> на батьківському контейнері</p>\n</li>\n<li><p><strong>Дві осі</strong> — головна (<code>flex-direction</code>) та перехресна. <code>justify-content</code> вирівнює по головній, <code>align-items</code> — по перехресній</p>\n</li>\n<li><p><strong>Ключові властивості контейнера:</strong> <code>flex-direction</code>, <code>justify-content</code>, <code>align-items</code>, <code>flex-wrap</code>, <code>gap</code></p>\n</li>\n<li><p><strong>Ключові властивості елементів:</strong> <code>flex</code> (скорочення для <code>flex-grow</code>, <code>flex-shrink</code>, <code>flex-basis</code>), <code>align-self</code>, <code>order</code></p>\n</li>\n<li><p><strong>Адаптивний дизайн</strong> — сторінка змінює вигляд залежно від розміру екрана; понад 60% трафіку — мобільний</p>\n</li>\n<li><p><strong>Media queries</strong> (<code>@media</code>) — основний інструмент адаптивності; дозволяють застосовувати різні стилі для різних розмірів</p>\n</li>\n<li><p><strong>Mobile-first</strong> — сучасний підхід: базові стилі для мобільних, <code>@media (min-width: ...)</code> розширює дизайн для більших екранів</p>\n</li>\n<li><p><strong>Мета-тег <code>viewport</code></strong> — обов'язковий для коректної роботи адаптивного дизайну на мобільних пристроях</p>\n</li>\n</ol>\n</div>\n\n","<h1>❓ Контрольні питання</h1>\n<ol>\n<li><p>🤔 Яка різниця між властивостями flex-контейнера та flex-елементів? Наведіть по 3 приклади кожної групи.</p>\n</li>\n<li><p>🤔 Що таке головна та перехресна осі Flexbox? Як вони змінюються залежно від <code>flex-direction</code>?</p>\n</li>\n<li><p>🤔 Чим відрізняються <code>justify-content: space-between</code> та <code>space-evenly</code>? Коли доцільно використовувати кожне?</p>\n</li>\n<li><p>🤔 Що означає запис <code>flex: 1</code>? Яке повне значення він представляє?</p>\n</li>\n<li><p>🤔 Чому <code>gap</code> зручніший за <code>margin</code> при роботі з Flexbox-сітками?</p>\n</li>\n<li><p>🤔 Що таке підхід mobile-first і чим він відрізняється від desktop-first? Яка різниця в синтаксисі media queries?</p>\n</li>\n<li><p>🤔 Чому без мета-тегу <code>viewport</code> адаптивний дизайн не працює коректно на мобільних?</p>\n</li>\n</ol>\n","<h1>📖 Глосарій термінів</h1>\n<table>\n<thead>\n<tr>\n<th>Термін</th>\n<th>English</th>\n<th>Визначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Гнучкий контейнер</td>\n<td>Flex Container</td>\n<td>Батьківський елемент з <code>display: flex</code>, що керує розташуванням дочірніх</td>\n</tr>\n<tr>\n<td>Гнучкий елемент</td>\n<td>Flex Item</td>\n<td>Прямий дочірній елемент flex-контейнера</td>\n</tr>\n<tr>\n<td>Головна вісь</td>\n<td>Main Axis</td>\n<td>Вісь, вздовж якої розташовуються flex-елементи (визначається <code>flex-direction</code>)</td>\n</tr>\n<tr>\n<td>Перехресна вісь</td>\n<td>Cross Axis</td>\n<td>Вісь, перпендикулярна до головної</td>\n</tr>\n<tr>\n<td>Перенос рядка</td>\n<td>Line Wrapping</td>\n<td>Поведінка при <code>flex-wrap: wrap</code> — елементи переносяться на наступний рядок</td>\n</tr>\n<tr>\n<td>Адаптивний дизайн</td>\n<td>Responsive Design</td>\n<td>Підхід, що забезпечує коректне відображення сторінки на всіх розмірах екранів</td>\n</tr>\n<tr>\n<td>Медіа-запит</td>\n<td>Media Query</td>\n<td>CSS-конструкція для застосування стилів за умовою (ширина, тип пристрою)</td>\n</tr>\n<tr>\n<td>Контрольна точка</td>\n<td>Breakpoint</td>\n<td>Значення ширини екрана, при якому змінюється макет сторінки</td>\n</tr>\n<tr>\n<td>Мобільний спочатку</td>\n<td>Mobile First</td>\n<td>Підхід, за якого базові стилі призначені для мобільних, а не для десктопу</td>\n</tr>\n</tbody></table>\n","<h1>📖 Глосарій абревіатур</h1>\n<table>\n<thead>\n<tr>\n<th>Абревіатура</th>\n<th>Розшифровка</th>\n<th>Переклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>CSS</td>\n<td>Cascading Style Sheets</td>\n<td>Каскадні таблиці стилів</td>\n</tr>\n<tr>\n<td>HTML</td>\n<td>HyperText Markup Language</td>\n<td>Мова розмітки гіпертексту</td>\n</tr>\n<tr>\n<td>UI</td>\n<td>User Interface</td>\n<td>Інтерфейс користувача</td>\n</tr>\n<tr>\n<td>UX</td>\n<td>User Experience</td>\n<td>Досвід користувача</td>\n</tr>\n</tbody></table>\n"];let currentSlideIndex=0;
+function showSlide(i){if(i<0||i>=slides.length)return;currentSlideIndex=i;const el=document.getElementById("current-slide");el.innerHTML=slides[i];el.scrollTop=0;document.getElementById("progress-bar").style.width=((i+1)/slides.length*100)+"%";document.getElementById("slide-number").textContent=(i+1)+" / "+slides.length;updateSidebarActive();}
+function nextSlide(){if(currentSlideIndex<slides.length-1)showSlide(currentSlideIndex+1);}
+function previousSlide(){if(currentSlideIndex>0)showSlide(currentSlideIndex-1);}
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleHelp(){document.getElementById("help-overlay").classList.toggle("hidden");}
+function toggleFullscreen(){if(!document.fullscreenElement){const pc=document.getElementById("presentation-container");if(pc.requestFullscreen)pc.requestFullscreen();else if(pc.webkitRequestFullscreen)pc.webkitRequestFullscreen();else if(pc.msRequestFullscreen)pc.msRequestFullscreen();else if(pc.mozRequestFullScreen)pc.mozRequestFullScreen();}else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();else if(document.msExitFullscreen)document.msExitFullscreen();else if(document.mozCancelFullScreen)document.mozCancelFullScreen();}}
+function generateSidebar(){const sc=document.getElementById("sidebar-content");sc.innerHTML="";slides.forEach((html,idx)=>{const t=document.createElement("div");t.className="slide-thumbnail";if(idx===0)t.classList.add("active");const tmp=document.createElement("div");tmp.innerHTML=html;const title=tmp.querySelector("h1,h2");const titleText=title?title.textContent:("Слайд "+(idx+1));const textContent=tmp.textContent.replace(/s+/g," ").trim();const preview=textContent.substring(0,100)+(textContent.length>100?"...":"");t.innerHTML="<div class=\"slide-thumbnail-number\">"+(idx+1)+"</div><div class=\"slide-thumbnail-title\">"+titleText+"</div><div class=\"slide-thumbnail-content\">"+preview+"</div>";t.onclick=()=>{showSlide(idx);if(window.innerWidth<1024)toggleSidebar();};sc.appendChild(t);});}
+function updateSidebarActive(){document.querySelectorAll(".slide-thumbnail").forEach((th,idx)=>{if(idx===currentSlideIndex){th.classList.add("active");th.scrollIntoView({behavior:"smooth",block:"nearest"});}else th.classList.remove("active");});}
+document.addEventListener("keydown",e=>{switch(e.key){case"ArrowLeft":previousSlide();break;case"ArrowRight":case" ":e.preventDefault();nextSlide();break;case"f":case"F":toggleFullscreen();break;case"s":case"S":toggleSidebar();break;case"?":toggleHelp();break;case"Escape":const sb=document.getElementById("sidebar");const ho=document.getElementById("help-overlay");if(sb.classList.contains("open"))toggleSidebar();else if(!ho.classList.contains("hidden"))ho.classList.add("hidden");break;}});
+generateSidebar();showSlide(0);</script></body></html>
