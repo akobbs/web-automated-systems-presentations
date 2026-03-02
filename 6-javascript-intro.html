@@ -1,0 +1,621 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Вступ до JavaScript</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><style>* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor-container.hidden {
+            display: none;
+        }
+
+        #editor-header {
+            background: #2d3748;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor-header h2 {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #editor-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        #markdown-input {
+            flex: 1;
+            padding: 2rem;
+            background: #1a202c;
+            color: #e2e8f0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        #markdown-input:focus {
+            outline: none;
+        }
+
+        .slide-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .slide h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h2 {
+            color: #764ba2;
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide pre {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .slide pre code {
+            background: transparent;
+            color: #abb2bf;
+        }
+
+        .slide code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .slide h1 code, .slide h2 code, .slide h3 code {
+            font-size: 0.85em;
+            background: rgba(237, 242, 247, 0.5);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .slide p code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .slide blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        .slide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .slide th, .slide td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .slide th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .slide tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .note {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #c53030;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .warning strong {
+            color: #c05621;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .info strong {
+            color: #2c5282;
+        }
+
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #22543d;
+        }
+
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .danger strong {
+            color: #742a2a;
+        }
+
+        .tip {
+            background: #fefcbf;
+            border-left: 4px solid #ecc94b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #744210;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            transition: width 0.3s;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        #sidebar.open {
+            right: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #sidebar-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        #sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        #sidebar-close:hover {
+            color: #667eea;
+        }
+
+        .slide-thumbnail {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .slide-thumbnail:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .slide-thumbnail.active {
+            border-color: #667eea;
+            background: #f7faff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slide-thumbnail-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-thumbnail-content {
+            font-size: 0.85rem;
+            color: #2d3748;
+            line-height: 1.4;
+            max-height: 4.2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-thumbnail-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 1.4rem;
+            background: linear-gradient(to right, transparent, white);
+        }
+
+        .slide-thumbnail.active .slide-thumbnail-content::after {
+            background: linear-gradient(to right, transparent, #f7faff);
+        }
+
+        .slide-thumbnail-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+        }
+
+        #sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: visible; /* щоб не обрізати тіні / розширені ноди */
+        }
+
+        /* Запобігаємо обрізанню останньої літери в нодах Mermaid через зміну font-weight після розрахунку розміру */
+        .mermaid svg { overflow: visible !important; }
+        /* перестраховка проти обрізання foreignObject (на випадок інших діаграм) */
+        .mermaid svg foreignObject { overflow: visible !important; }
+
+        .plantuml-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        #help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #help-overlay kbd {
+            background: #2d3748;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .mermaid-error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #742a2a;
+            margin: 1.5rem 0;
+        }
+
+        .mermaid-error pre {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
+
+        /* Повноекранний режим - зберігаємо оригінальний фон */
+        #presentation-container:fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-webkit-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-moz-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-ms-fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+#presentation-container:fullscreen,#presentation-container:-webkit-full-screen,#presentation-container:-moz-full-screen,#presentation-container:-ms-fullscreen{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)!important;}</style></head><body><div id="presentation-container"><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><button id="sidebar-toggle" onclick="toggleSidebar()" title="Навігація слайдами (S)">☰</button><div id="sidebar"><div id="sidebar-header"><h3>📑 Слайди</h3><button id="sidebar-close" onclick="toggleSidebar()">✕</button></div><div id="sidebar-content"></div></div><div class="slide-container"><div class="slide" id="current-slide"></div></div><div class="controls"><button class="control-btn" onclick="previousSlide()" title="Попередній (←)">←</button><button class="control-btn" onclick="nextSlide()" title="Наступний (→)">→</button><button class="control-btn" onclick="toggleFullscreen()" title="Повноекранний режим (F)">⛶</button><button class="control-btn" onclick="toggleHelp()" title="Допомога (?)">?</button></div><div class="slide-number" id="slide-number">1 / 15</div><div id="help-overlay" class="hidden"><strong>Гарячі клавіші:</strong><br><kbd>←</kbd> <kbd>→</kbd> Навігація<br><kbd>F</kbd> Повноекранний режим<br><kbd>S</kbd> Sidebar<br><kbd>?</kbd> Допомога<br><kbd>Esc</kbd> Закрити</div></div><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script><script>const slides=["<h1>Вступ до JavaScript</h1>\n<p><strong>Web-технології в автоматизованих системах</strong></p>\n<p>Лектор: Кобилянський Антон</p>\n","<h1>📋 План лекції</h1>\n<ol>\n<li>🌐 Що таке JavaScript і навіщо він потрібен</li>\n<li>🔗 Підключення JS до HTML-сторінки</li>\n<li>📦 Змінні: <code>let</code>, <code>const</code> та <code>var</code></li>\n<li>🔢 Типи даних: примітиви JavaScript</li>\n<li>⚙️ Оператори: арифметика, порівняння, логіка</li>\n<li>🔀 Умовні конструкції: <code>if/else</code> та <code>switch</code></li>\n<li>🖥️ Виведення даних та налагодження</li>\n<li>🔄 Цикли: <code>for</code>, <code>while</code>, <code>for...of</code></li>\n<li>✅ Ключові висновки та контрольні питання</li>\n</ol>\n","<h1>🌐 Що таке JavaScript?</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>JavaScript (JS)</strong> — інтерпретована мова програмування з динамічною типізацією, що виконується безпосередньо у браузері. Разом із HTML та CSS вона утворює тріаду основних веб-технологій.</p>\n</div>\n\n\n\n<p><strong>Роль JavaScript у веб-розробці:</strong></p>\n<table>\n<thead>\n<tr>\n<th>Технологія</th>\n<th>Відповідає за</th>\n<th>Аналогія</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>🏗️ HTML</td>\n<td>Структура та вміст</td>\n<td>Скелет будівлі</td>\n</tr>\n<tr>\n<td>🎨 CSS</td>\n<td>Зовнішній вигляд та стилі</td>\n<td>Оздоблення</td>\n</tr>\n<tr>\n<td>⚡ JavaScript</td>\n<td>Логіка, взаємодія та динаміка</td>\n<td>Електрика та механізми</td>\n</tr>\n</tbody></table>\n<p><strong>Що робить JS можливим:</strong></p>\n<ul>\n<li>🖱️ Реакція на дії користувача (кліки, введення, прокрутка)</li>\n<li>🔄 Динамічна зміна вмісту сторінки без перезавантаження</li>\n<li>📡 Запити до серверів та робота з API</li>\n<li>✅ Валідація форм у браузері</li>\n<li>🎮 Ігри, анімації, інтерактивні компоненти</li>\n</ul>\n<div class=\"note\"><strong>📝 Середовище виконання</strong> <p>JavaScript виконується у <strong>рушії браузера</strong> (V8 у Chrome, SpiderMonkey у Firefox). Поза браузером JS працює через Node.js — серверне середовище. У цьому курсі ми зосереджуємось на браузерному JS.</p>\n</div>\n\n","<h1>🔗 Підключення JS до HTML</h1>\n<p><strong>Головна ідея:</strong> Існує три способи додати JavaScript до сторінки. Кожен підходить для різних ситуацій, але зовнішній файл є стандартом у реальній розробці.</p>\n<h2>📂 Три способи підключення</h2>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-comment\">&lt;!-- 1. Inline — безпосередньо в атрибуті події (не рекомендується) --&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">button</span> <span class=\"hljs-attr\">onclick</span>=<span class=\"hljs-string\">\"alert('Привіт!')\"</span>&gt;</span>Натисни мене<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">button</span>&gt;</span>\n\n<span class=\"hljs-comment\">&lt;!-- 2. Внутрішній блок — у тегу &lt;script&gt; всередині HTML --&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">script</span>&gt;</span><span class=\"language-javascript\">\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Сторінка завантажена'</span>);\n</span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">script</span>&gt;</span>\n\n<span class=\"hljs-comment\">&lt;!-- 3. Зовнішній файл — підключення окремого .js файлу (рекомендується) --&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">script</span> <span class=\"hljs-attr\">src</span>=<span class=\"hljs-string\">\"script.js\"</span>&gt;</span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">script</span>&gt;</span></code></pre><h2>📌 Де розміщувати <code>&lt;script&gt;</code>?</h2>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-meta\">&lt;!DOCTYPE <span class=\"hljs-keyword\">html</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">html</span> <span class=\"hljs-attr\">lang</span>=<span class=\"hljs-string\">\"uk\"</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">head</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">meta</span> <span class=\"hljs-attr\">charset</span>=<span class=\"hljs-string\">\"UTF-8\"</span> /&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">title</span>&gt;</span>Моя сторінка<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">title</span>&gt;</span>\n    <span class=\"hljs-comment\">&lt;!-- ⚠️ Тут не бажано: JS виконується до завантаження HTML --&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">head</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">body</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">h1</span>&gt;</span>Заголовок<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">h1</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">p</span>&gt;</span>Контент сторінки...<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">p</span>&gt;</span>\n\n    <span class=\"hljs-comment\">&lt;!-- ✅ Рекомендовано: перед &lt;/body&gt;, коли HTML вже завантажено --&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">script</span> <span class=\"hljs-attr\">src</span>=<span class=\"hljs-string\">\"script.js\"</span>&gt;</span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">script</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">body</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">html</span>&gt;</span></code></pre><div class=\"tip\"><strong>💡 Атрибут <code>defer</code></strong> <p>Альтернатива розміщенню наприкінці <code>&lt;body&gt;</code> — атрибут <code>defer</code> у тегу <code>&lt;head&gt;</code>: <code>&lt;script src=\"script.js\" defer&gt;&lt;/script&gt;</code>. Він гарантує, що скрипт виконається після повного завантаження HTML, але файл завантажується паралельно.</p>\n</div>\n\n","<h1>📦 Змінні: <code>let</code> та <code>const</code></h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Змінна</strong> — іменована область пам'яті для зберігання значення. У JavaScript для оголошення змінних використовують <code>let</code> та <code>const</code>.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> <code>const</code> — коли значення не зміниться, <code>let</code> — коли зміниться. <code>var</code> — застарілий спосіб, якого слід уникати.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 📌 const — константа, значення не можна перевизначити</span>\n<span class=\"hljs-keyword\">const</span> siteName = <span class=\"hljs-string\">'Мій сайт'</span>;\n<span class=\"hljs-keyword\">const</span> maxAttempts = <span class=\"hljs-number\">3</span>;\n<span class=\"hljs-keyword\">const</span> <span class=\"hljs-variable constant_\">PI</span> = <span class=\"hljs-number\">3.14159</span>;\n\n<span class=\"hljs-comment\">// siteName = 'Інший сайт'; // ❌ TypeError: Assignment to constant variable</span>\n\n<span class=\"hljs-comment\">// 📌 let — змінна, значення можна змінювати</span>\n<span class=\"hljs-keyword\">let</span> currentPage = <span class=\"hljs-number\">1</span>;\n<span class=\"hljs-keyword\">let</span> isLoggedIn = <span class=\"hljs-literal\">false</span>;\n<span class=\"hljs-keyword\">let</span> userName = <span class=\"hljs-string\">''</span>;\n\ncurrentPage = <span class=\"hljs-number\">2</span>;       <span class=\"hljs-comment\">// ✅ Можна змінити</span>\nisLoggedIn = <span class=\"hljs-literal\">true</span>;     <span class=\"hljs-comment\">// ✅ Можна змінити</span>\nuserName = <span class=\"hljs-string\">'Антон'</span>;   <span class=\"hljs-comment\">// ✅ Можна змінити</span></code></pre><h2>⚠️ Чому не <code>var</code>?</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// var має область видимості функції (не блоку) — це джерело помилок</span>\n<span class=\"hljs-keyword\">if</span> (<span class=\"hljs-literal\">true</span>) {\n  <span class=\"hljs-keyword\">var</span> old = <span class=\"hljs-string\">'var'</span>;   <span class=\"hljs-comment\">// \"витікає\" за межі блоку</span>\n  <span class=\"hljs-keyword\">let</span> modern = <span class=\"hljs-string\">'let'</span>; <span class=\"hljs-comment\">// залишається всередині блоку</span>\n}\n\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(old);    <span class=\"hljs-comment\">// 'var'    — ❌ доступна поза блоком</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(modern); <span class=\"hljs-comment\">// ❌ ReferenceError — let не \"витікає\"</span></code></pre><div class=\"warning\"><strong>⚠️ Правило сучасного JS</strong> <p>У сучасному JavaScript <code>var</code> не використовується в новому коді. Завжди надавайте перевагу <code>const</code> за замовчуванням — і лише якщо значення точно зміниться, використовуйте <code>let</code>.</p>\n</div>\n\n","<h1>🔢 Типи даних</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Тип даних</strong> визначає, яке значення може зберігати змінна і які операції над ним допустимі. JavaScript має <strong>динамічну типізацію</strong> — тип визначається автоматично під час виконання.</p>\n</div>\n\n\n\n<h2>📊 Примітивні типи</h2>\n<table>\n<thead>\n<tr>\n<th>Тип</th>\n<th>Приклади значень</th>\n<th>Опис</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>number</code></td>\n<td><code>42</code>, <code>3.14</code>, <code>-7</code>, <code>Infinity</code>, <code>NaN</code></td>\n<td>Цілі та дробові числа</td>\n</tr>\n<tr>\n<td><code>string</code></td>\n<td><code>'текст'</code>, <code>\"рядок\"</code>, <code>`шаблон`</code></td>\n<td>Послідовність символів</td>\n</tr>\n<tr>\n<td><code>boolean</code></td>\n<td><code>true</code>, <code>false</code></td>\n<td>Логічне значення</td>\n</tr>\n<tr>\n<td><code>undefined</code></td>\n<td><code>undefined</code></td>\n<td>Змінна оголошена, але не задана</td>\n</tr>\n<tr>\n<td><code>null</code></td>\n<td><code>null</code></td>\n<td>Явна відсутність значення</td>\n</tr>\n</tbody></table>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> age = <span class=\"hljs-number\">20</span>;                    <span class=\"hljs-comment\">// number</span>\n<span class=\"hljs-keyword\">const</span> name = <span class=\"hljs-string\">'Марія'</span>;              <span class=\"hljs-comment\">// string</span>\n<span class=\"hljs-keyword\">const</span> isActive = <span class=\"hljs-literal\">true</span>;             <span class=\"hljs-comment\">// boolean</span>\n<span class=\"hljs-keyword\">let</span> result;                        <span class=\"hljs-comment\">// undefined (не ініціалізована)</span>\n<span class=\"hljs-keyword\">const</span> empty = <span class=\"hljs-literal\">null</span>;                <span class=\"hljs-comment\">// null (явно порожнє)</span>\n\n<span class=\"hljs-comment\">// Оператор typeof визначає тип значення</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-keyword\">typeof</span> age);       <span class=\"hljs-comment\">// 'number'</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-keyword\">typeof</span> name);      <span class=\"hljs-comment\">// 'string'</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-keyword\">typeof</span> isActive);  <span class=\"hljs-comment\">// 'boolean'</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-keyword\">typeof</span> result);    <span class=\"hljs-comment\">// 'undefined'</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-keyword\">typeof</span> <span class=\"hljs-literal\">null</span>);      <span class=\"hljs-comment\">// 'object' — історична помилка JS!</span></code></pre><div class=\"note\"><strong>📝 Рядкові шаблони (Template Literals)</strong> <p>Зворотні лапки <code>`</code> дозволяють вставляти значення змінних у рядок: <code>`Привіт, ${name}! Тобі ${age} років.`</code> — це читабельніше, ніж конкатенація через <code>+</code>.</p>\n</div>\n\n","<h1>⚙️ Оператори</h1>\n<p><strong>Головна ідея:</strong> JavaScript надає повний набір операторів для обчислень, порівнянь і логічних виразів. Критично важливо розрізняти <code>==</code> і <code>===</code>.</p>\n<h2>🔢 Арифметичні оператори</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> a = <span class=\"hljs-number\">10</span>;\n<span class=\"hljs-keyword\">const</span> b = <span class=\"hljs-number\">3</span>;\n\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(a + b);   <span class=\"hljs-comment\">// 13 — додавання</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(a - b);   <span class=\"hljs-comment\">// 7  — віднімання</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(a * b);   <span class=\"hljs-comment\">// 30 — множення</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(a / b);   <span class=\"hljs-comment\">// 3.333... — ділення</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(a % b);   <span class=\"hljs-comment\">// 1  — остача від ділення (modulo)</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(a ** b);  <span class=\"hljs-comment\">// 1000 — піднесення до степеня</span>\n\n<span class=\"hljs-comment\">// Рядки: + означає конкатенацію</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Привіт, '</span> + <span class=\"hljs-string\">'світ!'</span>); <span class=\"hljs-comment\">// 'Привіт, світ!'</span></code></pre><h2>⚖️ Оператори порівняння та логіки</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Порівняння</span>\n<span class=\"hljs-number\">5</span> == <span class=\"hljs-string\">'5'</span>   <span class=\"hljs-comment\">// true  — нестрогe (з приведенням типів) ❌ уникати</span>\n<span class=\"hljs-number\">5</span> === <span class=\"hljs-string\">'5'</span>  <span class=\"hljs-comment\">// false — строге (без приведення типів) ✅ використовувати</span>\n<span class=\"hljs-number\">5</span> !== <span class=\"hljs-number\">3</span>    <span class=\"hljs-comment\">// true  — строга нерівність</span>\n<span class=\"hljs-number\">10</span> &gt; <span class=\"hljs-number\">3</span>     <span class=\"hljs-comment\">// true</span>\n<span class=\"hljs-number\">10</span> &lt;= <span class=\"hljs-number\">10</span>   <span class=\"hljs-comment\">// true</span>\n\n<span class=\"hljs-comment\">// Логічні оператори</span>\n<span class=\"hljs-literal\">true</span> &amp;&amp; <span class=\"hljs-literal\">false</span>  <span class=\"hljs-comment\">// false — І (обидві умови)</span>\n<span class=\"hljs-literal\">true</span> || <span class=\"hljs-literal\">false</span>  <span class=\"hljs-comment\">// true  — АБО (хоча б одна умова)</span>\n!<span class=\"hljs-literal\">true</span>          <span class=\"hljs-comment\">// false — НЕ (заперечення)</span></code></pre><div class=\"danger\"><strong>🚫 Подвійне vs потрійне рівняння</strong> <p><code>==</code> перетворює типи перед порівнянням: <code>0 == false</code> → <code>true</code> (обидва приводяться до <code>0</code>), <code>'' == false</code> → <code>true</code> (порожній рядок приводиться до <code>0</code>, <code>false</code> — теж до <code>0</code>). Це джерело важковловимих помилок. <strong>Завжди використовуйте <code>===</code></strong> для порівняння значень.</p>\n</div>\n\n","<h1>🔀 Умовні конструкції</h1>\n<p><strong>Головна ідея:</strong> Умовні конструкції керують потоком виконання програми залежно від значення виразу.</p>\n<h2>📌 <code>if / else if / else</code></h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> score = <span class=\"hljs-number\">75</span>;\n\n<span class=\"hljs-keyword\">if</span> (score &gt;= <span class=\"hljs-number\">90</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Відмінно! 🌟'</span>);\n} <span class=\"hljs-keyword\">else</span> <span class=\"hljs-keyword\">if</span> (score &gt;= <span class=\"hljs-number\">75</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Добре! 👍'</span>);\n} <span class=\"hljs-keyword\">else</span> <span class=\"hljs-keyword\">if</span> (score &gt;= <span class=\"hljs-number\">60</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Задовільно 😐'</span>);\n} <span class=\"hljs-keyword\">else</span> {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Незадовільно 😔'</span>);\n}\n<span class=\"hljs-comment\">// Виведе: 'Добре! 👍'</span></code></pre><h2>📌 <code>switch</code> — для перевірки конкретних значень</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> day = <span class=\"hljs-string\">'понеділок'</span>;\n\n<span class=\"hljs-keyword\">switch</span> (day) {\n  <span class=\"hljs-keyword\">case</span> <span class=\"hljs-string\">'субота'</span>:\n  <span class=\"hljs-keyword\">case</span> <span class=\"hljs-string\">'неділя'</span>:\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Вихідний! 🎉'</span>);\n    <span class=\"hljs-keyword\">break</span>;\n  <span class=\"hljs-keyword\">case</span> <span class=\"hljs-string\">'понеділок'</span>:\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Початок тижня 💪'</span>);\n    <span class=\"hljs-keyword\">break</span>;\n  <span class=\"hljs-attr\">default</span>:\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Звичайний робочий день'</span>);\n}\n<span class=\"hljs-comment\">// Виведе: 'Початок тижня 💪'</span></code></pre><h2>📌 Тернарний оператор</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Компактний запис if/else для одного виразу</span>\n<span class=\"hljs-keyword\">const</span> age = <span class=\"hljs-number\">20</span>;\n<span class=\"hljs-keyword\">const</span> status = age &gt;= <span class=\"hljs-number\">18</span> ? <span class=\"hljs-string\">'повнолітній'</span> : <span class=\"hljs-string\">'неповнолітній'</span>;\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(status); <span class=\"hljs-comment\">// 'повнолітній'</span></code></pre><div class=\"tip\"><strong>💡 Коли використовувати switch</strong> <p><code>switch</code> доцільний, коли одна змінна порівнюється з багатьма конкретними значеннями. Для складних логічних виразів з <code>&gt;</code>, <code>&lt;</code>, <code>&amp;&amp;</code> — краще підходить <code>if/else</code>.</p>\n</div>\n\n","<h1>🖥️ Виведення даних та налагодження</h1>\n<p><strong>Головна ідея:</strong> Для виведення результатів і налагодження коду в браузері використовують консоль DevTools та діалогові вікна.</p>\n<h2>📋 Методи виведення</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 🔍 console.log — основний інструмент розробника</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Просте повідомлення'</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Ім'я:\"</span>, <span class=\"hljs-string\">'Антон'</span>, <span class=\"hljs-string\">'| Вік:'</span>, <span class=\"hljs-number\">20</span>);\n\n<span class=\"hljs-comment\">// Можна виводити кілька значень через кому</span>\n<span class=\"hljs-keyword\">const</span> x = <span class=\"hljs-number\">42</span>;\n<span class=\"hljs-keyword\">const</span> name = <span class=\"hljs-string\">'Марія'</span>;\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Змінна x:'</span>, x);       <span class=\"hljs-comment\">// Змінна x: 42</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'name ='</span>, name);       <span class=\"hljs-comment\">// name = Марія</span>\n\n<span class=\"hljs-comment\">// Рівні повідомлень — відображаються різними кольорами у DevTools</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">warn</span>(<span class=\"hljs-string\">'⚠️ Попередження'</span>);   <span class=\"hljs-comment\">// жовтий</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(<span class=\"hljs-string\">'❌ Помилка'</span>);        <span class=\"hljs-comment\">// червоний</span>\n\n<span class=\"hljs-comment\">// 💬 Діалогові вікна (блокують виконання — тільки для навчання!)</span>\n<span class=\"hljs-title function_\">alert</span>(<span class=\"hljs-string\">'Повідомлення для користувача'</span>);\n<span class=\"hljs-keyword\">const</span> answer = <span class=\"hljs-title function_\">confirm</span>(<span class=\"hljs-string\">'Ви впевнені?'</span>);  <span class=\"hljs-comment\">// true/false</span>\n<span class=\"hljs-keyword\">const</span> value = <span class=\"hljs-title function_\">prompt</span>(<span class=\"hljs-string\">\"Введіть ваше ім'я:\"</span>); <span class=\"hljs-comment\">// рядок або null</span></code></pre><div class=\"tip\"><strong>💡 DevTools Console</strong> <p>Відкрийте DevTools (<code>F12</code>) → вкладка <strong>Console</strong>. Тут можна виконувати JavaScript-код безпосередньо, бачити всі <code>console.log</code> виводи та повідомлення про помилки. Це ваш головний інструмент налагодження.</p>\n</div>\n\n","<h1>🔄 Цикли</h1>\n<p><strong>Головна ідея:</strong> Цикли дозволяють виконувати блок коду багаторазово. Вибір циклу залежить від того, чи відома кількість ітерацій заздалегідь.</p>\n<h2>🔁 <code>for</code> — коли відома кількість ітерацій</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Класичний for: оголошення; умова; крок</span>\n<span class=\"hljs-keyword\">for</span> (<span class=\"hljs-keyword\">let</span> i = <span class=\"hljs-number\">0</span>; i &lt; <span class=\"hljs-number\">5</span>; i++) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">`Ітерація <span class=\"hljs-subst\">${i}</span>`</span>);\n}\n<span class=\"hljs-comment\">// Виведе: Ітерація 0, 1, 2, 3, 4</span>\n\n<span class=\"hljs-comment\">// Сума чисел від 1 до 100</span>\n<span class=\"hljs-keyword\">let</span> sum = <span class=\"hljs-number\">0</span>;\n<span class=\"hljs-keyword\">for</span> (<span class=\"hljs-keyword\">let</span> i = <span class=\"hljs-number\">1</span>; i &lt;= <span class=\"hljs-number\">100</span>; i++) {\n  sum += i;\n}\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(sum); <span class=\"hljs-comment\">// 5050</span></code></pre><h2>🔁 <code>while</code> та <code>do...while</code></h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// while: умова перевіряється ДО виконання тіла</span>\n<span class=\"hljs-keyword\">let</span> count = <span class=\"hljs-number\">0</span>;\n<span class=\"hljs-keyword\">while</span> (count &lt; <span class=\"hljs-number\">3</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">`count = <span class=\"hljs-subst\">${count}</span>`</span>);\n  count++;\n}\n\n<span class=\"hljs-comment\">// do...while: тіло виконується МІНІМУМ ОДИН РАЗ</span>\n<span class=\"hljs-keyword\">let</span> input;\n<span class=\"hljs-keyword\">do</span> {\n  input = <span class=\"hljs-title class_\">Number</span>(<span class=\"hljs-title function_\">prompt</span>(<span class=\"hljs-string\">'Введіть число більше 0:'</span>));\n  <span class=\"hljs-comment\">// prompt() завжди повертає рядок — Number() перетворює його на число</span>\n} <span class=\"hljs-keyword\">while</span> (input &lt;= <span class=\"hljs-number\">0</span>);</code></pre><h2>🔁 <code>for...of</code> — перебір масиву</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> fruits = [<span class=\"hljs-string\">'яблуко'</span>, <span class=\"hljs-string\">'банан'</span>, <span class=\"hljs-string\">'апельсин'</span>];\n\n<span class=\"hljs-keyword\">for</span> (<span class=\"hljs-keyword\">const</span> fruit <span class=\"hljs-keyword\">of</span> fruits) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(fruit);\n}\n<span class=\"hljs-comment\">// Виведе: яблуко, банан, апельсин</span></code></pre><div class=\"note\"><strong>📝 <code>break</code> та <code>continue</code></strong> <p><code>break</code> — негайно перериває цикл. <code>continue</code> — пропускає поточну ітерацію та переходить до наступної. Обидві інструкції працюють у всіх типах циклів.</p>\n</div>\n\n","<h1>🧩 Практичний приклад</h1>\n<p><strong>Головна ідея:</strong> Поєднаємо всі вивчені концепції в одному скрипті — класифікатор рівня знань студента.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 📝 Вхідні дані</span>\n<span class=\"hljs-keyword\">const</span> studentName = <span class=\"hljs-string\">'Марія'</span>;\n<span class=\"hljs-keyword\">const</span> scores = [<span class=\"hljs-number\">85</span>, <span class=\"hljs-number\">92</span>, <span class=\"hljs-number\">67</span>, <span class=\"hljs-number\">78</span>, <span class=\"hljs-number\">90</span>];\n\n<span class=\"hljs-comment\">// 📊 Обчислення середнього балу</span>\n<span class=\"hljs-keyword\">let</span> total = <span class=\"hljs-number\">0</span>;\n<span class=\"hljs-keyword\">for</span> (<span class=\"hljs-keyword\">const</span> score <span class=\"hljs-keyword\">of</span> scores) {\n  total += score;\n}\n<span class=\"hljs-keyword\">const</span> average = total / scores.<span class=\"hljs-property\">length</span>;\n\n<span class=\"hljs-comment\">// 🔀 Визначення рівня</span>\n<span class=\"hljs-keyword\">let</span> level;\n<span class=\"hljs-keyword\">if</span> (average &gt;= <span class=\"hljs-number\">90</span>) {\n  level = <span class=\"hljs-string\">'Відмінник 🌟'</span>;\n} <span class=\"hljs-keyword\">else</span> <span class=\"hljs-keyword\">if</span> (average &gt;= <span class=\"hljs-number\">75</span>) {\n  level = <span class=\"hljs-string\">'Хорошист 👍'</span>;\n} <span class=\"hljs-keyword\">else</span> <span class=\"hljs-keyword\">if</span> (average &gt;= <span class=\"hljs-number\">60</span>) {\n  level = <span class=\"hljs-string\">'Задовільно 😐'</span>;\n} <span class=\"hljs-keyword\">else</span> {\n  level = <span class=\"hljs-string\">'Потребує покращення 📚'</span>;\n}\n\n<span class=\"hljs-comment\">// 🖥️ Виведення результату</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">`Студент: <span class=\"hljs-subst\">${studentName}</span>`</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">`Оцінки: <span class=\"hljs-subst\">${scores.join(<span class=\"hljs-string\">', '</span>)}</span>`</span>);     <span class=\"hljs-comment\">// .join() — метод масиву, розглянемо пізніше</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">`Середній бал: <span class=\"hljs-subst\">${average.toFixed(<span class=\"hljs-number\">1</span>)}</span>`</span>); <span class=\"hljs-comment\">// .toFixed() — округлення, розглянемо пізніше</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">`Рівень: <span class=\"hljs-subst\">${level}</span>`</span>);\n\n<span class=\"hljs-comment\">// Виведе:</span>\n<span class=\"hljs-comment\">// Студент: Марія</span>\n<span class=\"hljs-comment\">// Оцінки: 85, 92, 67, 78, 90</span>\n<span class=\"hljs-comment\">// Середній бал: 82.4</span>\n<span class=\"hljs-comment\">// Рівень: Хорошист 👍</span></code></pre><div class=\"note\"><strong>📝 Що використано в прикладі</strong> <p>Константи (<code>const</code>), масив значень, цикл <code>for...of</code> для підрахунку суми, умовний <code>if/else</code> для класифікації та шаблонні рядки для виводу — все це вже вивчені концепції цієї лекції. Методи <code>.join()</code> та <code>.toFixed()</code> розглянемо у наступних темах.</p>\n</div>\n\n","<h1>✅ Ключові висновки</h1>\n<div class=\"success\"><strong>✅ Підсумок лекції</strong> <p><strong>📌 Що ми вивчили:</strong></p>\n<ol>\n<li><p><strong>JavaScript</strong> — мова програмування браузера, що додає сторінці інтерактивність і логіку; виконується у рушії браузера</p>\n</li>\n<li><p><strong>Підключення JS</strong> — зовнішній файл <code>&lt;script src=\"...\"&gt;</code> перед <code>&lt;/body&gt;</code> є стандартом; атрибут <code>defer</code> дозволяє розміщувати тег у <code>&lt;head&gt;</code></p>\n</li>\n<li><p><strong><code>const</code> та <code>let</code></strong> — сучасний стандарт оголошення змінних; <code>const</code> — значення не змінюється, <code>let</code> — змінюється; <code>var</code> не використовується</p>\n</li>\n<li><p><strong>Типи даних</strong> — <code>number</code>, <code>string</code>, <code>boolean</code>, <code>null</code>, <code>undefined</code>; JavaScript має динамічну типізацію; <code>typeof</code> визначає поточний тип</p>\n</li>\n<li><p><strong><code>===</code> замість <code>==</code></strong> — строге порівняння без неявного перетворення типів є обов'язковою практикою</p>\n</li>\n<li><p><strong>Умовні конструкції</strong> — <code>if/else</code> для логічних умов, <code>switch</code> для конкретних значень, тернарний оператор для компактного запису</p>\n</li>\n<li><p><strong>Цикли</strong> — <code>for</code> зі лічильником, <code>while</code> з динамічною умовою, <code>for...of</code> для перебору масивів</p>\n</li>\n<li><p><strong>DevTools Console</strong> — головний інструмент розробника для виводу результатів і пошуку помилок</p>\n</li>\n</ol>\n</div>\n\n","<h1>❓ Контрольні питання</h1>\n<ol>\n<li><p>🤔 Чим відрізняються <code>let</code>, <code>const</code> та <code>var</code>? Чому <code>var</code> не рекомендується у сучасному JavaScript?</p>\n</li>\n<li><p>🤔 Що таке динамічна типізація? Як оператор <code>typeof</code> допомагає визначити тип значення?</p>\n</li>\n<li><p>🤔 Яка різниця між <code>==</code> та <code>===</code>? Наведіть приклад, де <code>==</code> повертає <code>true</code>, а <code>===</code> — <code>false</code>.</p>\n</li>\n<li><p>🤔 Що таке <code>null</code> та <code>undefined</code>? Чим вони відрізняються за призначенням?</p>\n</li>\n<li><p>🤔 Коли доцільно використовувати <code>switch</code> замість <code>if/else</code>? Яка роль <code>break</code> у <code>switch</code>?</p>\n</li>\n<li><p>🤔 Яка різниця між <code>while</code> та <code>do...while</code>? В якій ситуації <code>do...while</code> є єдиним правильним вибором?</p>\n</li>\n<li><p>🤔 Для чого використовується <code>console.log</code>? Де відображаються його результати?</p>\n</li>\n</ol>\n","<h1>📖 Глосарій термінів</h1>\n<table>\n<thead>\n<tr>\n<th>Термін</th>\n<th>English</th>\n<th>Визначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Змінна</td>\n<td>Variable</td>\n<td>Іменована область пам'яті для зберігання значення</td>\n</tr>\n<tr>\n<td>Константа</td>\n<td>Constant</td>\n<td>Змінна, значення якої не може бути перевизначене після ініціалізації</td>\n</tr>\n<tr>\n<td>Тип даних</td>\n<td>Data Type</td>\n<td>Категорія значення, що визначає допустимі операції з ним</td>\n</tr>\n<tr>\n<td>Динамічна типізація</td>\n<td>Dynamic Typing</td>\n<td>Тип змінної визначається автоматично під час виконання, а не оголошення</td>\n</tr>\n<tr>\n<td>Оператор</td>\n<td>Operator</td>\n<td>Символ або ключове слово, що виконує операцію над одним або кількома значеннями</td>\n</tr>\n<tr>\n<td>Умовна конструкція</td>\n<td>Conditional</td>\n<td>Конструкція, що виконує різний код залежно від істинності умови</td>\n</tr>\n<tr>\n<td>Цикл</td>\n<td>Loop</td>\n<td>Конструкція для багаторазового виконання блоку коду</td>\n</tr>\n<tr>\n<td>Ітерація</td>\n<td>Iteration</td>\n<td>Одне виконання тіла циклу</td>\n</tr>\n<tr>\n<td>Конкатенація</td>\n<td>Concatenation</td>\n<td>Об'єднання рядків в один за допомогою оператора <code>+</code></td>\n</tr>\n<tr>\n<td>Консоль</td>\n<td>Console</td>\n<td>Інструмент DevTools для виводу повідомлень та виконання JS-коду</td>\n</tr>\n</tbody></table>\n","<h1>📖 Глосарій абревіатур</h1>\n<table>\n<thead>\n<tr>\n<th>Абревіатура</th>\n<th>Розшифровка</th>\n<th>Переклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>JS</td>\n<td>JavaScript</td>\n<td>JavaScript</td>\n</tr>\n<tr>\n<td>HTML</td>\n<td>HyperText Markup Language</td>\n<td>Мова розмітки гіпертексту</td>\n</tr>\n<tr>\n<td>CSS</td>\n<td>Cascading Style Sheets</td>\n<td>Каскадні таблиці стилів</td>\n</tr>\n<tr>\n<td>API</td>\n<td>Application Programming Interface</td>\n<td>Програмний інтерфейс застосунку</td>\n</tr>\n<tr>\n<td>DevTools</td>\n<td>Developer Tools</td>\n<td>Інструменти розробника</td>\n</tr>\n<tr>\n<td>NaN</td>\n<td>Not a Number</td>\n<td>Не є числом</td>\n</tr>\n</tbody></table>\n"];let currentSlideIndex=0;
+function renderMath(root){if(typeof renderMathInElement!=="function"||!root)return;try{renderMathInElement(root,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false,strict:"ignore",ignoredTags:["script","noscript","style","textarea","pre","code"]});}catch(e){console.warn("Math render error:",e);}}
+function showSlide(i){if(i<0||i>=slides.length)return;currentSlideIndex=i;const el=document.getElementById("current-slide");el.innerHTML=slides[i];el.scrollTop=0;renderMath(el);document.getElementById("progress-bar").style.width=((i+1)/slides.length*100)+"%";document.getElementById("slide-number").textContent=(i+1)+" / "+slides.length;updateSidebarActive();}
+function nextSlide(){if(currentSlideIndex<slides.length-1)showSlide(currentSlideIndex+1);}
+function previousSlide(){if(currentSlideIndex>0)showSlide(currentSlideIndex-1);}
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleHelp(){document.getElementById("help-overlay").classList.toggle("hidden");}
+function toggleFullscreen(){if(!document.fullscreenElement){const pc=document.getElementById("presentation-container");if(pc.requestFullscreen)pc.requestFullscreen();else if(pc.webkitRequestFullscreen)pc.webkitRequestFullscreen();else if(pc.msRequestFullscreen)pc.msRequestFullscreen();else if(pc.mozRequestFullScreen)pc.mozRequestFullScreen();}else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();else if(document.msExitFullscreen)document.msExitFullscreen();else if(document.mozCancelFullScreen)document.mozCancelFullScreen();}}
+function generateSidebar(){const sc=document.getElementById("sidebar-content");sc.innerHTML="";slides.forEach((html,idx)=>{const t=document.createElement("div");t.className="slide-thumbnail";if(idx===0)t.classList.add("active");const tmp=document.createElement("div");tmp.innerHTML=html;const title=tmp.querySelector("h1,h2");const titleText=title?title.textContent:("Слайд "+(idx+1));const textContent=tmp.textContent.replace(/s+/g," ").trim();const preview=textContent.substring(0,100)+(textContent.length>100?"...":"");t.innerHTML="<div class=\"slide-thumbnail-number\">"+(idx+1)+"</div><div class=\"slide-thumbnail-title\">"+titleText+"</div><div class=\"slide-thumbnail-content\">"+preview+"</div>";t.onclick=()=>{showSlide(idx);if(window.innerWidth<1024)toggleSidebar();};sc.appendChild(t);});}
+function updateSidebarActive(){document.querySelectorAll(".slide-thumbnail").forEach((th,idx)=>{if(idx===currentSlideIndex){th.classList.add("active");th.scrollIntoView({behavior:"smooth",block:"nearest"});}else th.classList.remove("active");});}
+document.addEventListener("keydown",e=>{switch(e.key){case"ArrowLeft":previousSlide();break;case"ArrowRight":case" ":e.preventDefault();nextSlide();break;case"f":case"F":toggleFullscreen();break;case"s":case"S":toggleSidebar();break;case"?":toggleHelp();break;case"Escape":const sb=document.getElementById("sidebar");const ho=document.getElementById("help-overlay");if(sb.classList.contains("open"))toggleSidebar();else if(!ho.classList.contains("hidden"))ho.classList.add("hidden");break;}});
+generateSidebar();showSlide(0);</script></body></html>
