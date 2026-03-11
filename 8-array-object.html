@@ -1,0 +1,621 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Масиви та об&#039;єкти</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><style>* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor-container.hidden {
+            display: none;
+        }
+
+        #editor-header {
+            background: #2d3748;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor-header h2 {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #editor-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        #markdown-input {
+            flex: 1;
+            padding: 2rem;
+            background: #1a202c;
+            color: #e2e8f0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        #markdown-input:focus {
+            outline: none;
+        }
+
+        .slide-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .slide h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h2 {
+            color: #764ba2;
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide pre {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .slide pre code {
+            background: transparent;
+            color: #abb2bf;
+        }
+
+        .slide code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .slide h1 code, .slide h2 code, .slide h3 code {
+            font-size: 0.85em;
+            background: rgba(237, 242, 247, 0.5);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .slide p code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .slide blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        .slide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .slide th, .slide td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .slide th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .slide tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .note {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #c53030;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .warning strong {
+            color: #c05621;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .info strong {
+            color: #2c5282;
+        }
+
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #22543d;
+        }
+
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .danger strong {
+            color: #742a2a;
+        }
+
+        .tip {
+            background: #fefcbf;
+            border-left: 4px solid #ecc94b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #744210;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            transition: width 0.3s;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        #sidebar.open {
+            right: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #sidebar-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        #sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        #sidebar-close:hover {
+            color: #667eea;
+        }
+
+        .slide-thumbnail {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .slide-thumbnail:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .slide-thumbnail.active {
+            border-color: #667eea;
+            background: #f7faff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slide-thumbnail-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-thumbnail-content {
+            font-size: 0.85rem;
+            color: #2d3748;
+            line-height: 1.4;
+            max-height: 4.2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-thumbnail-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 1.4rem;
+            background: linear-gradient(to right, transparent, white);
+        }
+
+        .slide-thumbnail.active .slide-thumbnail-content::after {
+            background: linear-gradient(to right, transparent, #f7faff);
+        }
+
+        .slide-thumbnail-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+        }
+
+        #sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: visible; /* щоб не обрізати тіні / розширені ноди */
+        }
+
+        /* Запобігаємо обрізанню останньої літери в нодах Mermaid через зміну font-weight після розрахунку розміру */
+        .mermaid svg { overflow: visible !important; }
+        /* перестраховка проти обрізання foreignObject (на випадок інших діаграм) */
+        .mermaid svg foreignObject { overflow: visible !important; }
+
+        .plantuml-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        #help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #help-overlay kbd {
+            background: #2d3748;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .mermaid-error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #742a2a;
+            margin: 1.5rem 0;
+        }
+
+        .mermaid-error pre {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
+
+        /* Повноекранний режим - зберігаємо оригінальний фон */
+        #presentation-container:fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-webkit-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-moz-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-ms-fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+#presentation-container:fullscreen,#presentation-container:-webkit-full-screen,#presentation-container:-moz-full-screen,#presentation-container:-ms-fullscreen{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)!important;}</style></head><body><div id="presentation-container"><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><button id="sidebar-toggle" onclick="toggleSidebar()" title="Навігація слайдами (S)">☰</button><div id="sidebar"><div id="sidebar-header"><h3>📑 Слайди</h3><button id="sidebar-close" onclick="toggleSidebar()">✕</button></div><div id="sidebar-content"></div></div><div class="slide-container"><div class="slide" id="current-slide"></div></div><div class="controls"><button class="control-btn" onclick="previousSlide()" title="Попередній (←)">←</button><button class="control-btn" onclick="nextSlide()" title="Наступний (→)">→</button><button class="control-btn" onclick="toggleFullscreen()" title="Повноекранний режим (F)">⛶</button><button class="control-btn" onclick="toggleHelp()" title="Допомога (?)">?</button></div><div class="slide-number" id="slide-number">1 / 19</div><div id="help-overlay" class="hidden"><strong>Гарячі клавіші:</strong><br><kbd>←</kbd> <kbd>→</kbd> Навігація<br><kbd>F</kbd> Повноекранний режим<br><kbd>S</kbd> Sidebar<br><kbd>?</kbd> Допомога<br><kbd>Esc</kbd> Закрити</div></div><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script><script>const slides=["<h1>Масиви та об'єкти</h1>\n<p><strong>Web-технології в автоматизованих системах</strong></p>\n<p>Лектор: Кобилянський Антон</p>\n","<h1>📋 План лекції</h1>\n<ol>\n<li>📚 Масиви — що це і як створюються</li>\n<li>🔧 Базові методи масивів — <code>push</code>, <code>pop</code>, <code>splice</code> та інші</li>\n<li>🔄 Перебір масивів — <code>forEach</code>, <code>for...of</code></li>\n<li>🗺️ Трансформація масивів — <code>map</code></li>\n<li>🔍 Фільтрація та пошук — <code>filter</code>, <code>find</code>, <code>some</code>, <code>every</code></li>\n<li>➕ Згортання масивів — <code>reduce</code></li>\n<li>🗂️ Об'єкти — структура, властивості, методи</li>\n<li>🎯 Деструктуризація масивів та об'єктів</li>\n<li>✅ Ключові висновки та контрольні питання</li>\n</ol>\n","<h1>📚 Масиви в JavaScript</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Масив (Array)</strong> — впорядкована колекція значень, що зберігаються під одним ім'ям змінної та індексуються цілими числами, починаючи з <code>0</code>. Масив в JavaScript може містити елементи <strong>будь-яких типів</strong>, у тому числі змішаних.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Масиви дозволяють зберігати та обробляти набори даних — списки студентів, результати вимірювань, набори налаштувань тощо.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 📌 Способи створення масиву</span>\n<span class=\"hljs-keyword\">const</span> fruits = [<span class=\"hljs-string\">\"яблуко\"</span>, <span class=\"hljs-string\">\"банан\"</span>, <span class=\"hljs-string\">\"груша\"</span>]; <span class=\"hljs-comment\">// літерал — рекомендований спосіб</span>\n<span class=\"hljs-keyword\">const</span> nums = <span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">Array</span>(<span class=\"hljs-number\">1</span>, <span class=\"hljs-number\">2</span>, <span class=\"hljs-number\">3</span>); <span class=\"hljs-comment\">// через конструктор — рідше використовується</span>\n\n<span class=\"hljs-comment\">// 🔢 Індексація починається з 0</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(fruits[<span class=\"hljs-number\">0</span>]); <span class=\"hljs-comment\">// 'яблуко'</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(fruits[<span class=\"hljs-number\">2</span>]); <span class=\"hljs-comment\">// 'груша'</span>\n\n<span class=\"hljs-comment\">// 📏 Довжина масиву</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(fruits.<span class=\"hljs-property\">length</span>); <span class=\"hljs-comment\">// 3</span>\n\n<span class=\"hljs-comment\">// 🎭 Масив може містити різні типи</span>\n<span class=\"hljs-keyword\">const</span> mixed = [<span class=\"hljs-number\">42</span>, <span class=\"hljs-string\">\"текст\"</span>, <span class=\"hljs-literal\">true</span>, <span class=\"hljs-literal\">null</span>, [<span class=\"hljs-number\">1</span>, <span class=\"hljs-number\">2</span>]];</code></pre><div class=\"note\"><strong>📝 Масив — це об'єкт</strong> <p>У JavaScript масив технічно є об'єктом особливого виду. Тому <code>typeof []</code> повертає <code>'object'</code>. Для перевірки, чи є значення масивом, використовуйте <code>Array.isArray(value)</code>.</p>\n</div>\n\n","<h1>🔧 Базові методи масивів</h1>\n<p><strong>Головна ідея:</strong> JavaScript надає вбудовані методи для додавання, видалення та пошуку елементів у масиві без написання циклів вручну.</p>\n<h2>➕ Додавання та видалення</h2>\n<table>\n<thead>\n<tr>\n<th>Метод</th>\n<th>Де діє</th>\n<th>Що робить</th>\n<th>Повертає</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>push(...items)</code></td>\n<td>Кінець</td>\n<td>Додає один або кілька елементів</td>\n<td>Нову довжину масиву</td>\n</tr>\n<tr>\n<td><code>pop()</code></td>\n<td>Кінець</td>\n<td>Видаляє останній елемент</td>\n<td>Видалений елемент</td>\n</tr>\n<tr>\n<td><code>unshift(...items)</code></td>\n<td>Початок</td>\n<td>Додає один або кілька елементів</td>\n<td>Нову довжину масиву</td>\n</tr>\n<tr>\n<td><code>shift()</code></td>\n<td>Початок</td>\n<td>Видаляє перший елемент</td>\n<td>Видалений елемент</td>\n</tr>\n<tr>\n<td><code>splice(i, n, ...items)</code></td>\n<td>Будь-де</td>\n<td>Видаляє <code>n</code> елементів з позиції <code>i</code>, вставляє нові</td>\n<td>Масив видалених елементів</td>\n</tr>\n</tbody></table>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> scores = [<span class=\"hljs-number\">10</span>, <span class=\"hljs-number\">20</span>, <span class=\"hljs-number\">30</span>];\n\nscores.<span class=\"hljs-title function_\">push</span>(<span class=\"hljs-number\">40</span>); <span class=\"hljs-comment\">// [10, 20, 30, 40]</span>\nscores.<span class=\"hljs-title function_\">pop</span>(); <span class=\"hljs-comment\">// [10, 20, 30]  — повертає 30</span>\nscores.<span class=\"hljs-title function_\">unshift</span>(<span class=\"hljs-number\">0</span>); <span class=\"hljs-comment\">// [0, 10, 20, 30]</span>\nscores.<span class=\"hljs-title function_\">shift</span>(); <span class=\"hljs-comment\">// [10, 20, 30]  — повертає 0</span>\n\n<span class=\"hljs-comment\">// splice: видалити 1 елемент з індексу 1, вставити 99</span>\nscores.<span class=\"hljs-title function_\">splice</span>(<span class=\"hljs-number\">1</span>, <span class=\"hljs-number\">1</span>, <span class=\"hljs-number\">99</span>); <span class=\"hljs-comment\">// [10, 99, 30]</span></code></pre><h2>🔎 Пошук та перевірка</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> animals = [<span class=\"hljs-string\">\"кіт\"</span>, <span class=\"hljs-string\">\"пес\"</span>, <span class=\"hljs-string\">\"кіт\"</span>, <span class=\"hljs-string\">\"кролик\"</span>];\n\nanimals.<span class=\"hljs-title function_\">indexOf</span>(<span class=\"hljs-string\">\"кіт\"</span>); <span class=\"hljs-comment\">// 0  — перший збіг</span>\nanimals.<span class=\"hljs-title function_\">lastIndexOf</span>(<span class=\"hljs-string\">\"кіт\"</span>); <span class=\"hljs-comment\">// 2  — останній збіг</span>\nanimals.<span class=\"hljs-title function_\">includes</span>(<span class=\"hljs-string\">\"пес\"</span>); <span class=\"hljs-comment\">// true</span>\nanimals.<span class=\"hljs-title function_\">indexOf</span>(<span class=\"hljs-string\">\"хом'як\"</span>); <span class=\"hljs-comment\">// -1 — не знайдено</span></code></pre>","<h1>🔄 Перебір масивів — <code>forEach</code> та <code>for...of</code></h1>\n<p><strong>Головна ідея:</strong> Для виконання дій з кожним елементом масиву JavaScript пропонує зручніші альтернативи класичному циклу <code>for</code>.</p>\n<h2>📌 <code>for...of</code> — сучасний синтаксис перебору</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> temperatures = [<span class=\"hljs-number\">18</span>, <span class=\"hljs-number\">22</span>, <span class=\"hljs-number\">15</span>, <span class=\"hljs-number\">27</span>, <span class=\"hljs-number\">20</span>];\n\n<span class=\"hljs-keyword\">for</span> (<span class=\"hljs-keyword\">const</span> temp <span class=\"hljs-keyword\">of</span> temperatures) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">`Температура: <span class=\"hljs-subst\">${temp}</span>°C`</span>);\n}\n<span class=\"hljs-comment\">// Температура: 18°C</span>\n<span class=\"hljs-comment\">// Температура: 22°C  ...</span></code></pre><h2>📌 <code>forEach</code> — метод масиву з колбеком</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> students = [<span class=\"hljs-string\">\"Олена\"</span>, <span class=\"hljs-string\">\"Микола\"</span>, <span class=\"hljs-string\">\"Дарина\"</span>];\n\n<span class=\"hljs-comment\">// Колбек отримує: (елемент, індекс, сам масив)</span>\nstudents.<span class=\"hljs-title function_\">forEach</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">name, index</span>) =&gt;</span> {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">`<span class=\"hljs-subst\">${index + <span class=\"hljs-number\">1</span>}</span>. <span class=\"hljs-subst\">${name}</span>`</span>);\n});\n<span class=\"hljs-comment\">// 1. Олена</span>\n<span class=\"hljs-comment\">// 2. Микола</span>\n<span class=\"hljs-comment\">// 3. Дарина</span></code></pre><h2>⚖️ Порівняння підходів</h2>\n<table>\n<thead>\n<tr>\n<th>Підхід</th>\n<th align=\"center\">Доступ до індексу</th>\n<th align=\"center\">Переривання (<code>break</code>)</th>\n<th align=\"center\">Читабельність</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>for</code></td>\n<td align=\"center\">✅</td>\n<td align=\"center\">✅</td>\n<td align=\"center\">Середня</td>\n</tr>\n<tr>\n<td><code>for...of</code></td>\n<td align=\"center\">⚠️ через <code>entries()</code></td>\n<td align=\"center\">✅</td>\n<td align=\"center\">Висока</td>\n</tr>\n<tr>\n<td><code>forEach</code></td>\n<td align=\"center\">✅ (2-й параметр)</td>\n<td align=\"center\">❌</td>\n<td align=\"center\">Висока</td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 Коли що використовувати</strong> <p><code>forEach</code> — для простих операцій без потреби зупинятись. <code>for...of</code> — коли потрібен <code>break</code> або <code>continue</code>. Класичний <code>for</code> — коли важливий прямий контроль над індексом.</p>\n</div>\n\n","<h1>🗺️ Трансформація масиву — <code>map</code></h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong><code>map(callback)</code></strong> — метод, що створює <strong>новий масив</strong> тієї ж довжини, де кожен елемент є результатом виклику функції-колбека для відповідного елемента оригіналу. Оригінальний масив <strong>не змінюється</strong>.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> <code>map</code> — основний інструмент для перетворення кожного елемента масиву за певним правилом.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> prices = [<span class=\"hljs-number\">100</span>, <span class=\"hljs-number\">250</span>, <span class=\"hljs-number\">80</span>, <span class=\"hljs-number\">320</span>];\n\n<span class=\"hljs-comment\">// Підвищити ціни вдвічі</span>\n<span class=\"hljs-keyword\">const</span> doubled = prices.<span class=\"hljs-title function_\">map</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">price</span>) =&gt;</span> price * <span class=\"hljs-number\">2</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(doubled); <span class=\"hljs-comment\">// [200, 500, 160, 640]</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(prices); <span class=\"hljs-comment\">// [100, 250, 80, 320] — оригінал незмінний!</span>\n\n<span class=\"hljs-comment\">// Перетворення об'єктів: отримати лише імена</span>\n<span class=\"hljs-keyword\">const</span> users = [\n  { <span class=\"hljs-attr\">id</span>: <span class=\"hljs-number\">1</span>, <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Олена\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">21</span> },\n  { <span class=\"hljs-attr\">id</span>: <span class=\"hljs-number\">2</span>, <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Микола\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">19</span> },\n  { <span class=\"hljs-attr\">id</span>: <span class=\"hljs-number\">3</span>, <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Дарина\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">22</span> },\n];\n\n<span class=\"hljs-keyword\">const</span> names = users.<span class=\"hljs-title function_\">map</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">user</span>) =&gt;</span> user.<span class=\"hljs-property\">name</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(names); <span class=\"hljs-comment\">// ['Олена', 'Микола', 'Дарина']</span>\n\n<span class=\"hljs-comment\">// Форматування: додати мітку до кожного елемента</span>\n<span class=\"hljs-keyword\">const</span> labels = prices.<span class=\"hljs-title function_\">map</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">price, index</span>) =&gt;</span> <span class=\"hljs-string\">`Товар <span class=\"hljs-subst\">${index + <span class=\"hljs-number\">1</span>}</span>: <span class=\"hljs-subst\">${price}</span> грн`</span>);\n<span class=\"hljs-comment\">// ['Товар 1: 100 грн', 'Товар 2: 250 грн', ...]</span></code></pre><div class=\"warning\"><strong>⚠️ Поширена помилка</strong> <p><code>map</code> завжди повертає новий масив тієї ж довжини. Якщо колбек не містить явного <code>return</code>, кожен елемент нового масиву буде <code>undefined</code>. Це часта помилка при використанні фігурних дужок в arrow-функції.</p>\n</div>\n\n","<h1>🔍 Фільтрація та пошук</h1>\n<p><strong>Головна ідея:</strong> Методи <code>filter</code>, <code>find</code>, <code>some</code> та <code>every</code> дозволяють відбирати елементи або перевіряти масив за умовою без написання циклів вручну.</p>\n<h2>📌 <code>filter</code> — відібрати елементи за умовою</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> temps = [<span class=\"hljs-number\">12</span>, <span class=\"hljs-number\">25</span>, <span class=\"hljs-number\">8</span>, <span class=\"hljs-number\">30</span>, <span class=\"hljs-number\">17</span>, <span class=\"hljs-number\">22</span>];\n\n<span class=\"hljs-comment\">// Повертає НОВИЙ масив лише з тими елементами, для яких умова true</span>\n<span class=\"hljs-keyword\">const</span> warm = temps.<span class=\"hljs-title function_\">filter</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">t</span>) =&gt;</span> t &gt;= <span class=\"hljs-number\">20</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(warm); <span class=\"hljs-comment\">// [25, 30, 22]</span>\n\n<span class=\"hljs-keyword\">const</span> users = [\n  { <span class=\"hljs-attr\">id</span>: <span class=\"hljs-number\">1</span>, <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Олена\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">21</span> },\n  { <span class=\"hljs-attr\">id</span>: <span class=\"hljs-number\">2</span>, <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Микола\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">19</span> },\n  { <span class=\"hljs-attr\">id</span>: <span class=\"hljs-number\">3</span>, <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Дарина\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">22</span> },\n];\n\n<span class=\"hljs-keyword\">const</span> activeUsers = users.<span class=\"hljs-title function_\">filter</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">user</span>) =&gt;</span> user.<span class=\"hljs-property\">age</span> &gt;= <span class=\"hljs-number\">21</span>);\n<span class=\"hljs-comment\">// [{ id: 1, name: 'Олена', age: 21 }, { id: 3, name: 'Дарина', age: 22 }]</span></code></pre><h2>📌 <code>find</code> — знайти перший відповідний елемент</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Повертає САМ елемент (або undefined, якщо не знайдено)</span>\n<span class=\"hljs-comment\">// (масив users оголошено вище)</span>\n<span class=\"hljs-keyword\">const</span> found = users.<span class=\"hljs-title function_\">find</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">user</span>) =&gt;</span> user.<span class=\"hljs-property\">id</span> === <span class=\"hljs-number\">2</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(found); <span class=\"hljs-comment\">// { id: 2, name: 'Микола', age: 19 }</span>\n\n<span class=\"hljs-keyword\">const</span> notFound = users.<span class=\"hljs-title function_\">find</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">user</span>) =&gt;</span> user.<span class=\"hljs-property\">id</span> === <span class=\"hljs-number\">99</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(notFound); <span class=\"hljs-comment\">// undefined</span></code></pre><h2>📌 <code>some</code> та <code>every</code> — перевірка умов</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> grades = [<span class=\"hljs-number\">72</span>, <span class=\"hljs-number\">85</span>, <span class=\"hljs-number\">91</span>, <span class=\"hljs-number\">63</span>, <span class=\"hljs-number\">78</span>];\n\n<span class=\"hljs-comment\">// some: чи є ХОЧА Б ОДИН елемент, що відповідає умові?</span>\ngrades.<span class=\"hljs-title function_\">some</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">g</span>) =&gt;</span> g &gt;= <span class=\"hljs-number\">90</span>); <span class=\"hljs-comment\">// true  — є оцінка 91</span>\n\n<span class=\"hljs-comment\">// every: чи ВСІ елементи відповідають умові?</span>\ngrades.<span class=\"hljs-title function_\">every</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">g</span>) =&gt;</span> g &gt;= <span class=\"hljs-number\">60</span>); <span class=\"hljs-comment\">// true  — всі &gt;= 60</span>\ngrades.<span class=\"hljs-title function_\">every</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">g</span>) =&gt;</span> g &gt;= <span class=\"hljs-number\">80</span>); <span class=\"hljs-comment\">// false — є оцінки нижче 80</span></code></pre><table>\n<thead>\n<tr>\n<th>Метод</th>\n<th>Повертає</th>\n<th align=\"center\">Мутує оригінал</th>\n<th align=\"center\">Зупиняється при першому збігу</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>filter</code></td>\n<td>Новий масив</td>\n<td align=\"center\">❌</td>\n<td align=\"center\">❌</td>\n</tr>\n<tr>\n<td><code>find</code></td>\n<td>Елемент / <code>undefined</code></td>\n<td align=\"center\">❌</td>\n<td align=\"center\">✅</td>\n</tr>\n<tr>\n<td><code>some</code></td>\n<td><code>boolean</code></td>\n<td align=\"center\">❌</td>\n<td align=\"center\">✅ (при <code>true</code>)</td>\n</tr>\n<tr>\n<td><code>every</code></td>\n<td><code>boolean</code></td>\n<td align=\"center\">❌</td>\n<td align=\"center\">✅ (при <code>false</code>)</td>\n</tr>\n</tbody></table>\n","<h1>➕ Згортання масиву — <code>reduce</code></h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong><code>reduce(callback, initialValue)</code></strong> — метод, що \"згортає\" масив до <strong>одного значення</strong>, послідовно застосовуючи колбек до акумулятора та поточного елемента. Результатом може бути число, рядок, об'єкт або новий масив.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> <code>reduce</code> — найуніверсальніший метод масивів; через нього можна реалізувати логіку будь-якого іншого метода.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> numbers = [<span class=\"hljs-number\">1</span>, <span class=\"hljs-number\">2</span>, <span class=\"hljs-number\">3</span>, <span class=\"hljs-number\">4</span>, <span class=\"hljs-number\">5</span>];\n\n<span class=\"hljs-comment\">// Сума всіх елементів</span>\n<span class=\"hljs-keyword\">const</span> sum = numbers.<span class=\"hljs-title function_\">reduce</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">acc, current</span>) =&gt;</span> acc + current, <span class=\"hljs-number\">0</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(sum); <span class=\"hljs-comment\">// 15</span>\n\n<span class=\"hljs-comment\">// Підрахунок максимального значення</span>\n<span class=\"hljs-keyword\">const</span> grades = [<span class=\"hljs-number\">72</span>, <span class=\"hljs-number\">85</span>, <span class=\"hljs-number\">91</span>, <span class=\"hljs-number\">63</span>, <span class=\"hljs-number\">78</span>];\n<span class=\"hljs-keyword\">const</span> max = grades.<span class=\"hljs-title function_\">reduce</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">acc, g</span>) =&gt;</span> (g &gt; acc ? g : acc), grades[<span class=\"hljs-number\">0</span>]);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(max); <span class=\"hljs-comment\">// 91</span>\n\n<span class=\"hljs-comment\">// Групування: масив об'єктів → об'єкт {ім'я: вік}</span>\n<span class=\"hljs-keyword\">const</span> members = [\n  { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Олена\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">21</span> },\n  { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Микола\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">19</span> },\n  { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Дарина\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">22</span> },\n];\n<span class=\"hljs-keyword\">const</span> byName = members.<span class=\"hljs-title function_\">reduce</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">acc, user</span>) =&gt;</span> {\n  acc[user.<span class=\"hljs-property\">name</span>] = user.<span class=\"hljs-property\">age</span>;\n  <span class=\"hljs-keyword\">return</span> acc;\n}, {});\n<span class=\"hljs-comment\">// { Олена: 21, Микола: 19, Дарина: 22 }</span></code></pre>\n<div class=\"mermaid\" data-source=\"graph LR\n    A[&quot;acc=0, cur=1&quot;] --&gt; B[&quot;acc=1, cur=2&quot;]\n    B --&gt; C[&quot;acc=3, cur=3&quot;]\n    C --&gt; D[&quot;acc=6, cur=4&quot;]\n    D --&gt; E[&quot;acc=10, cur=5&quot;]\n    E --&gt; F[&quot;✅ 15&quot;]\n    style A fill:#e3f2fd,stroke:#1565c0\n    style B fill:#e3f2fd,stroke:#1565c0\n    style C fill:#e3f2fd,stroke:#1565c0\n    style D fill:#e3f2fd,stroke:#1565c0\n    style E fill:#e3f2fd,stroke:#1565c0\n    style F fill:#e8f5e9,stroke:#388e3c\"><svg id=\"exp-1773253340188-7-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 1078.25px;\" viewBox=\"0 0 1078.25 64\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1773253340188-7-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1773253340188-7-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1773253340188-7-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1773253340188-7-0 .error-icon{fill:#552222;}#exp-1773253340188-7-0 .error-text{fill:#552222;stroke:#552222;}#exp-1773253340188-7-0 .edge-thickness-normal{stroke-width:1px;}#exp-1773253340188-7-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1773253340188-7-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1773253340188-7-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1773253340188-7-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1773253340188-7-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1773253340188-7-0 .marker{fill:#333333;stroke:#333333;}#exp-1773253340188-7-0 .marker.cross{stroke:#333333;}#exp-1773253340188-7-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1773253340188-7-0 p{margin:0;}#exp-1773253340188-7-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1773253340188-7-0 .cluster-label text{fill:#333;}#exp-1773253340188-7-0 .cluster-label span{color:#333;}#exp-1773253340188-7-0 .cluster-label span p{background-color:transparent;}#exp-1773253340188-7-0 .label text,#exp-1773253340188-7-0 span{fill:#333;color:#333;}#exp-1773253340188-7-0 .node rect,#exp-1773253340188-7-0 .node circle,#exp-1773253340188-7-0 .node ellipse,#exp-1773253340188-7-0 .node polygon,#exp-1773253340188-7-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1773253340188-7-0 .rough-node .label text,#exp-1773253340188-7-0 .node .label text,#exp-1773253340188-7-0 .image-shape .label,#exp-1773253340188-7-0 .icon-shape .label{text-anchor:middle;}#exp-1773253340188-7-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1773253340188-7-0 .rough-node .label,#exp-1773253340188-7-0 .node .label,#exp-1773253340188-7-0 .image-shape .label,#exp-1773253340188-7-0 .icon-shape .label{text-align:center;}#exp-1773253340188-7-0 .node.clickable{cursor:pointer;}#exp-1773253340188-7-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1773253340188-7-0 .arrowheadPath{fill:#333333;}#exp-1773253340188-7-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1773253340188-7-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1773253340188-7-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1773253340188-7-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1773253340188-7-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1773253340188-7-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1773253340188-7-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1773253340188-7-0 .cluster text{fill:#333;}#exp-1773253340188-7-0 .cluster span{color:#333;}#exp-1773253340188-7-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1773253340188-7-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1773253340188-7-0 rect.text{fill:none;stroke-width:0;}#exp-1773253340188-7-0 .icon-shape,#exp-1773253340188-7-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1773253340188-7-0 .icon-shape p,#exp-1773253340188-7-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1773253340188-7-0 .icon-shape .label rect,#exp-1773253340188-7-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1773253340188-7-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1773253340188-7-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1773253340188-7-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1773253340188-7-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1773253340188-7-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1773253340188-7-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1773253340188-7-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1773253340188-7-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1773253340188-7-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M149.656,32L153.823,32C157.99,32,166.323,32,173.99,32C181.656,32,188.656,32,192.156,32L195.656,32\" id=\"L_A_B_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_A_B_0\" data-points=\"W3sieCI6MTQ5LjY1NjI1LCJ5IjozMn0seyJ4IjoxNzQuNjU2MjUsInkiOjMyfSx7IngiOjE5OS42NTYyNSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1773253340188-7-0_flowchart-v2-pointEnd)\"></path><path d=\"M341.125,32L345.292,32C349.458,32,357.792,32,365.458,32C373.125,32,380.125,32,383.625,32L387.125,32\" id=\"L_B_C_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_B_C_0\" data-points=\"W3sieCI6MzQxLjEyNSwieSI6MzJ9LHsieCI6MzY2LjEyNSwieSI6MzJ9LHsieCI6MzkxLjEyNSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1773253340188-7-0_flowchart-v2-pointEnd)\"></path><path d=\"M535.422,32L539.589,32C543.755,32,552.089,32,559.755,32C567.422,32,574.422,32,577.922,32L581.422,32\" id=\"L_C_D_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_C_D_0\" data-points=\"W3sieCI6NTM1LjQyMTg3NSwieSI6MzJ9LHsieCI6NTYwLjQyMTg3NSwieSI6MzJ9LHsieCI6NTg1LjQyMTg3NSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1773253340188-7-0_flowchart-v2-pointEnd)\"></path><path d=\"M730.141,32L734.307,32C738.474,32,746.807,32,754.474,32C762.141,32,769.141,32,772.641,32L776.141,32\" id=\"L_D_E_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_D_E_0\" data-points=\"W3sieCI6NzMwLjE0MDYyNSwieSI6MzJ9LHsieCI6NzU1LjE0MDYyNSwieSI6MzJ9LHsieCI6NzgwLjE0MDYyNSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1773253340188-7-0_flowchart-v2-pointEnd)\"></path><path d=\"M931.375,32L935.542,32C939.708,32,948.042,32,955.708,32C963.375,32,970.375,32,973.875,32L977.375,32\" id=\"L_E_F_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_E_F_0\" data-points=\"W3sieCI6OTMxLjM3NSwieSI6MzJ9LHsieCI6OTU2LjM3NSwieSI6MzJ9LHsieCI6OTgxLjM3NSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1773253340188-7-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_A_B_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_B_C_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_C_D_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_D_E_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_E_F_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-A-0\" transform=\"translate(78.828125, 32)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-70.828125\" y=\"-24\" width=\"141.65625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-46.828125, -12)\"><rect></rect><foreignObject width=\"93.65625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>acc=0, cur=1</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-B-1\" transform=\"translate(270.390625, 32)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-70.734375\" y=\"-24\" width=\"141.46875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-46.734375, -12)\"><rect></rect><foreignObject width=\"93.46875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>acc=1, cur=2</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-C-3\" transform=\"translate(463.2734375, 32)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-72.1484375\" y=\"-24\" width=\"144.296875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-48.1484375, -12)\"><rect></rect><foreignObject width=\"96.296875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>acc=3, cur=3</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-D-5\" transform=\"translate(657.78125, 32)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-72.359375\" y=\"-24\" width=\"144.71875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-48.359375, -12)\"><rect></rect><foreignObject width=\"96.71875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>acc=6, cur=4</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-E-7\" transform=\"translate(855.7578125, 32)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-75.6171875\" y=\"-24\" width=\"151.234375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-51.6171875, -12)\"><rect></rect><foreignObject width=\"103.234375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>acc=10, cur=5</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-F-9\" transform=\"translate(1025.8125, 32)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-44.4375\" y=\"-24\" width=\"88.875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-20.4375, -12)\"><rect></rect><foreignObject width=\"40.875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>✅ 15</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<div class=\"tip\"><strong>💡 Початкове значення</strong> <p>Завжди вказуйте <code>initialValue</code> (другий аргумент <code>reduce</code>). Без нього перший елемент масиву стає акумулятором, що може призвести до помилки на порожньому масиві.</p>\n</div>\n\n","<h1>🔗 Ланцюжки методів</h1>\n<p><strong>Головна ідея:</strong> Методи <code>map</code>, <code>filter</code> та <code>reduce</code> повертають нові значення, тому їх можна об'єднувати в ланцюжки — це робить код виразним і компактним.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> orders = [\n  { <span class=\"hljs-attr\">product</span>: <span class=\"hljs-string\">\"Ноутбук\"</span>, <span class=\"hljs-attr\">price</span>: <span class=\"hljs-number\">35000</span>, <span class=\"hljs-attr\">qty</span>: <span class=\"hljs-number\">2</span> },\n  { <span class=\"hljs-attr\">product</span>: <span class=\"hljs-string\">\"Мишка\"</span>, <span class=\"hljs-attr\">price</span>: <span class=\"hljs-number\">800</span>, <span class=\"hljs-attr\">qty</span>: <span class=\"hljs-number\">5</span> },\n  { <span class=\"hljs-attr\">product</span>: <span class=\"hljs-string\">\"Монітор\"</span>, <span class=\"hljs-attr\">price</span>: <span class=\"hljs-number\">12000</span>, <span class=\"hljs-attr\">qty</span>: <span class=\"hljs-number\">1</span> },\n  { <span class=\"hljs-attr\">product</span>: <span class=\"hljs-string\">\"Клавіатура\"</span>, <span class=\"hljs-attr\">price</span>: <span class=\"hljs-number\">1500</span>, <span class=\"hljs-attr\">qty</span>: <span class=\"hljs-number\">3</span> },\n];\n\n<span class=\"hljs-comment\">// Загальна сума замовлень лише для товарів дорожче 1000 грн</span>\n<span class=\"hljs-keyword\">const</span> total = orders\n  .<span class=\"hljs-title function_\">filter</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">order</span>) =&gt;</span> order.<span class=\"hljs-property\">price</span> &gt; <span class=\"hljs-number\">1000</span>) <span class=\"hljs-comment\">// 1️⃣ відібрати дорогі товари</span>\n  .<span class=\"hljs-title function_\">map</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">order</span>) =&gt;</span> order.<span class=\"hljs-property\">price</span> * order.<span class=\"hljs-property\">qty</span>) <span class=\"hljs-comment\">// 2️⃣ перетворити на суми</span>\n  .<span class=\"hljs-title function_\">reduce</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">acc, sum</span>) =&gt;</span> acc + sum, <span class=\"hljs-number\">0</span>); <span class=\"hljs-comment\">// 3️⃣ скласти всі суми</span>\n\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(total); <span class=\"hljs-comment\">// 35000*2 + 12000*1 + 1500*3 = 86500</span></code></pre>\n<div class=\"mermaid\" data-source=\"graph LR\n    RAW[&quot;📦 4 замовлення&quot;] --&gt; FILTER[&quot;🔍 filter: price &gt; 1000&quot;]\n    FILTER --&gt; MAP[&quot;🗺️ map: price × qty&quot;]\n    MAP --&gt; REDUCE[&quot;➕ reduce: сума&quot;]\n    REDUCE --&gt; RESULT[&quot;✅ 86500 грн&quot;]\n    style RAW fill:#e3f2fd,stroke:#1565c0\n    style FILTER fill:#fff3e0,stroke:#ef6c00\n    style MAP fill:#f3e5f5,stroke:#7b1fa2\n    style REDUCE fill:#fce4ec,stroke:#c2185b\n    style RESULT fill:#e8f5e9,stroke:#388e3c\"><svg id=\"exp-1773253340204-8-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 1107.828125px;\" viewBox=\"0 0 1107.828125 64\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1773253340204-8-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1773253340204-8-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1773253340204-8-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1773253340204-8-0 .error-icon{fill:#552222;}#exp-1773253340204-8-0 .error-text{fill:#552222;stroke:#552222;}#exp-1773253340204-8-0 .edge-thickness-normal{stroke-width:1px;}#exp-1773253340204-8-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1773253340204-8-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1773253340204-8-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1773253340204-8-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1773253340204-8-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1773253340204-8-0 .marker{fill:#333333;stroke:#333333;}#exp-1773253340204-8-0 .marker.cross{stroke:#333333;}#exp-1773253340204-8-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1773253340204-8-0 p{margin:0;}#exp-1773253340204-8-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1773253340204-8-0 .cluster-label text{fill:#333;}#exp-1773253340204-8-0 .cluster-label span{color:#333;}#exp-1773253340204-8-0 .cluster-label span p{background-color:transparent;}#exp-1773253340204-8-0 .label text,#exp-1773253340204-8-0 span{fill:#333;color:#333;}#exp-1773253340204-8-0 .node rect,#exp-1773253340204-8-0 .node circle,#exp-1773253340204-8-0 .node ellipse,#exp-1773253340204-8-0 .node polygon,#exp-1773253340204-8-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1773253340204-8-0 .rough-node .label text,#exp-1773253340204-8-0 .node .label text,#exp-1773253340204-8-0 .image-shape .label,#exp-1773253340204-8-0 .icon-shape .label{text-anchor:middle;}#exp-1773253340204-8-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1773253340204-8-0 .rough-node .label,#exp-1773253340204-8-0 .node .label,#exp-1773253340204-8-0 .image-shape .label,#exp-1773253340204-8-0 .icon-shape .label{text-align:center;}#exp-1773253340204-8-0 .node.clickable{cursor:pointer;}#exp-1773253340204-8-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1773253340204-8-0 .arrowheadPath{fill:#333333;}#exp-1773253340204-8-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1773253340204-8-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1773253340204-8-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1773253340204-8-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1773253340204-8-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1773253340204-8-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1773253340204-8-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1773253340204-8-0 .cluster text{fill:#333;}#exp-1773253340204-8-0 .cluster span{color:#333;}#exp-1773253340204-8-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1773253340204-8-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1773253340204-8-0 rect.text{fill:none;stroke-width:0;}#exp-1773253340204-8-0 .icon-shape,#exp-1773253340204-8-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1773253340204-8-0 .icon-shape p,#exp-1773253340204-8-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1773253340204-8-0 .icon-shape .label rect,#exp-1773253340204-8-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1773253340204-8-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1773253340204-8-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1773253340204-8-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1773253340204-8-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1773253340204-8-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1773253340204-8-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1773253340204-8-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1773253340204-8-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1773253340204-8-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M185.156,32L189.323,32C193.49,32,201.823,32,209.49,32C217.156,32,224.156,32,227.656,32L231.156,32\" id=\"L_RAW_FILTER_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_RAW_FILTER_0\" data-points=\"W3sieCI6MTg1LjE1NjI1LCJ5IjozMn0seyJ4IjoyMTAuMTU2MjUsInkiOjMyfSx7IngiOjIzNS4xNTYyNSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1773253340204-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M439.703,32L443.87,32C448.036,32,456.37,32,464.036,32C471.703,32,478.703,32,482.203,32L485.703,32\" id=\"L_FILTER_MAP_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_FILTER_MAP_0\" data-points=\"W3sieCI6NDM5LjcwMzEyNSwieSI6MzJ9LHsieCI6NDY0LjcwMzEyNSwieSI6MzJ9LHsieCI6NDg5LjcwMzEyNSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1773253340204-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M679.891,32L684.057,32C688.224,32,696.557,32,704.224,32C711.891,32,718.891,32,722.391,32L725.891,32\" id=\"L_MAP_REDUCE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_MAP_REDUCE_0\" data-points=\"W3sieCI6Njc5Ljg5MDYyNSwieSI6MzJ9LHsieCI6NzA0Ljg5MDYyNSwieSI6MzJ9LHsieCI6NzI5Ljg5MDYyNSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1773253340204-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M898.578,32L902.745,32C906.911,32,915.245,32,922.911,32C930.578,32,937.578,32,941.078,32L944.578,32\" id=\"L_REDUCE_RESULT_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_REDUCE_RESULT_0\" data-points=\"W3sieCI6ODk4LjU3ODEyNSwieSI6MzJ9LHsieCI6OTIzLjU3ODEyNSwieSI6MzJ9LHsieCI6OTQ4LjU3ODEyNSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1773253340204-8-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_RAW_FILTER_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_FILTER_MAP_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_MAP_REDUCE_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_REDUCE_RESULT_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-RAW-0\" transform=\"translate(96.578125, 32)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-88.578125\" y=\"-24\" width=\"177.15625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-64.578125, -12)\"><rect></rect><foreignObject width=\"129.15625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📦 4 замовлення</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-FILTER-1\" transform=\"translate(337.4296875, 32)\"><rect class=\"basic label-container\" style=\"fill:#fff3e0 !important;stroke:#ef6c00 !important\" x=\"-102.2734375\" y=\"-24\" width=\"204.546875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-78.2734375, -12)\"><rect></rect><foreignObject width=\"156.546875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🔍 filter: price &gt; 1000</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-MAP-3\" transform=\"translate(584.796875, 32)\"><rect class=\"basic label-container\" style=\"fill:#f3e5f5 !important;stroke:#7b1fa2 !important\" x=\"-95.09375\" y=\"-24\" width=\"190.1875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-71.09375, -12)\"><rect></rect><foreignObject width=\"142.1875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🗺️ map: price × qty</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-REDUCE-5\" transform=\"translate(814.234375, 32)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-84.34375\" y=\"-24\" width=\"168.6875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-60.34375, -12)\"><rect></rect><foreignObject width=\"120.6875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>➕ reduce: сума</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-RESULT-7\" transform=\"translate(1024.203125, 32)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-75.625\" y=\"-24\" width=\"151.25\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-51.625, -12)\"><rect></rect><foreignObject width=\"103.25\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>✅ 86500 грн</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<div class=\"note\"><strong>📝 Читабельність ланцюжків</strong> <p>Записуйте кожен метод з нового рядка з відступом — це значно покращує читабельність та спрощує налагодження. Можна тимчасово додати <code>console.log</code> між кроками для перевірки проміжних результатів.</p>\n</div>\n\n","<h1>🗂️ Об'єкти в JavaScript</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Об'єкт (Object)</strong> — структура даних, що зберігає пари <strong>ключ : значення</strong>. Ключі — це рядки (або Symbol), значення — будь-який тип даних, включаючи функції та інші об'єкти.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Якщо масив — це впорядкований список, то об'єкт — іменований словник. Об'єкти моделюють реальні сутності: студента, замовлення, конфігурацію.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 📌 Літеральний синтаксис — основний спосіб створення</span>\n<span class=\"hljs-keyword\">const</span> student = {\n  <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Олена Коваль\"</span>,\n  <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">21</span>,\n  <span class=\"hljs-attr\">group</span>: <span class=\"hljs-string\">\"ВТ-31\"</span>,\n  <span class=\"hljs-attr\">isActive</span>: <span class=\"hljs-literal\">true</span>,\n  <span class=\"hljs-attr\">grades</span>: [<span class=\"hljs-number\">85</span>, <span class=\"hljs-number\">92</span>, <span class=\"hljs-number\">78</span>], <span class=\"hljs-comment\">// масив як значення</span>\n  <span class=\"hljs-attr\">address</span>: {\n    <span class=\"hljs-comment\">// вкладений об'єкт</span>\n    <span class=\"hljs-attr\">city</span>: <span class=\"hljs-string\">\"Київ\"</span>,\n    <span class=\"hljs-attr\">street</span>: <span class=\"hljs-string\">\"Хрещатик, 1\"</span>,\n  },\n};\n\n<span class=\"hljs-comment\">// 🔑 Доступ до властивостей</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(student.<span class=\"hljs-property\">name</span>); <span class=\"hljs-comment\">// 'Олена Коваль'  — крапкова нотація</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(student[<span class=\"hljs-string\">\"group\"</span>]); <span class=\"hljs-comment\">// 'ВТ-31'         — дужкова нотація</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(student.<span class=\"hljs-property\">address</span>.<span class=\"hljs-property\">city</span>); <span class=\"hljs-comment\">// 'Київ'</span>\n\n<span class=\"hljs-comment\">// ✏️ Зміна та додавання властивостей</span>\nstudent.<span class=\"hljs-property\">age</span> = <span class=\"hljs-number\">22</span>;\nstudent.<span class=\"hljs-property\">email</span> = <span class=\"hljs-string\">\"o.koval@example.com\"</span>; <span class=\"hljs-comment\">// нова властивість</span>\n\n<span class=\"hljs-comment\">// 🗑️ Видалення властивості</span>\n<span class=\"hljs-keyword\">delete</span> student.<span class=\"hljs-property\">isActive</span>;</code></pre><div class=\"tip\"><strong>💡 Коли використовувати дужкову нотацію</strong> <p>Дужкова нотація потрібна, коли ім'я властивості зберігається у змінній або містить спеціальні символи: <code>obj[dynamicKey]</code>, <code>obj['my-key']</code>. В усіх інших випадках крапкова нотація читабельніша.</p>\n</div>\n\n","<h1>🔄 Методи об'єктів та ітерація</h1>\n<p><strong>Головна ідея:</strong> JavaScript надає статичні методи <code>Object.keys</code>, <code>Object.values</code> та <code>Object.entries</code> для отримання вмісту об'єкта у вигляді масивів — після цього можна застосовувати всі методи масивів.</p>\n<h2>📌 Функція як властивість — метод об'єкта</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> calculator = {\n  <span class=\"hljs-attr\">value</span>: <span class=\"hljs-number\">0</span>,\n  <span class=\"hljs-comment\">// this — посилання на сам об'єкт всередині його методу</span>\n  <span class=\"hljs-title function_\">add</span>(<span class=\"hljs-params\">n</span>) {\n    <span class=\"hljs-variable language_\">this</span>.<span class=\"hljs-property\">value</span> += n;\n    <span class=\"hljs-keyword\">return</span> <span class=\"hljs-variable language_\">this</span>;\n  },\n  <span class=\"hljs-title function_\">subtract</span>(<span class=\"hljs-params\">n</span>) {\n    <span class=\"hljs-variable language_\">this</span>.<span class=\"hljs-property\">value</span> -= n;\n    <span class=\"hljs-keyword\">return</span> <span class=\"hljs-variable language_\">this</span>;\n  },\n  <span class=\"hljs-title function_\">result</span>(<span class=\"hljs-params\"></span>) {\n    <span class=\"hljs-keyword\">return</span> <span class=\"hljs-variable language_\">this</span>.<span class=\"hljs-property\">value</span>;\n  },\n};\n\ncalculator.<span class=\"hljs-title function_\">add</span>(<span class=\"hljs-number\">10</span>).<span class=\"hljs-title function_\">add</span>(<span class=\"hljs-number\">5</span>).<span class=\"hljs-title function_\">subtract</span>(<span class=\"hljs-number\">3</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(calculator.<span class=\"hljs-title function_\">result</span>()); <span class=\"hljs-comment\">// 12</span></code></pre><h2>📌 <code>Object.keys</code>, <code>Object.values</code>, <code>Object.entries</code></h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> config = { <span class=\"hljs-attr\">host</span>: <span class=\"hljs-string\">\"localhost\"</span>, <span class=\"hljs-attr\">port</span>: <span class=\"hljs-number\">3000</span>, <span class=\"hljs-attr\">debug</span>: <span class=\"hljs-literal\">true</span> };\n\n<span class=\"hljs-title class_\">Object</span>.<span class=\"hljs-title function_\">keys</span>(config); <span class=\"hljs-comment\">// ['host', 'port', 'debug']</span>\n<span class=\"hljs-title class_\">Object</span>.<span class=\"hljs-title function_\">values</span>(config); <span class=\"hljs-comment\">// ['localhost', 3000, true]</span>\n<span class=\"hljs-title class_\">Object</span>.<span class=\"hljs-title function_\">entries</span>(config); <span class=\"hljs-comment\">// [['host','localhost'], ['port',3000], ['debug',true]]</span>\n\n<span class=\"hljs-comment\">// Ітерація через властивості об'єкта</span>\n<span class=\"hljs-keyword\">for</span> (<span class=\"hljs-keyword\">const</span> [key, value] <span class=\"hljs-keyword\">of</span> <span class=\"hljs-title class_\">Object</span>.<span class=\"hljs-title function_\">entries</span>(config)) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">`<span class=\"hljs-subst\">${key}</span>: <span class=\"hljs-subst\">${value}</span>`</span>);\n}\n<span class=\"hljs-comment\">// host: localhost</span>\n<span class=\"hljs-comment\">// port: 3000</span>\n<span class=\"hljs-comment\">// debug: true</span></code></pre><h2>📌 Перевірка наявності властивості</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-string\">\"host\"</span> <span class=\"hljs-keyword\">in</span> config; <span class=\"hljs-comment\">// true</span>\nconfig.<span class=\"hljs-title function_\">hasOwnProperty</span>(<span class=\"hljs-string\">\"timeout\"</span>); <span class=\"hljs-comment\">// false</span></code></pre>","<h1>🎯 Деструктуризація масивів</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Деструктуризація</strong> — синтаксис ES6+, що дозволяє розпакувати значення з масивів або властивості з об'єктів у окремі змінні в один рядок.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Деструктуризація усуває повторення коду при отриманні кількох значень одночасно і робить код декларативнішим.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> rgb = [<span class=\"hljs-number\">255</span>, <span class=\"hljs-number\">128</span>, <span class=\"hljs-number\">0</span>];\n\n<span class=\"hljs-comment\">// ❌ Без деструктуризації</span>\n<span class=\"hljs-keyword\">const</span> r = rgb[<span class=\"hljs-number\">0</span>],\n  g = rgb[<span class=\"hljs-number\">1</span>],\n  b = rgb[<span class=\"hljs-number\">2</span>];\n\n<span class=\"hljs-comment\">// ✅ З деструктуризацією</span>\n<span class=\"hljs-keyword\">const</span> [red, green, blue] = rgb;\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(red, green, blue); <span class=\"hljs-comment\">// 255 128 0</span>\n\n<span class=\"hljs-comment\">// 🔀 Пропуск елементів через кому</span>\n<span class=\"hljs-keyword\">const</span> coords = [<span class=\"hljs-number\">10</span>, <span class=\"hljs-number\">20</span>, <span class=\"hljs-number\">30</span>, <span class=\"hljs-number\">40</span>];\n<span class=\"hljs-keyword\">const</span> [x, , z] = coords; <span class=\"hljs-comment\">// x=10, z=30 (елемент 20 пропущено)</span>\n\n<span class=\"hljs-comment\">// 🔄 Обмін значень без тимчасової змінної</span>\n<span class=\"hljs-keyword\">let</span> a = <span class=\"hljs-number\">1</span>,\n  b = <span class=\"hljs-number\">2</span>;\n[a, b] = [b, a];\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(a, b); <span class=\"hljs-comment\">// 2 1</span>\n\n<span class=\"hljs-comment\">// 📦 Rest-елемент — зібрати решту в масив</span>\n<span class=\"hljs-keyword\">const</span> [first, second, ...rest] = [<span class=\"hljs-number\">10</span>, <span class=\"hljs-number\">20</span>, <span class=\"hljs-number\">30</span>, <span class=\"hljs-number\">40</span>, <span class=\"hljs-number\">50</span>];\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(first); <span class=\"hljs-comment\">// 10</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(second); <span class=\"hljs-comment\">// 20</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(rest); <span class=\"hljs-comment\">// [30, 40, 50]</span>\n\n<span class=\"hljs-comment\">// 🛡️ Значення за замовчуванням</span>\n<span class=\"hljs-keyword\">const</span> [p = <span class=\"hljs-number\">0</span>, q = <span class=\"hljs-number\">0</span>, w = <span class=\"hljs-number\">100</span>] = [<span class=\"hljs-number\">5</span>, <span class=\"hljs-number\">10</span>];\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(w); <span class=\"hljs-comment\">// 100 — не задано, використано default</span></code></pre>","<h1>🎯 Деструктуризація об'єктів</h1>\n<p><strong>Головна ідея:</strong> Деструктуризація об'єктів особливо корисна при роботі з API-відповідями та параметрами функцій — коли потрібно витягти кілька конкретних полів з великого об'єкта.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> product = {\n  <span class=\"hljs-attr\">id</span>: <span class=\"hljs-number\">42</span>,\n  <span class=\"hljs-attr\">title</span>: <span class=\"hljs-string\">\"Механічна клавіатура\"</span>,\n  <span class=\"hljs-attr\">price</span>: <span class=\"hljs-number\">2800</span>,\n  <span class=\"hljs-attr\">category</span>: <span class=\"hljs-string\">\"Периферія\"</span>,\n  <span class=\"hljs-attr\">stock</span>: <span class=\"hljs-number\">15</span>,\n};\n\n<span class=\"hljs-comment\">// ✅ Базова деструктуризація</span>\n<span class=\"hljs-keyword\">const</span> { title, price } = product;\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(title, price); <span class=\"hljs-comment\">// 'Механічна клавіатура' 2800</span></code></pre><pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 🏷️ Перейменування при деструктуризації</span>\n<span class=\"hljs-keyword\">const</span> { <span class=\"hljs-attr\">title</span>: productName, <span class=\"hljs-attr\">price</span>: cost } = product;\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(productName); <span class=\"hljs-comment\">// 'Механічна клавіатура'</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(cost); <span class=\"hljs-comment\">// 2800</span></code></pre><pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 🛡️ Значення за замовчуванням</span>\n<span class=\"hljs-keyword\">const</span> { stock, discount = <span class=\"hljs-number\">0</span> } = product;\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(discount); <span class=\"hljs-comment\">// 0 — властивості немає в об'єкті</span>\n\n<span class=\"hljs-comment\">// 📦 Rest — зібрати решту властивостей</span>\n<span class=\"hljs-keyword\">const</span> { id, ...details } = product;\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(details);\n<span class=\"hljs-comment\">// { title: '...', price: 2800, category: 'Периферія', stock: 15 }</span></code></pre><pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 🔧 Деструктуризація у параметрах функції</span>\n<span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">printProduct</span>(<span class=\"hljs-params\">{ title, price, category = <span class=\"hljs-string\">\"Загальне\"</span> }</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">`<span class=\"hljs-subst\">${title}</span> — <span class=\"hljs-subst\">${price}</span> грн (<span class=\"hljs-subst\">${category}</span>)`</span>);\n}\n<span class=\"hljs-title function_\">printProduct</span>(product); <span class=\"hljs-comment\">// 'Механічна клавіатура — 2800 грн (Периферія)'</span></code></pre><div class=\"note\"><strong>📝 Вкладена деструктуризація</strong> <p>Деструктуризацію можна застосовувати до вкладених структур: <code>const { address: { city } } = student</code>. Але глибока вкладеність знижує читабельність — на практиці обмежуйтесь 1–2 рівнями.</p>\n</div>\n\n","<h1>🔗 Spread та Rest оператори</h1>\n<p><strong>Головна ідея:</strong> Оператор <code>...</code> виконує дві різні ролі залежно від контексту: <strong>spread</strong> — розпаковує колекцію, <strong>rest</strong> — збирає елементи в колекцію.</p>\n<h2>📌 Spread — розпаковування</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Копіювання та злиття масивів</span>\n<span class=\"hljs-keyword\">const</span> a = [<span class=\"hljs-number\">1</span>, <span class=\"hljs-number\">2</span>],\n  b = [<span class=\"hljs-number\">3</span>, <span class=\"hljs-number\">4</span>];\n<span class=\"hljs-keyword\">const</span> merged = [...a, ...b, <span class=\"hljs-number\">5</span>]; <span class=\"hljs-comment\">// [1, 2, 3, 4, 5]</span>\n\n<span class=\"hljs-comment\">// Копіювання та оновлення об'єкта — поширений патерн</span>\n<span class=\"hljs-keyword\">const</span> user = { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Олена\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">21</span>, <span class=\"hljs-attr\">role</span>: <span class=\"hljs-string\">\"student\"</span> };\n<span class=\"hljs-keyword\">const</span> updated = { ...user, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">22</span>, <span class=\"hljs-attr\">email</span>: <span class=\"hljs-string\">\"o@example.com\"</span> };\n<span class=\"hljs-comment\">// { name: 'Олена', age: 22, role: 'student', email: 'o@example.com' }</span>\n<span class=\"hljs-comment\">// Властивості, що йдуть пізніше, перезаписують попередні</span>\n\n<span class=\"hljs-comment\">// Передача масиву як аргументів функції</span>\n<span class=\"hljs-keyword\">const</span> nums = [<span class=\"hljs-number\">3</span>, <span class=\"hljs-number\">1</span>, <span class=\"hljs-number\">4</span>, <span class=\"hljs-number\">1</span>, <span class=\"hljs-number\">5</span>, <span class=\"hljs-number\">9</span>];\n<span class=\"hljs-keyword\">const</span> max = <span class=\"hljs-title class_\">Math</span>.<span class=\"hljs-title function_\">max</span>(...nums);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(max); <span class=\"hljs-comment\">// 9</span></code></pre><div class=\"warning\"><strong>⚠️ Поверхнева копія</strong> <p><code>[...arr]</code> та <code>{...obj}</code> виконують <strong>поверхневу копію</strong> — примітивні значення копіюються, але вкладені об'єкти залишаються спільними посиланнями. Для глибокого копіювання використовуйте <code>structuredClone(obj)</code>.</p>\n</div>\n\n","<h1>🏗️ Практичний приклад: обробка даних студентів</h1>\n<p><strong>Головна ідея:</strong> Поєднання масивів, об'єктів, деструктуризації та методів дозволяє вирішувати реальні задачі обробки даних лаконічно і виразно.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> students = [\n  { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Олена\"</span>, <span class=\"hljs-attr\">group</span>: <span class=\"hljs-string\">\"ВТ-31\"</span>, <span class=\"hljs-attr\">grade</span>: <span class=\"hljs-number\">92</span> },\n  { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Микола\"</span>, <span class=\"hljs-attr\">group</span>: <span class=\"hljs-string\">\"ВТ-32\"</span>, <span class=\"hljs-attr\">grade</span>: <span class=\"hljs-number\">74</span> },\n  { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Дарина\"</span>, <span class=\"hljs-attr\">group</span>: <span class=\"hljs-string\">\"ВТ-31\"</span>, <span class=\"hljs-attr\">grade</span>: <span class=\"hljs-number\">88</span> },\n  { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Іван\"</span>, <span class=\"hljs-attr\">group</span>: <span class=\"hljs-string\">\"ВТ-32\"</span>, <span class=\"hljs-attr\">grade</span>: <span class=\"hljs-number\">61</span> },\n  { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Соня\"</span>, <span class=\"hljs-attr\">group</span>: <span class=\"hljs-string\">\"ВТ-31\"</span>, <span class=\"hljs-attr\">grade</span>: <span class=\"hljs-number\">95</span> },\n];\n\n<span class=\"hljs-comment\">// 1️⃣ Відмінники групи ВТ-31 (grade &gt;= 90)</span>\n<span class=\"hljs-keyword\">const</span> topVT31 = students\n  .<span class=\"hljs-title function_\">filter</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">{ group, grade }</span>) =&gt;</span> group === <span class=\"hljs-string\">\"ВТ-31\"</span> &amp;&amp; grade &gt;= <span class=\"hljs-number\">90</span>)\n  .<span class=\"hljs-title function_\">map</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">{ name, grade }</span>) =&gt;</span> <span class=\"hljs-string\">`<span class=\"hljs-subst\">${name}</span>: <span class=\"hljs-subst\">${grade}</span>`</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(topVT31); <span class=\"hljs-comment\">// ['Олена: 92', 'Соня: 95']</span>\n\n<span class=\"hljs-comment\">// 2️⃣ Середній бал</span>\n<span class=\"hljs-keyword\">const</span> avg =\n  students.<span class=\"hljs-title function_\">reduce</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">sum, { grade }</span>) =&gt;</span> sum + grade, <span class=\"hljs-number\">0</span>) / students.<span class=\"hljs-property\">length</span>;\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(avg.<span class=\"hljs-title function_\">toFixed</span>(<span class=\"hljs-number\">1</span>)); <span class=\"hljs-comment\">// '82.0' (рядок — toFixed повертає string)</span>\n\n<span class=\"hljs-comment\">// 3️⃣ Групування за групою</span>\n<span class=\"hljs-keyword\">const</span> byGroup = students.<span class=\"hljs-title function_\">reduce</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">acc, { group, name }</span>) =&gt;</span> {\n  <span class=\"hljs-keyword\">if</span> (!acc[group]) acc[group] = [];\n  acc[group].<span class=\"hljs-title function_\">push</span>(name);\n  <span class=\"hljs-keyword\">return</span> acc;\n}, {});\n<span class=\"hljs-comment\">// { 'ВТ-31': ['Олена', 'Дарина', 'Соня'], 'ВТ-32': ['Микола', 'Іван'] }</span>\n\n<span class=\"hljs-comment\">// 4️⃣ Чи є студент із незадовільною оцінкою?</span>\n<span class=\"hljs-keyword\">const</span> hasFailed = students.<span class=\"hljs-title function_\">some</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">{ grade }</span>) =&gt;</span> grade &lt; <span class=\"hljs-number\">60</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(hasFailed); <span class=\"hljs-comment\">// false</span></code></pre>","<h1>✅ Ключові висновки</h1>\n<div class=\"success\"><strong>✅ Підсумок лекції</strong> <p><strong>📌 Що ми вивчили:</strong></p>\n<ol>\n<li><p><strong>Масив</strong> — впорядкована колекція будь-яких значень; індексація з <code>0</code>; <code>length</code> — поточна довжина</p>\n</li>\n<li><p><strong>Базові методи</strong> — <code>push</code>/<code>pop</code> (кінець), <code>unshift</code>/<code>shift</code> (початок), <code>splice</code> (будь-яка позиція), <code>indexOf</code>/<code>includes</code> (пошук)</p>\n</li>\n<li><p><strong><code>forEach</code> / <code>for...of</code></strong> — перебір масиву без створення нового; <code>forEach</code> не підтримує <code>break</code></p>\n</li>\n<li><p><strong><code>map</code></strong> — створює новий масив тієї ж довжини через трансформацію кожного елемента</p>\n</li>\n<li><p><strong><code>filter</code> / <code>find</code> / <code>some</code> / <code>every</code></strong> — відбір, пошук та перевірка умов без мутації оригіналу</p>\n</li>\n<li><p><strong><code>reduce</code></strong> — найуніверсальніший метод; \"згортає\" масив до будь-якого одного значення</p>\n</li>\n<li><p><strong>Об'єкт</strong> — структура ключ/значення; <code>Object.keys/values/entries</code> — перетворення на масив для подальшої обробки</p>\n</li>\n<li><p><strong>Деструктуризація</strong> — лаконічне розпаковування масивів і об'єктів у змінні; підтримує значення за замовчуванням і rest</p>\n</li>\n<li><p><strong>Spread <code>...</code></strong> — копіювання і злиття масивів та об'єктів; є поверхневою копією</p>\n</li>\n</ol>\n</div>\n\n","<h1>❓ Контрольні питання</h1>\n<ol>\n<li><p>🤔 Яка різниця між <code>push</code> та <code>unshift</code>? Що повертає кожен з цих методів?</p>\n</li>\n<li><p>🤔 Чим <code>map</code> відрізняється від <code>forEach</code>? Коли слід використовувати кожен з них?</p>\n</li>\n<li><p>🤔 Що повертає <code>filter</code>, якщо жоден елемент не відповідає умові? А <code>find</code>?</p>\n</li>\n<li><p>🤔 Навіщо <code>reduce</code> потрібне початкове значення (<code>initialValue</code>)? Що станеться, якщо його не передати та масив порожній?</p>\n</li>\n<li><p>🤔 У чому різниця між доступом до властивості через крапку та через дужки? Коли дужки є обов'язковими?</p>\n</li>\n<li><p>🤔 Що таке поверхнева копія при використанні spread-оператора? Наведіть приклад ситуації, де це може призвести до помилки.</p>\n</li>\n<li><p>🤔 Як деструктуризація об'єкта у параметрі функції покращує читабельність коду?</p>\n</li>\n</ol>\n","<h1>📖 Глосарій термінів</h1>\n<table>\n<thead>\n<tr>\n<th>Термін</th>\n<th>English</th>\n<th>Визначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Масив</td>\n<td>Array</td>\n<td>Впорядкована колекція значень з індексним доступом</td>\n</tr>\n<tr>\n<td>Об'єкт</td>\n<td>Object</td>\n<td>Колекція пар ключ/значення для опису сутності</td>\n</tr>\n<tr>\n<td>Метод масиву</td>\n<td>Array method</td>\n<td>Вбудована функція для роботи з елементами масиву</td>\n</tr>\n<tr>\n<td>Колбек</td>\n<td>Callback</td>\n<td>Функція, що передається як аргумент іншій функції</td>\n</tr>\n<tr>\n<td>Акумулятор</td>\n<td>Accumulator</td>\n<td>Проміжне значення, що накопичується в <code>reduce</code></td>\n</tr>\n<tr>\n<td>Деструктуризація</td>\n<td>Destructuring</td>\n<td>Синтаксис розпаковування значень з масиву або об'єкта у змінні</td>\n</tr>\n<tr>\n<td>Поверхнева копія</td>\n<td>Shallow copy</td>\n<td>Копія, де вкладені об'єкти залишаються спільними посиланнями</td>\n</tr>\n<tr>\n<td>Ланцюжок методів</td>\n<td>Method chaining</td>\n<td>Послідовний виклик кількох методів на одному значенні</td>\n</tr>\n<tr>\n<td>Розпаковування</td>\n<td>Spread</td>\n<td>Оператор <code>...</code> для розгортання масиву або об'єкта</td>\n</tr>\n<tr>\n<td>Решта елементів</td>\n<td>Rest</td>\n<td>Оператор <code>...</code> для збирання решти елементів у масив або об'єкт</td>\n</tr>\n</tbody></table>\n","<h1>📖 Глосарій абревіатур</h1>\n<table>\n<thead>\n<tr>\n<th>Абревіатура</th>\n<th>Розшифровка</th>\n<th>Переклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>JS</td>\n<td>JavaScript</td>\n<td>Мова програмування JavaScript</td>\n</tr>\n<tr>\n<td>ES6</td>\n<td>ECMAScript 2015</td>\n<td>Стандарт JavaScript 6-го видання</td>\n</tr>\n<tr>\n<td>API</td>\n<td>Application Programming Interface</td>\n<td>Програмний інтерфейс застосунку</td>\n</tr>\n<tr>\n<td>MDN</td>\n<td>Mozilla Developer Network</td>\n<td>Документація Mozilla для розробників</td>\n</tr>\n</tbody></table>\n"];let currentSlideIndex=0;
+function renderMath(root){if(typeof renderMathInElement!=="function"||!root)return;try{renderMathInElement(root,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false,strict:"ignore",ignoredTags:["script","noscript","style","textarea","pre","code"]});}catch(e){console.warn("Math render error:",e);}}
+function showSlide(i){if(i<0||i>=slides.length)return;currentSlideIndex=i;const el=document.getElementById("current-slide");el.innerHTML=slides[i];el.scrollTop=0;renderMath(el);document.getElementById("progress-bar").style.width=((i+1)/slides.length*100)+"%";document.getElementById("slide-number").textContent=(i+1)+" / "+slides.length;updateSidebarActive();}
+function nextSlide(){if(currentSlideIndex<slides.length-1)showSlide(currentSlideIndex+1);}
+function previousSlide(){if(currentSlideIndex>0)showSlide(currentSlideIndex-1);}
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleHelp(){document.getElementById("help-overlay").classList.toggle("hidden");}
+function toggleFullscreen(){if(!document.fullscreenElement){const pc=document.getElementById("presentation-container");if(pc.requestFullscreen)pc.requestFullscreen();else if(pc.webkitRequestFullscreen)pc.webkitRequestFullscreen();else if(pc.msRequestFullscreen)pc.msRequestFullscreen();else if(pc.mozRequestFullScreen)pc.mozRequestFullScreen();}else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();else if(document.msExitFullscreen)document.msExitFullscreen();else if(document.mozCancelFullScreen)document.mozCancelFullScreen();}}
+function generateSidebar(){const sc=document.getElementById("sidebar-content");sc.innerHTML="";slides.forEach((html,idx)=>{const t=document.createElement("div");t.className="slide-thumbnail";if(idx===0)t.classList.add("active");const tmp=document.createElement("div");tmp.innerHTML=html;const title=tmp.querySelector("h1,h2");const titleText=title?title.textContent:("Слайд "+(idx+1));const textContent=tmp.textContent.replace(/s+/g," ").trim();const preview=textContent.substring(0,100)+(textContent.length>100?"...":"");t.innerHTML="<div class=\"slide-thumbnail-number\">"+(idx+1)+"</div><div class=\"slide-thumbnail-title\">"+titleText+"</div><div class=\"slide-thumbnail-content\">"+preview+"</div>";t.onclick=()=>{showSlide(idx);if(window.innerWidth<1024)toggleSidebar();};sc.appendChild(t);});}
+function updateSidebarActive(){document.querySelectorAll(".slide-thumbnail").forEach((th,idx)=>{if(idx===currentSlideIndex){th.classList.add("active");th.scrollIntoView({behavior:"smooth",block:"nearest"});}else th.classList.remove("active");});}
+document.addEventListener("keydown",e=>{switch(e.key){case"ArrowLeft":previousSlide();break;case"ArrowRight":case" ":e.preventDefault();nextSlide();break;case"f":case"F":toggleFullscreen();break;case"s":case"S":toggleSidebar();break;case"?":toggleHelp();break;case"Escape":const sb=document.getElementById("sidebar");const ho=document.getElementById("help-overlay");if(sb.classList.contains("open"))toggleSidebar();else if(!ho.classList.contains("hidden"))ho.classList.add("hidden");break;}});
+generateSidebar();showSlide(0);</script></body></html>
