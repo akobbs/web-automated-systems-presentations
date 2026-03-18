@@ -1,0 +1,621 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DOM: Document Object Model</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><style>* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor-container.hidden {
+            display: none;
+        }
+
+        #editor-header {
+            background: #2d3748;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor-header h2 {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #editor-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        #markdown-input {
+            flex: 1;
+            padding: 2rem;
+            background: #1a202c;
+            color: #e2e8f0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        #markdown-input:focus {
+            outline: none;
+        }
+
+        .slide-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .slide h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h2 {
+            color: #764ba2;
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide pre {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .slide pre code {
+            background: transparent;
+            color: #abb2bf;
+        }
+
+        .slide code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .slide h1 code, .slide h2 code, .slide h3 code {
+            font-size: 0.85em;
+            background: rgba(237, 242, 247, 0.5);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .slide p code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .slide blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        .slide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .slide th, .slide td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .slide th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .slide tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .note {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #c53030;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .warning strong {
+            color: #c05621;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .info strong {
+            color: #2c5282;
+        }
+
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #22543d;
+        }
+
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .danger strong {
+            color: #742a2a;
+        }
+
+        .tip {
+            background: #fefcbf;
+            border-left: 4px solid #ecc94b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #744210;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            transition: width 0.3s;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        #sidebar.open {
+            right: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #sidebar-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        #sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        #sidebar-close:hover {
+            color: #667eea;
+        }
+
+        .slide-thumbnail {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .slide-thumbnail:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .slide-thumbnail.active {
+            border-color: #667eea;
+            background: #f7faff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slide-thumbnail-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-thumbnail-content {
+            font-size: 0.85rem;
+            color: #2d3748;
+            line-height: 1.4;
+            max-height: 4.2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-thumbnail-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 1.4rem;
+            background: linear-gradient(to right, transparent, white);
+        }
+
+        .slide-thumbnail.active .slide-thumbnail-content::after {
+            background: linear-gradient(to right, transparent, #f7faff);
+        }
+
+        .slide-thumbnail-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+        }
+
+        #sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: visible; /* щоб не обрізати тіні / розширені ноди */
+        }
+
+        /* Запобігаємо обрізанню останньої літери в нодах Mermaid через зміну font-weight після розрахунку розміру */
+        .mermaid svg { overflow: visible !important; }
+        /* перестраховка проти обрізання foreignObject (на випадок інших діаграм) */
+        .mermaid svg foreignObject { overflow: visible !important; }
+
+        .plantuml-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        #help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #help-overlay kbd {
+            background: #2d3748;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .mermaid-error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #742a2a;
+            margin: 1.5rem 0;
+        }
+
+        .mermaid-error pre {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
+
+        /* Повноекранний режим - зберігаємо оригінальний фон */
+        #presentation-container:fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-webkit-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-moz-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-ms-fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+#presentation-container:fullscreen,#presentation-container:-webkit-full-screen,#presentation-container:-moz-full-screen,#presentation-container:-ms-fullscreen{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)!important;}</style></head><body><div id="presentation-container"><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><button id="sidebar-toggle" onclick="toggleSidebar()" title="Навігація слайдами (S)">☰</button><div id="sidebar"><div id="sidebar-header"><h3>📑 Слайди</h3><button id="sidebar-close" onclick="toggleSidebar()">✕</button></div><div id="sidebar-content"></div></div><div class="slide-container"><div class="slide" id="current-slide"></div></div><div class="controls"><button class="control-btn" onclick="previousSlide()" title="Попередній (←)">←</button><button class="control-btn" onclick="nextSlide()" title="Наступний (→)">→</button><button class="control-btn" onclick="toggleFullscreen()" title="Повноекранний режим (F)">⛶</button><button class="control-btn" onclick="toggleHelp()" title="Допомога (?)">?</button></div><div class="slide-number" id="slide-number">1 / 14</div><div id="help-overlay" class="hidden"><strong>Гарячі клавіші:</strong><br><kbd>←</kbd> <kbd>→</kbd> Навігація<br><kbd>F</kbd> Повноекранний режим<br><kbd>S</kbd> Sidebar<br><kbd>?</kbd> Допомога<br><kbd>Esc</kbd> Закрити</div></div><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script><script>const slides=["<h1>DOM: Document Object Model</h1>\n<p><strong>Web-технології в автоматизованих системах</strong></p>\n<p>Лектор: Кобилянський Антон</p>\n","<h1>📋 План лекції</h1>\n<ol>\n<li>🌳 Що таке DOM — структура та призначення</li>\n<li>🔍 Пошук елементів — методи вибору</li>\n<li>📝 Читання та зміна вмісту елементів</li>\n<li>🎨 Зміна стилів та атрибутів через JavaScript</li>\n<li>➕ Створення та видалення елементів</li>\n<li>🧭 Навігація по DOM-дереву</li>\n<li>✅ Ключові висновки та контрольні питання</li>\n</ol>\n","<h1>🌳 Що таке DOM</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>DOM</strong> (Document Object Model) — програмний інтерфейс браузера, що представляє HTML-документ у вигляді дерева об'єктів, якими можна керувати через JavaScript.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Коли браузер завантажує HTML-сторінку, він будує DOM — живе дерево вузлів. JavaScript взаємодіє зі сторінкою <strong>виключно через DOM</strong>.</p>\n\n<div class=\"mermaid\" data-source=\"graph TD\n    DOC[&quot;📄 document&quot;] --&gt; HTML[&quot;&amp;lt;html&amp;gt;&quot;]\n    HTML --&gt; HEAD[&quot;&amp;lt;head&amp;gt;&quot;]\n    HTML --&gt; BODY[&quot;&amp;lt;body&amp;gt;&quot;]\n    HEAD --&gt; TITLE[&quot;&amp;lt;title&amp;gt;&quot;]\n    BODY --&gt; H1[&quot;&amp;lt;h1&amp;gt;&quot;]\n    BODY --&gt; DIV[&quot;&amp;lt;div&amp;gt;&quot;]\n    DIV --&gt; P[&quot;&amp;lt;p&amp;gt;&quot;]\n    DIV --&gt; BTN[&quot;&amp;lt;button&amp;gt;&quot;]\n    style DOC fill:#fff9c4,stroke:#f9a825\n    style HTML fill:#e3f2fd,stroke:#1565c0\n    style HEAD fill:#e3f2fd,stroke:#1565c0\n    style BODY fill:#e3f2fd,stroke:#1565c0\n    style TITLE fill:#e8f5e9,stroke:#388e3c\n    style H1 fill:#e8f5e9,stroke:#388e3c\n    style DIV fill:#e8f5e9,stroke:#388e3c\n    style P fill:#fce4ec,stroke:#c2185b\n    style BTN fill:#fce4ec,stroke:#c2185b\"><svg id=\"exp-1773864522713-2-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 480.78515625px;\" viewBox=\"0 0 480.78515625 456\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1773864522713-2-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1773864522713-2-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1773864522713-2-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1773864522713-2-0 .error-icon{fill:#552222;}#exp-1773864522713-2-0 .error-text{fill:#552222;stroke:#552222;}#exp-1773864522713-2-0 .edge-thickness-normal{stroke-width:1px;}#exp-1773864522713-2-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1773864522713-2-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1773864522713-2-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1773864522713-2-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1773864522713-2-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1773864522713-2-0 .marker{fill:#333333;stroke:#333333;}#exp-1773864522713-2-0 .marker.cross{stroke:#333333;}#exp-1773864522713-2-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1773864522713-2-0 p{margin:0;}#exp-1773864522713-2-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1773864522713-2-0 .cluster-label text{fill:#333;}#exp-1773864522713-2-0 .cluster-label span{color:#333;}#exp-1773864522713-2-0 .cluster-label span p{background-color:transparent;}#exp-1773864522713-2-0 .label text,#exp-1773864522713-2-0 span{fill:#333;color:#333;}#exp-1773864522713-2-0 .node rect,#exp-1773864522713-2-0 .node circle,#exp-1773864522713-2-0 .node ellipse,#exp-1773864522713-2-0 .node polygon,#exp-1773864522713-2-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1773864522713-2-0 .rough-node .label text,#exp-1773864522713-2-0 .node .label text,#exp-1773864522713-2-0 .image-shape .label,#exp-1773864522713-2-0 .icon-shape .label{text-anchor:middle;}#exp-1773864522713-2-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1773864522713-2-0 .rough-node .label,#exp-1773864522713-2-0 .node .label,#exp-1773864522713-2-0 .image-shape .label,#exp-1773864522713-2-0 .icon-shape .label{text-align:center;}#exp-1773864522713-2-0 .node.clickable{cursor:pointer;}#exp-1773864522713-2-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1773864522713-2-0 .arrowheadPath{fill:#333333;}#exp-1773864522713-2-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1773864522713-2-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1773864522713-2-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1773864522713-2-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1773864522713-2-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1773864522713-2-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1773864522713-2-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1773864522713-2-0 .cluster text{fill:#333;}#exp-1773864522713-2-0 .cluster span{color:#333;}#exp-1773864522713-2-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1773864522713-2-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1773864522713-2-0 rect.text{fill:none;stroke-width:0;}#exp-1773864522713-2-0 .icon-shape,#exp-1773864522713-2-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1773864522713-2-0 .icon-shape p,#exp-1773864522713-2-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1773864522713-2-0 .icon-shape .label rect,#exp-1773864522713-2-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1773864522713-2-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1773864522713-2-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1773864522713-2-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1773864522713-2-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1773864522713-2-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1773864522713-2-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1773864522713-2-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1773864522713-2-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1773864522713-2-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M197.258,56L197.258,60.167C197.258,64.333,197.258,72.667,197.258,80.333C197.258,88,197.258,95,197.258,98.5L197.258,102\" id=\"L_DOC_HTML_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_DOC_HTML_0\" data-points=\"W3sieCI6MTk3LjI1NzgxMjUsInkiOjU2fSx7IngiOjE5Ny4yNTc4MTI1LCJ5Ijo4MX0seyJ4IjoxOTcuMjU3ODEyNSwieSI6MTA2fV0=\" marker-end=\"url(#exp-1773864522713-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M147.516,147.725L132.888,152.938C118.26,158.15,89.005,168.575,74.378,177.288C59.75,186,59.75,193,59.75,196.5L59.75,200\" id=\"L_HTML_HEAD_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_HTML_HEAD_0\" data-points=\"W3sieCI6MTQ3LjUxNTYyNSwieSI6MTQ3LjcyNTI5OTY5ODg4MDc1fSx7IngiOjU5Ljc1LCJ5IjoxNzl9LHsieCI6NTkuNzUsInkiOjIwNH1d\" marker-end=\"url(#exp-1773864522713-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M234.92,154L241.459,158.167C247.998,162.333,261.075,170.667,267.614,178.333C274.152,186,274.152,193,274.152,196.5L274.152,200\" id=\"L_HTML_BODY_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_HTML_BODY_0\" data-points=\"W3sieCI6MjM0LjkyMDQ0MDA1MTAyMDQyLCJ5IjoxNTR9LHsieCI6Mjc0LjE1MjM0Mzc1LCJ5IjoxNzl9LHsieCI6Mjc0LjE1MjM0Mzc1LCJ5IjoyMDR9XQ==\" marker-end=\"url(#exp-1773864522713-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M59.75,252L59.75,256.167C59.75,260.333,59.75,268.667,59.75,276.333C59.75,284,59.75,291,59.75,294.5L59.75,298\" id=\"L_HEAD_TITLE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_HEAD_TITLE_0\" data-points=\"W3sieCI6NTkuNzUsInkiOjI1Mn0seyJ4Ijo1OS43NSwieSI6Mjc3fSx7IngiOjU5Ljc1LCJ5IjozMDJ9XQ==\" marker-end=\"url(#exp-1773864522713-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M240.825,252L235.039,256.167C229.253,260.333,217.681,268.667,211.895,276.333C206.109,284,206.109,291,206.109,294.5L206.109,298\" id=\"L_BODY_H1_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_BODY_H1_0\" data-points=\"W3sieCI6MjQwLjgyNTE3NTM4MjY1MzA3LCJ5IjoyNTJ9LHsieCI6MjA2LjEwOTM3NSwieSI6Mjc3fSx7IngiOjIwNi4xMDkzNzUsInkiOjMwMn1d\" marker-end=\"url(#exp-1773864522713-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M307.48,252L313.265,256.167C319.051,260.333,330.623,268.667,336.409,276.333C342.195,284,342.195,291,342.195,294.5L342.195,298\" id=\"L_BODY_DIV_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_BODY_DIV_0\" data-points=\"W3sieCI6MzA3LjQ3OTUxMjExNzM0NjksInkiOjI1Mn0seyJ4IjozNDIuMTk1MzEyNSwieSI6Mjc3fSx7IngiOjM0Mi4xOTUzMTI1LCJ5IjozMDJ9XQ==\" marker-end=\"url(#exp-1773864522713-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M306.427,350L300.217,354.167C294.007,358.333,281.588,366.667,275.378,374.333C269.168,382,269.168,389,269.168,392.5L269.168,396\" id=\"L_DIV_P_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_DIV_P_0\" data-points=\"W3sieCI6MzA2LjQyNjgxNzYwMjA0MDg0LCJ5IjozNTB9LHsieCI6MjY5LjE2Nzk2ODc1LCJ5IjozNzV9LHsieCI6MjY5LjE2Nzk2ODc1LCJ5Ijo0MDB9XQ==\" marker-end=\"url(#exp-1773864522713-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M377.964,350L384.174,354.167C390.383,358.333,402.803,366.667,409.013,374.333C415.223,382,415.223,389,415.223,392.5L415.223,396\" id=\"L_DIV_BTN_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_DIV_BTN_0\" data-points=\"W3sieCI6Mzc3Ljk2MzgwNzM5Nzk1OTE2LCJ5IjozNTB9LHsieCI6NDE1LjIyMjY1NjI1LCJ5IjozNzV9LHsieCI6NDE1LjIyMjY1NjI1LCJ5Ijo0MDB9XQ==\" marker-end=\"url(#exp-1773864522713-2-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_DOC_HTML_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_HTML_HEAD_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_HTML_BODY_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_HEAD_TITLE_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_BODY_H1_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_BODY_DIV_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_DIV_P_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_DIV_BTN_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-DOC-0\" transform=\"translate(197.2578125, 32)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-72.734375\" y=\"-24\" width=\"145.46875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-48.734375, -12)\"><rect></rect><foreignObject width=\"97.46875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📄 document</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-HTML-1\" transform=\"translate(197.2578125, 130)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-49.7421875\" y=\"-24\" width=\"99.484375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-25.7421875, -12)\"><rect></rect><foreignObject width=\"51.484375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>&lt;html&gt;</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-HEAD-3\" transform=\"translate(59.75, 228)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-51.75\" y=\"-24\" width=\"103.5\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-27.75, -12)\"><rect></rect><foreignObject width=\"55.5\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>&lt;head&gt;</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-BODY-5\" transform=\"translate(274.15234375, 228)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-52.0390625\" y=\"-24\" width=\"104.078125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-28.0390625, -12)\"><rect></rect><foreignObject width=\"56.078125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>&lt;body&gt;</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-TITLE-7\" transform=\"translate(59.75, 326)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-47.3671875\" y=\"-24\" width=\"94.734375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-23.3671875, -12)\"><rect></rect><foreignObject width=\"46.734375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>&lt;title&gt;</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-H1-9\" transform=\"translate(206.109375, 326)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-41.5625\" y=\"-24\" width=\"83.125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-17.5625, -12)\"><rect></rect><foreignObject width=\"35.125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>&lt;h1&gt;</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-DIV-11\" transform=\"translate(342.1953125, 326)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-44.5234375\" y=\"-24\" width=\"89.046875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-20.5234375, -12)\"><rect></rect><foreignObject width=\"41.046875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>&lt;div&gt;</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-P-13\" transform=\"translate(269.16796875, 424)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-38.4921875\" y=\"-24\" width=\"76.984375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-14.4921875, -12)\"><rect></rect><foreignObject width=\"28.984375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>&lt;p&gt;</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-BTN-15\" transform=\"translate(415.22265625, 424)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-57.5625\" y=\"-24\" width=\"115.125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-33.5625, -12)\"><rect></rect><foreignObject width=\"67.125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>&lt;button&gt;</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<div class=\"note\"><strong>📝 Ключова роль <code>document</code></strong> <p>Глобальний об'єкт <code>document</code> — це точка входу до всього DOM. Саме через нього JavaScript отримує доступ до будь-якого елемента сторінки.</p>\n</div>\n\n","<h1>🔍 Пошук елементів — основні методи</h1>\n<p><strong>Головна ідея:</strong> Перш ніж маніпулювати елементом, його потрібно знайти. Існує кілька методів пошуку — вони відрізняються за критерієм пошуку та типом результату.</p>\n<h2>📊 Методи вибору</h2>\n<table>\n<thead>\n<tr>\n<th>Метод</th>\n<th>Критерій пошуку</th>\n<th>Повертає</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>getElementById('id')</code></td>\n<td>Атрибут <code>id</code></td>\n<td>Один елемент або <code>null</code></td>\n</tr>\n<tr>\n<td><code>getElementsByClassName('cls')</code></td>\n<td>Клас</td>\n<td>HTMLCollection (живий список)</td>\n</tr>\n<tr>\n<td><code>getElementsByTagName('tag')</code></td>\n<td>Тег</td>\n<td>HTMLCollection (живий список)</td>\n</tr>\n<tr>\n<td><code>querySelector('selector')</code></td>\n<td>CSS-селектор</td>\n<td>Перший збіг або <code>null</code></td>\n</tr>\n<tr>\n<td><code>querySelectorAll('selector')</code></td>\n<td>CSS-селектор</td>\n<td>NodeList (статичний список)</td>\n</tr>\n</tbody></table>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Пошук за id — найшвидший метод</span>\n<span class=\"hljs-keyword\">const</span> title = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">'main-title'</span>);\n\n<span class=\"hljs-comment\">// Пошук за CSS-селектором — найуніверсальніший</span>\n<span class=\"hljs-keyword\">const</span> btn = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'.btn-primary'</span>);\n<span class=\"hljs-keyword\">const</span> inputs = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelectorAll</span>(<span class=\"hljs-string\">'input[type=\"text\"]'</span>);\n\n<span class=\"hljs-comment\">// Пошук в межах конкретного елемента</span>\n<span class=\"hljs-keyword\">const</span> form = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#registration-form'</span>);\n<span class=\"hljs-keyword\">const</span> fields = form.<span class=\"hljs-title function_\">querySelectorAll</span>(<span class=\"hljs-string\">'input'</span>); <span class=\"hljs-comment\">// тільки input всередині форми</span></code></pre><div class=\"tip\"><strong>💡 Рекомендація</strong> <p>У сучасному коді переважно використовують <code>querySelector</code> та <code>querySelectorAll</code> — вони підтримують будь-які CSS-селектори і роблять код більш читабельним.</p>\n</div>\n\n","<h1>📝 Читання та зміна вмісту</h1>\n<p><strong>Головна ідея:</strong> DOM-елементи мають властивості для роботи з текстовим і HTML-вмістом. Вибір правильної властивості важливий і для зручності, і для безпеки.</p>\n<h2>🔑 Ключові властивості</h2>\n<table>\n<thead>\n<tr>\n<th>Властивість</th>\n<th>Що робить</th>\n<th>Безпека</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>textContent</code></td>\n<td>Читає/встановлює текст вузла та всіх нащадків</td>\n<td>✅ Безпечна</td>\n</tr>\n<tr>\n<td><code>innerHTML</code></td>\n<td>Читає/встановлює HTML-розмітку всередині елемента</td>\n<td>⚠️ Обережно</td>\n</tr>\n</tbody></table>\n<div class=\"note\"><strong>📝 <code>textContent</code> vs <code>innerText</code></strong> <p>Існує ще властивість <code>innerText</code>, яка враховує CSS і повертає лише <strong>видимий</strong> текст. Через це вона значно повільніша і менш передбачувана — у практиці майже завжди використовують <code>textContent</code>.</p>\n</div>\n\n\n\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> heading = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'h1'</span>);\n\n<span class=\"hljs-comment\">// Читання тексту</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(heading.<span class=\"hljs-property\">textContent</span>); <span class=\"hljs-comment\">// \"Привіт, світ!\"</span>\n\n<span class=\"hljs-comment\">// Зміна тексту — безпечно</span>\nheading.<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">'Новий заголовок'</span>;\n\n<span class=\"hljs-comment\">// Вставка HTML — лише з перевіреними даними!</span>\n<span class=\"hljs-keyword\">const</span> list = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#menu'</span>);\nlist.<span class=\"hljs-property\">innerHTML</span> = <span class=\"hljs-string\">'&lt;li&gt;Пункт 1&lt;/li&gt;&lt;li&gt;Пункт 2&lt;/li&gt;'</span>;\n\n<span class=\"hljs-comment\">// Небезпечний приклад — ніколи так не робити з даними користувача:</span>\n<span class=\"hljs-comment\">// element.innerHTML = userInput; // XSS-вразливість!</span></code></pre><div class=\"danger\"><strong>🚫 XSS через innerHTML</strong> <p>Якщо вставляти в <code>innerHTML</code> рядок, що містить дані від користувача, зловмисник може впровадити шкідливий <code>&lt;script&gt;</code>. Для тексту завжди використовуйте <code>textContent</code>.</p>\n</div>\n\n","<h1>🎨 Зміна стилів та атрибутів</h1>\n<p><strong>Головна ідея:</strong> JavaScript дозволяє змінювати як CSS-стилі безпосередньо, так і атрибути HTML-елементів — включно з класами.</p>\n<h2>🖌️ Робота зі стилями</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> box = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'.card'</span>);\n\n<span class=\"hljs-comment\">// Прямий стиль через властивість style</span>\nbox.<span class=\"hljs-property\">style</span>.<span class=\"hljs-property\">backgroundColor</span> = <span class=\"hljs-string\">'#e3f2fd'</span>;\nbox.<span class=\"hljs-property\">style</span>.<span class=\"hljs-property\">fontSize</span> = <span class=\"hljs-string\">'18px'</span>;\nbox.<span class=\"hljs-property\">style</span>.<span class=\"hljs-property\">display</span> = <span class=\"hljs-string\">'none'</span>; <span class=\"hljs-comment\">// приховати елемент</span>\n\n<span class=\"hljs-comment\">// Читання поточного стилю (з урахуванням CSS)</span>\n<span class=\"hljs-keyword\">const</span> styles = <span class=\"hljs-variable language_\">window</span>.<span class=\"hljs-title function_\">getComputedStyle</span>(box);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(styles.<span class=\"hljs-property\">fontSize</span>); <span class=\"hljs-comment\">// \"18px\"</span></code></pre><h2>🏷️ Робота з класами — <code>classList</code></h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> btn = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'.btn'</span>);\n\nbtn.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">add</span>(<span class=\"hljs-string\">'active'</span>);       <span class=\"hljs-comment\">// Додати клас</span>\nbtn.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">remove</span>(<span class=\"hljs-string\">'disabled'</span>);  <span class=\"hljs-comment\">// Видалити клас</span>\nbtn.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">toggle</span>(<span class=\"hljs-string\">'hidden'</span>);    <span class=\"hljs-comment\">// Додати/видалити залежно від наявності</span>\nbtn.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">contains</span>(<span class=\"hljs-string\">'active'</span>);  <span class=\"hljs-comment\">// true або false</span></code></pre><h2>🔧 Робота з атрибутами</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> img = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'img'</span>);\n\n<span class=\"hljs-comment\">// Читання та запис атрибутів</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(img.<span class=\"hljs-title function_\">getAttribute</span>(<span class=\"hljs-string\">'alt'</span>)); <span class=\"hljs-comment\">// \"Фото товару\"</span>\nimg.<span class=\"hljs-title function_\">setAttribute</span>(<span class=\"hljs-string\">'alt'</span>, <span class=\"hljs-string\">'Новий опис'</span>);\nimg.<span class=\"hljs-title function_\">removeAttribute</span>(<span class=\"hljs-string\">'disabled'</span>);\n\n<span class=\"hljs-comment\">// Спеціальні атрибути — доступні як властивості</span>\n<span class=\"hljs-keyword\">const</span> input = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'input'</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(input.<span class=\"hljs-property\">value</span>);    <span class=\"hljs-comment\">// поточне значення поля</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(input.<span class=\"hljs-property\">disabled</span>); <span class=\"hljs-comment\">// true або false</span>\ninput.<span class=\"hljs-property\">value</span> = <span class=\"hljs-string\">'Новий текст'</span>;</code></pre><div class=\"tip\"><strong>💡 classList замість className</strong> <p>Перевага <code>classList</code> над прямою заміною <code>className</code> — він не стирає інші класи елемента. <code>element.className = 'active'</code> видалить усі наявні класи.</p>\n</div>\n\n","<h1>➕ Створення елементів</h1>\n<p><strong>Головна ідея:</strong> DOM дозволяє динамічно створювати нові елементи та додавати їх на сторінку — без перезавантаження і без заміни всього HTML.</p>\n<h2>🏗️ Три кроки створення елемента</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 1. Створити елемент</span>\n<span class=\"hljs-keyword\">const</span> card = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">createElement</span>(<span class=\"hljs-string\">'div'</span>);\n\n<span class=\"hljs-comment\">// 2. Налаштувати</span>\ncard.<span class=\"hljs-property\">className</span> = <span class=\"hljs-string\">'product-card'</span>;\ncard.<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">'Новий товар'</span>;\n\n<span class=\"hljs-comment\">// Або через innerHTML (дані перевірені — не від користувача)</span>\n<span class=\"hljs-keyword\">const</span> li = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">createElement</span>(<span class=\"hljs-string\">'li'</span>);\nli.<span class=\"hljs-property\">innerHTML</span> = <span class=\"hljs-string\">'&lt;strong&gt;Назва:&lt;/strong&gt; Смартфон'</span>;\n\n<span class=\"hljs-comment\">// 3. Додати на сторінку</span>\n<span class=\"hljs-keyword\">const</span> list = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#product-list'</span>);\nlist.<span class=\"hljs-title function_\">appendChild</span>(card);          <span class=\"hljs-comment\">// в кінець контейнера</span>\nlist.<span class=\"hljs-title function_\">prepend</span>(li);                 <span class=\"hljs-comment\">// на початок контейнера</span></code></pre><h2>📌 Методи вставки</h2>\n<table>\n<thead>\n<tr>\n<th>Метод</th>\n<th>Куди вставляє</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>appendChild(el)</code></td>\n<td>Останньою дочірньою</td>\n</tr>\n<tr>\n<td><code>prepend(el)</code></td>\n<td>Першою дочірньою</td>\n</tr>\n<tr>\n<td><code>before(el)</code></td>\n<td>Перед елементом (сусід)</td>\n</tr>\n<tr>\n<td><code>after(el)</code></td>\n<td>Після елемента (сусід)</td>\n</tr>\n<tr>\n<td><code>replaceWith(el)</code></td>\n<td>Замінює елемент</td>\n</tr>\n</tbody></table>\n","<h1>🗑️ Видалення елементів</h1>\n<p><strong>Головна ідея:</strong> Видалення елемента з DOM повністю прибирає його зі сторінки. Для тимчасового приховання краще використовувати CSS.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Сучасний спосіб — remove()</span>\n<span class=\"hljs-keyword\">const</span> outdatedCard = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'.old-card'</span>);\noutdatedCard.<span class=\"hljs-title function_\">remove</span>();\n\n<span class=\"hljs-comment\">// Видалення дочірнього елемента</span>\n<span class=\"hljs-keyword\">const</span> list = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'ul'</span>);\n<span class=\"hljs-keyword\">const</span> firstItem = list.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'li'</span>);\nlist.<span class=\"hljs-title function_\">removeChild</span>(firstItem);\n\n<span class=\"hljs-comment\">// Очищення всього вмісту контейнера</span>\n<span class=\"hljs-keyword\">const</span> container = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#results'</span>);\ncontainer.<span class=\"hljs-property\">innerHTML</span> = <span class=\"hljs-string\">''</span>; <span class=\"hljs-comment\">// Очищає всі дочірні елементи</span></code></pre><h2>⚖️ Видалити vs приховати</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Приховати (залишається в DOM, можна повернути)</span>\nelement.<span class=\"hljs-property\">style</span>.<span class=\"hljs-property\">display</span> = <span class=\"hljs-string\">'none'</span>;\nelement.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">add</span>(<span class=\"hljs-string\">'hidden'</span>); <span class=\"hljs-comment\">// через CSS: .hidden { display: none }</span>\n\n<span class=\"hljs-comment\">// Видалити (повністю прибирається з DOM)</span>\nelement.<span class=\"hljs-title function_\">remove</span>();</code></pre><div class=\"warning\"><strong>⚠️ Коли видаляти, а коли приховувати</strong> <p>Якщо елемент може знадобитись знову — краще приховати через клас. Видаляти варто тоді, коли елемент більше ніколи не знадобиться або коли він буде заново створений з новими даними.</p>\n</div>\n\n","<h1>🧭 Навігація по DOM-дереву</h1>\n<p><strong>Головна ідея:</strong> Знайшовши один елемент, можна переміщатись по дереву до сусідніх або батьківських вузлів без нового пошуку.</p>\n<h2>🗺️ Властивості навігації</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> item = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'.selected'</span>);\n\n<span class=\"hljs-comment\">// Батьківський елемент</span>\n<span class=\"hljs-keyword\">const</span> parent = item.<span class=\"hljs-property\">parentElement</span>;\n\n<span class=\"hljs-comment\">// Дочірні елементи</span>\n<span class=\"hljs-keyword\">const</span> children = item.<span class=\"hljs-property\">children</span>;          <span class=\"hljs-comment\">// HTMLCollection лише елементів</span>\n<span class=\"hljs-keyword\">const</span> first = item.<span class=\"hljs-property\">firstElementChild</span>;\n<span class=\"hljs-keyword\">const</span> last  = item.<span class=\"hljs-property\">lastElementChild</span>;\n\n<span class=\"hljs-comment\">// Сусідні елементи</span>\n<span class=\"hljs-keyword\">const</span> next = item.<span class=\"hljs-property\">nextElementSibling</span>;    <span class=\"hljs-comment\">// наступний сусід</span>\n<span class=\"hljs-keyword\">const</span> prev = item.<span class=\"hljs-property\">previousElementSibling</span>; <span class=\"hljs-comment\">// попередній сусід</span></code></pre><h2>🔎 Пошук найближчого предка — <code>closest()</code></h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// closest() піднімається вгору по DOM і шукає перший збіг з селектором</span>\n<span class=\"hljs-keyword\">const</span> btn = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'.delete-btn'</span>);\n<span class=\"hljs-keyword\">const</span> card = btn.<span class=\"hljs-title function_\">closest</span>(<span class=\"hljs-string\">'.product-card'</span>); <span class=\"hljs-comment\">// знаходить батьківську картку</span>\n\n<span class=\"hljs-keyword\">if</span> (card) {\n  card.<span class=\"hljs-title function_\">remove</span>(); <span class=\"hljs-comment\">// видаляємо всю картку</span>\n}</code></pre><div class=\"note\"><strong>📝 <code>children</code> vs <code>childNodes</code></strong> <p><code>children</code> повертає лише дочірні <strong>елементи</strong> (теги). <code>childNodes</code> повертає всі вузли, включно з текстовими вузлами та коментарями. У роботі з DOM майже завжди використовують <code>children</code>.</p>\n</div>\n\n","<h1>🛠️ Практичний приклад: динамічний список завдань</h1>\n<p><strong>Головна ідея:</strong> Поєднання пошуку, створення та видалення елементів дозволяє будувати інтерактивні інтерфейси без перезавантаження сторінки.</p>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-meta\">&lt;!DOCTYPE <span class=\"hljs-keyword\">html</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">html</span> <span class=\"hljs-attr\">lang</span>=<span class=\"hljs-string\">\"uk\"</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">head</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">meta</span> <span class=\"hljs-attr\">charset</span>=<span class=\"hljs-string\">\"UTF-8\"</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">title</span>&gt;</span>Список завдань<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">title</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">head</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">body</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">h2</span>&gt;</span>📋 Мої завдання<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">h2</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">input</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"task-input\"</span> <span class=\"hljs-attr\">type</span>=<span class=\"hljs-string\">\"text\"</span> <span class=\"hljs-attr\">placeholder</span>=<span class=\"hljs-string\">\"Нове завдання...\"</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">button</span> <span class=\"hljs-attr\">onclick</span>=<span class=\"hljs-string\">\"addTask()\"</span>&gt;</span>➕ Додати<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">button</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">ul</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"task-list\"</span>&gt;</span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">ul</span>&gt;</span>\n\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">script</span>&gt;</span><span class=\"language-javascript\">\n    <span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">addTask</span>(<span class=\"hljs-params\"></span>) {\n      <span class=\"hljs-keyword\">const</span> input = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">'task-input'</span>);\n      <span class=\"hljs-keyword\">const</span> list  = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">'task-list'</span>);\n\n      <span class=\"hljs-keyword\">const</span> text = input.<span class=\"hljs-property\">value</span>.<span class=\"hljs-title function_\">trim</span>();\n      <span class=\"hljs-keyword\">if</span> (!text) <span class=\"hljs-keyword\">return</span>; <span class=\"hljs-comment\">// порожній рядок — ігноруємо</span>\n\n      <span class=\"hljs-comment\">// 1. Створити елемент списку</span>\n      <span class=\"hljs-keyword\">const</span> li = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">createElement</span>(<span class=\"hljs-string\">'li'</span>);\n      li.<span class=\"hljs-property\">textContent</span> = text;\n\n      <span class=\"hljs-comment\">// 2. Створити кнопку видалення</span>\n      <span class=\"hljs-keyword\">const</span> removeBtn = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">createElement</span>(<span class=\"hljs-string\">'button'</span>);\n      removeBtn.<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">'🗑️'</span>;\n      removeBtn.<span class=\"hljs-property\">onclick</span> = <span class=\"hljs-keyword\">function</span>(<span class=\"hljs-params\"></span>) {\n        li.<span class=\"hljs-title function_\">remove</span>();\n      };\n\n      <span class=\"hljs-comment\">// 3. Зібрати та додати на сторінку</span>\n      li.<span class=\"hljs-title function_\">appendChild</span>(removeBtn);\n      list.<span class=\"hljs-title function_\">appendChild</span>(li);\n      input.<span class=\"hljs-property\">value</span> = <span class=\"hljs-string\">''</span>; <span class=\"hljs-comment\">// очищаємо поле вводу</span>\n    }\n  </span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">script</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">body</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">html</span>&gt;</span></code></pre><div class=\"note\"><strong>📝 Атрибут <code>onclick</code></strong> <p>У прикладі використовується <code>onclick</code> — найпростіший спосіб прив'язати дію до кнопки. Він задається прямо в HTML (<code>onclick=\"addTask()\"</code>) або як властивість елемента (<code>element.onclick = function() {...}</code>). Більш гнучкий механізм обробки подій буде розглянутий на наступній лекції.</p>\n</div>\n\n","<h1>✅ Ключові висновки</h1>\n<div class=\"success\"><strong>✅ Підсумок лекції</strong> <p><strong>📌 Що ми вивчили:</strong></p>\n<ol>\n<li><p><strong>DOM</strong> — деревоподібна модель HTML-документа, через яку JavaScript взаємодіє зі сторінкою; точка входу — об'єкт <code>document</code></p>\n</li>\n<li><p><strong>Пошук елементів</strong> — <code>getElementById</code> для пошуку за id, <code>querySelector</code>/<code>querySelectorAll</code> — для будь-якого CSS-селектора</p>\n</li>\n<li><p><strong>Вміст</strong> — <code>textContent</code> для безпечної роботи з текстом, <code>innerHTML</code> — тільки для перевіреного HTML без даних від користувача</p>\n</li>\n<li><p><strong>Стилі та класи</strong> — <code>element.style</code> для прямих змін, <code>classList.add/remove/toggle</code> — для управління класами</p>\n</li>\n<li><p><strong>Атрибути</strong> — <code>getAttribute</code>/<code>setAttribute</code>/<code>removeAttribute</code>, а також прямий доступ через властивості (<code>value</code>, <code>disabled</code>)</p>\n</li>\n<li><p><strong>Створення</strong> — <code>createElement</code> → налаштування → <code>appendChild</code>/<code>prepend</code>/<code>after</code></p>\n</li>\n<li><p><strong>Видалення</strong> — <code>element.remove()</code> для видалення з DOM, <code>display: none</code> / CSS-клас — для тимчасового приховання</p>\n</li>\n<li><p><strong>Навігація</strong> — <code>parentElement</code>, <code>children</code>, <code>nextElementSibling</code>, <code>closest()</code> для переміщення по дереву</p>\n</li>\n</ol>\n</div>\n\n","<h1>❓ Контрольні питання</h1>\n<ol>\n<li><p>🤔 Що таке DOM і яку роль відіграє об'єкт <code>document</code>?</p>\n</li>\n<li><p>🤔 Яка різниця між <code>querySelector</code> та <code>querySelectorAll</code>? Що вони повертають?</p>\n</li>\n<li><p>🤔 Чим відрізняється <code>textContent</code> від <code>innerHTML</code>? Коли небезпечно використовувати <code>innerHTML</code>?</p>\n</li>\n<li><p>🤔 Що таке <code>classList</code>? Назвіть три методи та поясніть кожен.</p>\n</li>\n<li><p>🤔 Як динамічно створити новий елемент і додати його в кінець списку?</p>\n</li>\n<li><p>🤔 Яка різниця між <code>element.remove()</code> та <code>element.style.display = 'none'</code>?</p>\n</li>\n<li><p>🤔 Для чого використовується метод <code>closest()</code>? Як він шукає елемент?</p>\n</li>\n</ol>\n","<h1>📖 Глосарій термінів</h1>\n<table>\n<thead>\n<tr>\n<th>Термін</th>\n<th>English</th>\n<th>Визначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Об'єктна модель документа</td>\n<td>Document Object Model</td>\n<td>Представлення HTML-документа у вигляді дерева об'єктів</td>\n</tr>\n<tr>\n<td>Вузол</td>\n<td>Node</td>\n<td>Базова одиниця DOM-дерева (елемент, текст, коментар)</td>\n</tr>\n<tr>\n<td>Елемент</td>\n<td>Element</td>\n<td>Вузол, що відповідає HTML-тегу</td>\n</tr>\n<tr>\n<td>Батьківський елемент</td>\n<td>Parent Element</td>\n<td>Елемент, що безпосередньо містить даний елемент</td>\n</tr>\n<tr>\n<td>Дочірній елемент</td>\n<td>Child Element</td>\n<td>Елемент, що безпосередньо вкладений в інший</td>\n</tr>\n<tr>\n<td>Сусідній елемент</td>\n<td>Sibling Element</td>\n<td>Елемент на тому ж рівні вкладеності</td>\n</tr>\n<tr>\n<td>Список класів</td>\n<td>Class List</td>\n<td>Інтерфейс для управління класами елемента</td>\n</tr>\n<tr>\n<td>Обчислений стиль</td>\n<td>Computed Style</td>\n<td>Фактичний стиль елемента з урахуванням усіх CSS-правил</td>\n</tr>\n</tbody></table>\n","<h1>📖 Глосарій абревіатур</h1>\n<table>\n<thead>\n<tr>\n<th>Абревіатура</th>\n<th>Розшифровка</th>\n<th>Переклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>DOM</td>\n<td>Document Object Model</td>\n<td>Об'єктна модель документа</td>\n</tr>\n<tr>\n<td>API</td>\n<td>Application Programming Interface</td>\n<td>Програмний інтерфейс застосунку</td>\n</tr>\n<tr>\n<td>HTML</td>\n<td>HyperText Markup Language</td>\n<td>Мова розмітки гіпертексту</td>\n</tr>\n<tr>\n<td>CSS</td>\n<td>Cascading Style Sheets</td>\n<td>Каскадні таблиці стилів</td>\n</tr>\n<tr>\n<td>XSS</td>\n<td>Cross-Site Scripting</td>\n<td>Міжсайтовий скриптинг</td>\n</tr>\n</tbody></table>\n"];let currentSlideIndex=0;
+function renderMath(root){if(typeof renderMathInElement!=="function"||!root)return;try{renderMathInElement(root,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false,strict:"ignore",ignoredTags:["script","noscript","style","textarea","pre","code"]});}catch(e){console.warn("Math render error:",e);}}
+function showSlide(i){if(i<0||i>=slides.length)return;currentSlideIndex=i;const el=document.getElementById("current-slide");el.innerHTML=slides[i];el.scrollTop=0;renderMath(el);document.getElementById("progress-bar").style.width=((i+1)/slides.length*100)+"%";document.getElementById("slide-number").textContent=(i+1)+" / "+slides.length;updateSidebarActive();}
+function nextSlide(){if(currentSlideIndex<slides.length-1)showSlide(currentSlideIndex+1);}
+function previousSlide(){if(currentSlideIndex>0)showSlide(currentSlideIndex-1);}
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleHelp(){document.getElementById("help-overlay").classList.toggle("hidden");}
+function toggleFullscreen(){if(!document.fullscreenElement){const pc=document.getElementById("presentation-container");if(pc.requestFullscreen)pc.requestFullscreen();else if(pc.webkitRequestFullscreen)pc.webkitRequestFullscreen();else if(pc.msRequestFullscreen)pc.msRequestFullscreen();else if(pc.mozRequestFullScreen)pc.mozRequestFullScreen();}else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();else if(document.msExitFullscreen)document.msExitFullscreen();else if(document.mozCancelFullScreen)document.mozCancelFullScreen();}}
+function generateSidebar(){const sc=document.getElementById("sidebar-content");sc.innerHTML="";slides.forEach((html,idx)=>{const t=document.createElement("div");t.className="slide-thumbnail";if(idx===0)t.classList.add("active");const tmp=document.createElement("div");tmp.innerHTML=html;const title=tmp.querySelector("h1,h2");const titleText=title?title.textContent:("Слайд "+(idx+1));const textContent=tmp.textContent.replace(/s+/g," ").trim();const preview=textContent.substring(0,100)+(textContent.length>100?"...":"");t.innerHTML="<div class=\"slide-thumbnail-number\">"+(idx+1)+"</div><div class=\"slide-thumbnail-title\">"+titleText+"</div><div class=\"slide-thumbnail-content\">"+preview+"</div>";t.onclick=()=>{showSlide(idx);if(window.innerWidth<1024)toggleSidebar();};sc.appendChild(t);});}
+function updateSidebarActive(){document.querySelectorAll(".slide-thumbnail").forEach((th,idx)=>{if(idx===currentSlideIndex){th.classList.add("active");th.scrollIntoView({behavior:"smooth",block:"nearest"});}else th.classList.remove("active");});}
+document.addEventListener("keydown",e=>{switch(e.key){case"ArrowLeft":previousSlide();break;case"ArrowRight":case" ":e.preventDefault();nextSlide();break;case"f":case"F":toggleFullscreen();break;case"s":case"S":toggleSidebar();break;case"?":toggleHelp();break;case"Escape":const sb=document.getElementById("sidebar");const ho=document.getElementById("help-overlay");if(sb.classList.contains("open"))toggleSidebar();else if(!ho.classList.contains("hidden"))ho.classList.add("hidden");break;}});
+generateSidebar();showSlide(0);</script></body></html>
