@@ -1,0 +1,621 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Події та обробники подій</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><style>* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor-container.hidden {
+            display: none;
+        }
+
+        #editor-header {
+            background: #2d3748;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor-header h2 {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #editor-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        #markdown-input {
+            flex: 1;
+            padding: 2rem;
+            background: #1a202c;
+            color: #e2e8f0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        #markdown-input:focus {
+            outline: none;
+        }
+
+        .slide-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .slide h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h2 {
+            color: #764ba2;
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide pre {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .slide pre code {
+            background: transparent;
+            color: #abb2bf;
+        }
+
+        .slide code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .slide h1 code, .slide h2 code, .slide h3 code {
+            font-size: 0.85em;
+            background: rgba(237, 242, 247, 0.5);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .slide p code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .slide blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        .slide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .slide th, .slide td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .slide th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .slide tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .note {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #c53030;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .warning strong {
+            color: #c05621;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .info strong {
+            color: #2c5282;
+        }
+
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #22543d;
+        }
+
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .danger strong {
+            color: #742a2a;
+        }
+
+        .tip {
+            background: #fefcbf;
+            border-left: 4px solid #ecc94b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #744210;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            transition: width 0.3s;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        #sidebar.open {
+            right: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #sidebar-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        #sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        #sidebar-close:hover {
+            color: #667eea;
+        }
+
+        .slide-thumbnail {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .slide-thumbnail:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .slide-thumbnail.active {
+            border-color: #667eea;
+            background: #f7faff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slide-thumbnail-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-thumbnail-content {
+            font-size: 0.85rem;
+            color: #2d3748;
+            line-height: 1.4;
+            max-height: 4.2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-thumbnail-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 1.4rem;
+            background: linear-gradient(to right, transparent, white);
+        }
+
+        .slide-thumbnail.active .slide-thumbnail-content::after {
+            background: linear-gradient(to right, transparent, #f7faff);
+        }
+
+        .slide-thumbnail-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+        }
+
+        #sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: visible; /* щоб не обрізати тіні / розширені ноди */
+        }
+
+        /* Запобігаємо обрізанню останньої літери в нодах Mermaid через зміну font-weight після розрахунку розміру */
+        .mermaid svg { overflow: visible !important; }
+        /* перестраховка проти обрізання foreignObject (на випадок інших діаграм) */
+        .mermaid svg foreignObject { overflow: visible !important; }
+
+        .plantuml-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        #help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #help-overlay kbd {
+            background: #2d3748;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .mermaid-error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #742a2a;
+            margin: 1.5rem 0;
+        }
+
+        .mermaid-error pre {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
+
+        /* Повноекранний режим - зберігаємо оригінальний фон */
+        #presentation-container:fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-webkit-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-moz-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-ms-fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+#presentation-container:fullscreen,#presentation-container:-webkit-full-screen,#presentation-container:-moz-full-screen,#presentation-container:-ms-fullscreen{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)!important;}</style></head><body><div id="presentation-container"><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><button id="sidebar-toggle" onclick="toggleSidebar()" title="Навігація слайдами (S)">☰</button><div id="sidebar"><div id="sidebar-header"><h3>📑 Слайди</h3><button id="sidebar-close" onclick="toggleSidebar()">✕</button></div><div id="sidebar-content"></div></div><div class="slide-container"><div class="slide" id="current-slide"></div></div><div class="controls"><button class="control-btn" onclick="previousSlide()" title="Попередній (←)">←</button><button class="control-btn" onclick="nextSlide()" title="Наступний (→)">→</button><button class="control-btn" onclick="toggleFullscreen()" title="Повноекранний режим (F)">⛶</button><button class="control-btn" onclick="toggleHelp()" title="Допомога (?)">?</button></div><div class="slide-number" id="slide-number">1 / 13</div><div id="help-overlay" class="hidden"><strong>Гарячі клавіші:</strong><br><kbd>←</kbd> <kbd>→</kbd> Навігація<br><kbd>F</kbd> Повноекранний режим<br><kbd>S</kbd> Sidebar<br><kbd>?</kbd> Допомога<br><kbd>Esc</kbd> Закрити</div></div><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script><script>const slides=["<h1>Події та обробники подій</h1>\n<p><strong>Web-технології в автоматизованих системах</strong></p>\n<p>Лектор: Кобилянський Антон</p>\n","<h1>📋 План лекції</h1>\n<ol>\n<li>🖱️ Що таке події у браузері — концепція подієво-орієнтованої моделі</li>\n<li>🔗 Способи призначення обробників — <code>onclick</code>, <code>addEventListener</code></li>\n<li>📦 Об'єкт події <code>event</code> — властивості та методи</li>\n<li>🌊 Поширення подій — capturing, bubbling, <code>stopPropagation</code></li>\n<li>🎯 Делегування подій — патерн для динамічних списків</li>\n<li>📝 Практичний приклад — інтерактивна форма з валідацією</li>\n<li>✅ Ключові висновки та контрольні питання</li>\n</ol>\n","<h1>🖱️ Подієво-орієнтована модель браузера</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Подія (Event)</strong> — сигнал від браузера про те, що щось відбулось: користувач клацнув, натиснув клавішу, сторінка завантажилась, поле отримало фокус. <strong>Обробник події (Event Handler)</strong> — JavaScript-функція, що викликається у відповідь на цей сигнал.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Браузер постійно генерує події, а JavaScript дає змогу на них реагувати — саме це перетворює статичну сторінку на інтерактивний додаток.</p>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    U[&quot;👤 Користувач&quot;] --&gt;|&quot;клік / введення / скрол&quot;| B[&quot;🌐 Браузер&quot;]\n    B --&gt;|&quot;генерує подію&quot;| Q[&quot;📬 Черга подій&quot;]\n    Q --&gt;|&quot;виклик обробника&quot;| H[&quot;⚙️ Event Handler&quot;]\n    H --&gt;|&quot;змінює&quot;| D[&quot;📄 DOM&quot;]\n    style U fill:#e3f2fd,stroke:#1565c0\n    style B fill:#fff3e0,stroke:#ef6c00\n    style Q fill:#fff9c4,stroke:#f9a825\n    style H fill:#e8f5e9,stroke:#388e3c\n    style D fill:#fce4ec,stroke:#c2185b\"><svg id=\"exp-1774461553973-2-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 1446.5625px;\" viewBox=\"0 0 1446.5625 64\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1774461553973-2-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1774461553973-2-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1774461553973-2-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1774461553973-2-0 .error-icon{fill:#552222;}#exp-1774461553973-2-0 .error-text{fill:#552222;stroke:#552222;}#exp-1774461553973-2-0 .edge-thickness-normal{stroke-width:1px;}#exp-1774461553973-2-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1774461553973-2-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1774461553973-2-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1774461553973-2-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1774461553973-2-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1774461553973-2-0 .marker{fill:#333333;stroke:#333333;}#exp-1774461553973-2-0 .marker.cross{stroke:#333333;}#exp-1774461553973-2-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1774461553973-2-0 p{margin:0;}#exp-1774461553973-2-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1774461553973-2-0 .cluster-label text{fill:#333;}#exp-1774461553973-2-0 .cluster-label span{color:#333;}#exp-1774461553973-2-0 .cluster-label span p{background-color:transparent;}#exp-1774461553973-2-0 .label text,#exp-1774461553973-2-0 span{fill:#333;color:#333;}#exp-1774461553973-2-0 .node rect,#exp-1774461553973-2-0 .node circle,#exp-1774461553973-2-0 .node ellipse,#exp-1774461553973-2-0 .node polygon,#exp-1774461553973-2-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1774461553973-2-0 .rough-node .label text,#exp-1774461553973-2-0 .node .label text,#exp-1774461553973-2-0 .image-shape .label,#exp-1774461553973-2-0 .icon-shape .label{text-anchor:middle;}#exp-1774461553973-2-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1774461553973-2-0 .rough-node .label,#exp-1774461553973-2-0 .node .label,#exp-1774461553973-2-0 .image-shape .label,#exp-1774461553973-2-0 .icon-shape .label{text-align:center;}#exp-1774461553973-2-0 .node.clickable{cursor:pointer;}#exp-1774461553973-2-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1774461553973-2-0 .arrowheadPath{fill:#333333;}#exp-1774461553973-2-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1774461553973-2-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1774461553973-2-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1774461553973-2-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1774461553973-2-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1774461553973-2-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1774461553973-2-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1774461553973-2-0 .cluster text{fill:#333;}#exp-1774461553973-2-0 .cluster span{color:#333;}#exp-1774461553973-2-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1774461553973-2-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1774461553973-2-0 rect.text{fill:none;stroke-width:0;}#exp-1774461553973-2-0 .icon-shape,#exp-1774461553973-2-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1774461553973-2-0 .icon-shape p,#exp-1774461553973-2-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1774461553973-2-0 .icon-shape .label rect,#exp-1774461553973-2-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1774461553973-2-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1774461553973-2-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1774461553973-2-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1774461553973-2-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774461553973-2-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774461553973-2-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1774461553973-2-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1774461553973-2-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774461553973-2-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M168.734,32L187.491,32C206.247,32,243.76,32,280.607,32C317.453,32,353.633,32,371.723,32L389.813,32\" id=\"L_U_B_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_U_B_0\" data-points=\"W3sieCI6MTY4LjczNDM3NSwieSI6MzJ9LHsieCI6MjgxLjI3MzQzNzUsInkiOjMyfSx7IngiOjM5My44MTI1LCJ5IjozMn1d\" marker-end=\"url(#exp-1774461553973-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M528.906,32L542.466,32C556.026,32,583.146,32,609.599,32C636.052,32,661.839,32,674.732,32L687.625,32\" id=\"L_B_Q_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_B_Q_0\" data-points=\"W3sieCI6NTI4LjkwNjI1LCJ5IjozMn0seyJ4Ijo2MTAuMjY1NjI1LCJ5IjozMn0seyJ4Ijo2OTEuNjI1LCJ5IjozMn1d\" marker-end=\"url(#exp-1774461553973-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M853.984,32L870.094,32C886.203,32,918.422,32,949.974,32C981.526,32,1012.411,32,1027.854,32L1043.297,32\" id=\"L_Q_H_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_Q_H_0\" data-points=\"W3sieCI6ODUzLjk4NDM3NSwieSI6MzJ9LHsieCI6OTUwLjY0MDYyNSwieSI6MzJ9LHsieCI6MTA0Ny4yOTY4NzUsInkiOjMyfV0=\" marker-end=\"url(#exp-1774461553973-2-0_flowchart-v2-pointEnd)\"></path><path d=\"M1221.25,32L1230.259,32C1239.268,32,1257.286,32,1274.638,32C1291.99,32,1308.674,32,1317.017,32L1325.359,32\" id=\"L_H_D_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_H_D_0\" data-points=\"W3sieCI6MTIyMS4yNSwieSI6MzJ9LHsieCI6MTI3NS4zMDQ2ODc1LCJ5IjozMn0seyJ4IjoxMzI5LjM1OTM3NSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1774461553973-2-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\" transform=\"translate(281.2734375, 32)\"><g class=\"label\" data-id=\"L_U_B_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-87.5390625\" y=\"-1\" width=\"175.078125\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">клік</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> /</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> введення</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> /</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> скрол</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(610.265625, 32)\"><g class=\"label\" data-id=\"L_B_Q_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-56.359375\" y=\"-1\" width=\"112.71875\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">генерує</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> подію</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(950.640625, 32)\"><g class=\"label\" data-id=\"L_Q_H_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-71.65625\" y=\"-1\" width=\"143.3125\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">виклик</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> обробника</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(1275.3046875, 32)\"><g class=\"label\" data-id=\"L_H_D_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-29.0546875\" y=\"-1\" width=\"58.109375\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">змінює</tspan></tspan></text></g></g></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-U-0\" transform=\"translate(88.3671875, 32)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-80.3671875\" y=\"-24\" width=\"160.734375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-56.3671875, -12)\"><rect></rect><foreignObject width=\"112.734375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>👤 Користувач</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-B-1\" transform=\"translate(461.359375, 32)\"><rect class=\"basic label-container\" style=\"fill:#fff3e0 !important;stroke:#ef6c00 !important\" x=\"-67.546875\" y=\"-24\" width=\"135.09375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-43.546875, -12)\"><rect></rect><foreignObject width=\"87.09375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🌐 Браузер</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-Q-3\" transform=\"translate(772.8046875, 32)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-81.1796875\" y=\"-24\" width=\"162.359375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-57.1796875, -12)\"><rect></rect><foreignObject width=\"114.359375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📬 Черга подій</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-H-5\" transform=\"translate(1134.2734375, 32)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-86.9765625\" y=\"-24\" width=\"173.953125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-62.9765625, -12)\"><rect></rect><foreignObject width=\"125.953125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>⚙️ Event Handler</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-D-7\" transform=\"translate(1383.9609375, 32)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-54.6015625\" y=\"-24\" width=\"109.203125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-30.6015625, -12)\"><rect></rect><foreignObject width=\"61.203125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📄 DOM</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<p><strong>Категорії подій:</strong></p>\n<table>\n<thead>\n<tr>\n<th>Категорія</th>\n<th>Приклади подій</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>🖱️ Миша</td>\n<td><code>click</code>, <code>dblclick</code>, <code>mouseover</code>, <code>mouseout</code></td>\n</tr>\n<tr>\n<td>⌨️ Клавіатура</td>\n<td><code>keydown</code>, <code>keyup</code></td>\n</tr>\n<tr>\n<td>📝 Форми</td>\n<td><code>submit</code>, <code>change</code>, <code>input</code>, <code>focus</code>, <code>blur</code></td>\n</tr>\n<tr>\n<td>📄 Документ</td>\n<td><code>DOMContentLoaded</code>, <code>load</code>, <code>resize</code>, <code>scroll</code></td>\n</tr>\n<tr>\n<td>👆 Дотик</td>\n<td><code>touchstart</code>, <code>touchend</code>, <code>touchmove</code></td>\n</tr>\n</tbody></table>\n","<h1>🔗 Способи призначення обробників</h1>\n<p><strong>Головна ідея:</strong> Існують три способи призначити обробник події, але <code>addEventListener</code> є єдиним рекомендованим підходом у сучасному JavaScript.</p>\n<h2>📌 Спосіб 1 — HTML-атрибут (застарілий)</h2>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-comment\">&lt;!-- ❌ Не рекомендується — змішує HTML і JavaScript --&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">button</span> <span class=\"hljs-attr\">onclick</span>=<span class=\"hljs-string\">\"alert('Клік!')\"</span>&gt;</span>Натисни<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">button</span>&gt;</span></code></pre><h2>📌 Спосіб 2 — Властивість DOM-елемента (обмежений)</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// ⚠️ Можна призначити лише ОДИН обробник — наступний перезапише попередній</span>\n<span class=\"hljs-keyword\">const</span> btn = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#myBtn'</span>);\nbtn.<span class=\"hljs-property\">onclick</span> = <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\"></span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Клік!'</span>);\n};\n<span class=\"hljs-comment\">// Якщо призначити ще раз — перший обробник буде втрачений</span>\nbtn.<span class=\"hljs-property\">onclick</span> = <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\"></span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Другий клік — перший замінено!'</span>);\n};</code></pre><h2>📌 Спосіб 3 — <code>addEventListener</code> (✅ рекомендований)</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> btn = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#myBtn'</span>);\n\n<span class=\"hljs-comment\">// Можна призначити КІЛЬКА обробників на одну подію</span>\nbtn.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'click'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\"></span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Перший обробник'</span>);\n});\n\nbtn.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'click'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\"></span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Другий обробник — обидва спрацюють!'</span>);\n});\n\n<span class=\"hljs-comment\">// Видалення обробника (функція має бути збережена у змінній)</span>\n<span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">handleClick</span>(<span class=\"hljs-params\"></span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Обробник, який можна видалити'</span>);\n}\nbtn.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'click'</span>, handleClick);\nbtn.<span class=\"hljs-title function_\">removeEventListener</span>(<span class=\"hljs-string\">'click'</span>, handleClick); <span class=\"hljs-comment\">// Видаляємо</span></code></pre><div class=\"tip\"><strong>💡 Сигнатура addEventListener</strong> <p><code>element.addEventListener(тип, функція-обробник, опції)</code> — перший аргумент це назва події <strong>без префікса <code>on</code></strong>: <code>'click'</code>, а не <code>'onclick'</code>.</p>\n</div>\n\n","<h1>📦 Об'єкт події <code>event</code></h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Об'єкт <code>event</code></strong> — об'єкт, який браузер автоматично передає як перший аргумент обробнику події. Він містить усю інформацію про подію: що сталось, де, які клавіші були натиснуті тощо.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Через об'єкт <code>event</code> обробник отримує повний контекст події та може гнучко реагувати залежно від обставин.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#btn'</span>).<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'click'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">event</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(event.<span class=\"hljs-property\">type</span>);       <span class=\"hljs-comment\">// 'click' — тип події</span>\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(event.<span class=\"hljs-property\">target</span>);     <span class=\"hljs-comment\">// елемент, на якому відбулась подія</span>\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(event.<span class=\"hljs-property\">currentTarget</span>); <span class=\"hljs-comment\">// елемент, до якого прив'язаний обробник</span>\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(event.<span class=\"hljs-property\">clientX</span>, event.<span class=\"hljs-property\">clientY</span>); <span class=\"hljs-comment\">// координати кліку</span>\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(event.<span class=\"hljs-property\">timeStamp</span>);  <span class=\"hljs-comment\">// час виникнення події (мс від завантаження)</span>\n});</code></pre><h2>📊 Ключові властивості об'єкта <code>event</code></h2>\n<table>\n<thead>\n<tr>\n<th>Властивість</th>\n<th>Тип</th>\n<th>Що містить</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>type</code></td>\n<td><code>string</code></td>\n<td>Назва події: <code>'click'</code>, <code>'keydown'</code> тощо</td>\n</tr>\n<tr>\n<td><code>target</code></td>\n<td><code>Element</code></td>\n<td>Елемент, на якому безпосередньо відбулась подія</td>\n</tr>\n<tr>\n<td><code>currentTarget</code></td>\n<td><code>Element</code></td>\n<td>Елемент, до якого прив'язаний обробник</td>\n</tr>\n<tr>\n<td><code>clientX/Y</code></td>\n<td><code>number</code></td>\n<td>Координати миші відносно вікна браузера</td>\n</tr>\n<tr>\n<td><code>key</code></td>\n<td><code>string</code></td>\n<td>Натиснута клавіша: <code>'Enter'</code>, <code>'a'</code> тощо</td>\n</tr>\n<tr>\n<td><code>preventDefault</code></td>\n<td><code>method</code></td>\n<td>Скасовує стандартну дію браузера</td>\n</tr>\n<tr>\n<td><code>stopPropagation</code></td>\n<td><code>method</code></td>\n<td>Зупиняє поширення події по DOM (у будь-якій фазі)</td>\n</tr>\n</tbody></table>\n<h2>🚫 <code>event.preventDefault()</code></h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Заборонити стандартну відправку форми</span>\nform.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'submit'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">event</span>) {\n  event.<span class=\"hljs-title function_\">preventDefault</span>(); <span class=\"hljs-comment\">// Сторінка не перезавантажиться</span>\n  <span class=\"hljs-comment\">// Тепер можна самостійно обробити дані форми</span>\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Форма перехоплена!'</span>);\n});\n\n<span class=\"hljs-comment\">// Заборонити перехід за посиланням</span>\nlink.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'click'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">event</span>) {\n  event.<span class=\"hljs-title function_\">preventDefault</span>();\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Перехід заблоковано'</span>);\n});</code></pre>","<h1>🌊 Три фази поширення події</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p>Кожна подія у браузері проходить <strong>три фази</strong>: <strong>Capturing</strong> (занурення від кореня вниз до цілі) → <strong>Target</strong> (спрацювання на цільовому елементі) → <strong>Bubbling</strong> (спливання від цілі вгору до кореня). За замовчуванням <code>addEventListener</code> реєструє обробник у фазі bubbling.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Розуміння фаз пояснює не лише чому обробник батька спрацьовує при кліку на дитину, а й дає інструмент для перехоплення подій <strong>до</strong> того, як вони досягнуть цільового елемента.</p>\n\n<div class=\"mermaid\" data-source=\"graph TB\n    HTML[&quot;🌐 html&quot;] --&gt;|&quot;Фаза 1: Capturing ↓&quot;| BODY[&quot;body&quot;]\n    BODY --&gt; DIV[&quot;div#container&quot;]\n    DIV --&gt; BTN[&quot;🎯 button -- target&quot;]\n    BTN --&gt;|&quot;Фаза 3: Bubbling ↑&quot;| DIV2[&quot;div#container&quot;]\n    DIV2 --&gt; BODY2[&quot;body&quot;]\n    BODY2 --&gt; HTML2[&quot;🌐 html&quot;]\n    style BTN fill:#fce4ec,stroke:#c2185b\n    style HTML fill:#e3f2fd,stroke:#1565c0\n    style HTML2 fill:#e3f2fd,stroke:#1565c0\n    style DIV fill:#e8f5e9,stroke:#388e3c\n    style DIV2 fill:#e8f5e9,stroke:#388e3c\"><svg id=\"exp-1774461554032-5-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 201.953125px;\" viewBox=\"0 0 201.953125 696\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1774461554032-5-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1774461554032-5-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1774461554032-5-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1774461554032-5-0 .error-icon{fill:#552222;}#exp-1774461554032-5-0 .error-text{fill:#552222;stroke:#552222;}#exp-1774461554032-5-0 .edge-thickness-normal{stroke-width:1px;}#exp-1774461554032-5-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1774461554032-5-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1774461554032-5-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1774461554032-5-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1774461554032-5-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1774461554032-5-0 .marker{fill:#333333;stroke:#333333;}#exp-1774461554032-5-0 .marker.cross{stroke:#333333;}#exp-1774461554032-5-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1774461554032-5-0 p{margin:0;}#exp-1774461554032-5-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1774461554032-5-0 .cluster-label text{fill:#333;}#exp-1774461554032-5-0 .cluster-label span{color:#333;}#exp-1774461554032-5-0 .cluster-label span p{background-color:transparent;}#exp-1774461554032-5-0 .label text,#exp-1774461554032-5-0 span{fill:#333;color:#333;}#exp-1774461554032-5-0 .node rect,#exp-1774461554032-5-0 .node circle,#exp-1774461554032-5-0 .node ellipse,#exp-1774461554032-5-0 .node polygon,#exp-1774461554032-5-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1774461554032-5-0 .rough-node .label text,#exp-1774461554032-5-0 .node .label text,#exp-1774461554032-5-0 .image-shape .label,#exp-1774461554032-5-0 .icon-shape .label{text-anchor:middle;}#exp-1774461554032-5-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1774461554032-5-0 .rough-node .label,#exp-1774461554032-5-0 .node .label,#exp-1774461554032-5-0 .image-shape .label,#exp-1774461554032-5-0 .icon-shape .label{text-align:center;}#exp-1774461554032-5-0 .node.clickable{cursor:pointer;}#exp-1774461554032-5-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1774461554032-5-0 .arrowheadPath{fill:#333333;}#exp-1774461554032-5-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1774461554032-5-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1774461554032-5-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1774461554032-5-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1774461554032-5-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1774461554032-5-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1774461554032-5-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1774461554032-5-0 .cluster text{fill:#333;}#exp-1774461554032-5-0 .cluster span{color:#333;}#exp-1774461554032-5-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1774461554032-5-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1774461554032-5-0 rect.text{fill:none;stroke-width:0;}#exp-1774461554032-5-0 .icon-shape,#exp-1774461554032-5-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1774461554032-5-0 .icon-shape p,#exp-1774461554032-5-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1774461554032-5-0 .icon-shape .label rect,#exp-1774461554032-5-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1774461554032-5-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1774461554032-5-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1774461554032-5-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1774461554032-5-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774461554032-5-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774461554032-5-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1774461554032-5-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1774461554032-5-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774461554032-5-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M100.977,56L100.977,62C100.977,68,100.977,80,100.977,91.333C100.977,102.667,100.977,113.333,100.977,118.667L100.977,124\" id=\"L_HTML_BODY_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_HTML_BODY_0\" data-points=\"W3sieCI6MTAwLjk3NjU2MjUsInkiOjU2fSx7IngiOjEwMC45NzY1NjI1LCJ5Ijo5Mn0seyJ4IjoxMDAuOTc2NTYyNSwieSI6MTI4fV0=\" marker-end=\"url(#exp-1774461554032-5-0_flowchart-v2-pointEnd)\"></path><path d=\"M100.977,176L100.977,180.167C100.977,184.333,100.977,192.667,100.977,200.333C100.977,208,100.977,215,100.977,218.5L100.977,222\" id=\"L_BODY_DIV_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_BODY_DIV_0\" data-points=\"W3sieCI6MTAwLjk3NjU2MjUsInkiOjE3Nn0seyJ4IjoxMDAuOTc2NTYyNSwieSI6MjAxfSx7IngiOjEwMC45NzY1NjI1LCJ5IjoyMjZ9XQ==\" marker-end=\"url(#exp-1774461554032-5-0_flowchart-v2-pointEnd)\"></path><path d=\"M100.977,274L100.977,278.167C100.977,282.333,100.977,290.667,100.977,298.333C100.977,306,100.977,313,100.977,316.5L100.977,320\" id=\"L_DIV_BTN_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_DIV_BTN_0\" data-points=\"W3sieCI6MTAwLjk3NjU2MjUsInkiOjI3NH0seyJ4IjoxMDAuOTc2NTYyNSwieSI6Mjk5fSx7IngiOjEwMC45NzY1NjI1LCJ5IjozMjR9XQ==\" marker-end=\"url(#exp-1774461554032-5-0_flowchart-v2-pointEnd)\"></path><path d=\"M100.977,372L100.977,378C100.977,384,100.977,396,100.977,407.333C100.977,418.667,100.977,429.333,100.977,434.667L100.977,440\" id=\"L_BTN_DIV2_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_BTN_DIV2_0\" data-points=\"W3sieCI6MTAwLjk3NjU2MjUsInkiOjM3Mn0seyJ4IjoxMDAuOTc2NTYyNSwieSI6NDA4fSx7IngiOjEwMC45NzY1NjI1LCJ5Ijo0NDR9XQ==\" marker-end=\"url(#exp-1774461554032-5-0_flowchart-v2-pointEnd)\"></path><path d=\"M100.977,492L100.977,496.167C100.977,500.333,100.977,508.667,100.977,516.333C100.977,524,100.977,531,100.977,534.5L100.977,538\" id=\"L_DIV2_BODY2_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_DIV2_BODY2_0\" data-points=\"W3sieCI6MTAwLjk3NjU2MjUsInkiOjQ5Mn0seyJ4IjoxMDAuOTc2NTYyNSwieSI6NTE3fSx7IngiOjEwMC45NzY1NjI1LCJ5Ijo1NDJ9XQ==\" marker-end=\"url(#exp-1774461554032-5-0_flowchart-v2-pointEnd)\"></path><path d=\"M100.977,590L100.977,594.167C100.977,598.333,100.977,606.667,100.977,614.333C100.977,622,100.977,629,100.977,632.5L100.977,636\" id=\"L_BODY2_HTML2_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_BODY2_HTML2_0\" data-points=\"W3sieCI6MTAwLjk3NjU2MjUsInkiOjU5MH0seyJ4IjoxMDAuOTc2NTYyNSwieSI6NjE1fSx7IngiOjEwMC45NzY1NjI1LCJ5Ijo2NDB9XQ==\" marker-end=\"url(#exp-1774461554032-5-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\" transform=\"translate(100.9765625, 92)\"><g class=\"label\" data-id=\"L_HTML_BODY_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-75.125\" y=\"-1\" width=\"150.25\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">Фаза</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> 1:</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> Capturing</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> ↓</tspan></tspan></text></g></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_BODY_DIV_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_DIV_BTN_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\" transform=\"translate(100.9765625, 408)\"><g class=\"label\" data-id=\"L_BTN_DIV2_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-72.71875\" y=\"-1\" width=\"145.4375\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">Фаза</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> 3:</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> Bubbling</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> ↑</tspan></tspan></text></g></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_DIV2_BODY2_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_BODY2_HTML2_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-HTML-0\" transform=\"translate(100.9765625, 32)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-52.0703125\" y=\"-24\" width=\"104.140625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-28.0703125, -12)\"><rect></rect><foreignObject width=\"56.140625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🌐 html</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-BODY-1\" transform=\"translate(100.9765625, 152)\"><rect class=\"basic label-container\" style=\"\" x=\"-42.2734375\" y=\"-24\" width=\"84.546875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-18.2734375, -12)\"><rect></rect><foreignObject width=\"36.546875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>body</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-DIV-3\" transform=\"translate(100.9765625, 250)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-73.6875\" y=\"-24\" width=\"147.375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-49.6875, -12)\"><rect></rect><foreignObject width=\"99.375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>div#container</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-BTN-5\" transform=\"translate(100.9765625, 348)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-92.9765625\" y=\"-24\" width=\"185.953125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-68.9765625, -12)\"><rect></rect><foreignObject width=\"137.953125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🎯 button -- target</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-DIV2-7\" transform=\"translate(100.9765625, 468)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-73.6875\" y=\"-24\" width=\"147.375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-49.6875, -12)\"><rect></rect><foreignObject width=\"99.375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>div#container</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-BODY2-9\" transform=\"translate(100.9765625, 566)\"><rect class=\"basic label-container\" style=\"\" x=\"-42.2734375\" y=\"-24\" width=\"84.546875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-18.2734375, -12)\"><rect></rect><foreignObject width=\"36.546875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>body</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-HTML2-11\" transform=\"translate(100.9765625, 664)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-52.0703125\" y=\"-24\" width=\"104.140625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-28.0703125, -12)\"><rect></rect><foreignObject width=\"56.140625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🌐 html</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<blockquote>\n<p>💡 На схемі capturing і bubbling зображені як два окремих шляхи для наочності — насправді це один і той самий DOM-ланцюжок, пройдений у різних напрямках.</p>\n</blockquote>\n<h2>🫧 Bubbling — за замовчуванням</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#parent'</span>).<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'click'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">e</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Батько — bubbling'</span>); <span class=\"hljs-comment\">// Спрацює навіть при кліку на дитину</span>\n});\n\n<span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#child'</span>).<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'click'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">e</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Дочірній елемент'</span>);\n  e.<span class=\"hljs-title function_\">stopPropagation</span>(); <span class=\"hljs-comment\">// Зупиняє bubbling — батько НЕ спрацює</span>\n});</code></pre><h2>📡 Capturing — перехоплення до цілі</h2>\n<p>Третій параметр <code>{ capture: true }</code> (або просто <code>true</code>) реєструє обробник у фазі capturing — він спрацює <strong>раніше</strong>, ніж обробники на самому елементі.</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Capturing: спрацює ДО того, як подія досягне #child</span>\n<span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#parent'</span>).<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'click'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">e</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Батько — capturing, ще до кліку на дитину'</span>);\n}, { <span class=\"hljs-attr\">capture</span>: <span class=\"hljs-literal\">true</span> });</code></pre><h2>📋 Коли capturing справді потрібен</h2>\n<table>\n<thead>\n<tr>\n<th>Сценарій</th>\n<th>Чому capturing, а не bubbling</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><strong><code>focus</code> / <code>blur</code> на дочірніх полях</strong></td>\n<td>Ці події <strong>не спливають</strong>, тому делегування через bubbling не спрацює. Або використовують capturing, або bubbling-аналоги <code>focusin</code> / <code>focusout</code></td>\n</tr>\n<tr>\n<td><strong>Перехоплення кліків до обробки дочірніми</strong></td>\n<td>Батьківський компонент може скасувати подію (<code>stopPropagation</code>) раніше, ніж дочірній її отримає</td>\n</tr>\n<tr>\n<td><strong>Глобальне логування подій</strong></td>\n<td><code>document.addEventListener('click', log, true)</code> — перехопить усі кліки на сторінці у першій фазі</td>\n</tr>\n</tbody></table>\n<div class=\"warning\"><strong>⚠️ Різниця між target і currentTarget</strong> <p><code>event.target</code> — елемент, на якому реально клацнули. <code>event.currentTarget</code> — елемент, до якого прив'язаний обробник. При bubbling або capturing вони <strong>відрізняються</strong>.</p>\n</div>\n\n\n\n\n\n<div class=\"tip\"><strong>💡 focusin / focusout замість capturing</strong> <p>Якщо потрібно делегувати <code>focus</code>/<code>blur</code> — простіше використати <code>focusin</code>/<code>focusout</code>: вони є bubbling-аналогами і не вимагають capturing. Це поширеніший підхід у реальних проєктах.</p>\n</div>\n\n","<h1>🎯 Делегування подій</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Делегування подій (Event Delegation)</strong> — патерн, при якому один обробник призначається на батьківський елемент замість призначення окремих обробників на кожен дочірній. Завдяки bubbling, події від дітей \"спливають\" до батька.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Делегування економить пам'ять і автоматично працює для елементів, доданих у DOM динамічно — без потреби призначати нові обробники.</p>\n<h2>❌ Без делегування — неефективно</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Окремий обробник для кожного елементу — погано для великих списків</span>\n<span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelectorAll</span>(<span class=\"hljs-string\">'.task-item'</span>).<span class=\"hljs-title function_\">forEach</span>(<span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">item</span>) {\n  item.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'click'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\"></span>) {\n    item.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">toggle</span>(<span class=\"hljs-string\">'done'</span>);\n  });\n});\n<span class=\"hljs-comment\">// Проблема: нові елементи, додані пізніше, обробника НЕ матимуть</span></code></pre><h2>✅ З делегуванням — правильно</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Один обробник на батьківський елемент</span>\n<span class=\"hljs-keyword\">const</span> list = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#task-list'</span>);\n\nlist.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'click'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">event</span>) {\n  <span class=\"hljs-comment\">// Перевіряємо, чи клацнули саме на .task-item</span>\n  <span class=\"hljs-keyword\">const</span> item = event.<span class=\"hljs-property\">target</span>.<span class=\"hljs-title function_\">closest</span>(<span class=\"hljs-string\">'.task-item'</span>);\n  <span class=\"hljs-keyword\">if</span> (!item) <span class=\"hljs-keyword\">return</span>; <span class=\"hljs-comment\">// Клік був не на елементі списку</span>\n\n  item.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">toggle</span>(<span class=\"hljs-string\">'done'</span>);\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Клікнуто:'</span>, item.<span class=\"hljs-property\">textContent</span>);\n});\n\n<span class=\"hljs-comment\">// Новий елемент — обробник вже є, нічого не потрібно!</span>\n<span class=\"hljs-keyword\">const</span> newItem = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">createElement</span>(<span class=\"hljs-string\">'li'</span>);\nnewItem.<span class=\"hljs-property\">className</span> = <span class=\"hljs-string\">'task-item'</span>;\nnewItem.<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">'Нове завдання'</span>;\nlist.<span class=\"hljs-title function_\">appendChild</span>(newItem);</code></pre><div class=\"tip\"><strong>💡 <code>closest()</code> — ключовий метод делегування</strong> <p><code>element.closest(selector)</code> повертає найближчого предка (включно з самим елементом), що відповідає селектору. Якщо такого немає — повертає <code>null</code>. Це дозволяє коректно обробляти кліки навіть по вкладених елементах всередині цільового.</p>\n</div>\n\n","<h1>🕹️ Часто використовувані події</h1>\n<p><strong>Головна ідея:</strong> Знання конкретних подій та їх особливостей дозволяє будувати точну і передбачувану взаємодію з користувачем.</p>\n<h2>⌨️ Клавіатурні події</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'keydown'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">event</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(event.<span class=\"hljs-property\">key</span>);    <span class=\"hljs-comment\">// 'Enter', 'Escape', 'a', 'ArrowUp' тощо</span>\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(event.<span class=\"hljs-property\">code</span>);   <span class=\"hljs-comment\">// 'KeyA', 'Enter', 'Space' — фізична клавіша</span>\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(event.<span class=\"hljs-property\">ctrlKey</span>); <span class=\"hljs-comment\">// true, якщо затиснуто Ctrl</span>\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(event.<span class=\"hljs-property\">shiftKey</span>); <span class=\"hljs-comment\">// true, якщо затиснуто Shift</span>\n\n  <span class=\"hljs-keyword\">if</span> (event.<span class=\"hljs-property\">key</span> === <span class=\"hljs-string\">'Escape'</span>) {\n    <span class=\"hljs-title function_\">closeModal</span>(); <span class=\"hljs-comment\">// умовна функція — закриває модальне вікно</span>\n  }\n  <span class=\"hljs-keyword\">if</span> (event.<span class=\"hljs-property\">ctrlKey</span> &amp;&amp; event.<span class=\"hljs-property\">key</span> === <span class=\"hljs-string\">'s'</span>) {\n    event.<span class=\"hljs-title function_\">preventDefault</span>(); <span class=\"hljs-comment\">// Блокуємо стандартне \"Зберегти сторінку\"</span>\n    <span class=\"hljs-title function_\">saveData</span>(); <span class=\"hljs-comment\">// умовна функція — зберігає дані</span>\n  }\n});</code></pre><h2>📝 Події форм</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> input = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#search'</span>);\n\n<span class=\"hljs-comment\">// input — спрацьовує на КОЖНУ зміну символу</span>\ninput.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'input'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">event</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Поточне значення:'</span>, event.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">value</span>);\n});\n\n<span class=\"hljs-comment\">// change — спрацьовує після втрати фокусу (якщо значення змінилось)</span>\ninput.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'change'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">event</span>) {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">'Підтверджене значення:'</span>, event.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">value</span>);\n});\n\n<span class=\"hljs-comment\">// focus / blur</span>\ninput.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'focus'</span>, <span class=\"hljs-function\">() =&gt;</span> input.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">add</span>(<span class=\"hljs-string\">'active'</span>));\ninput.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'blur'</span>, <span class=\"hljs-function\">() =&gt;</span> input.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">remove</span>(<span class=\"hljs-string\">'active'</span>));</code></pre><div class=\"note\"><strong>📝 <code>input</code> vs <code>change</code></strong> <p><code>input</code> реагує миттєво на кожен введений символ — підходить для пошуку в реальному часі. <code>change</code> спрацьовує лише після завершення редагування (втрата фокусу) — підходить для валідації поля.</p>\n</div>\n\n","<h1>📝 Практичний приклад — форма з валідацією в реальному часі</h1>\n<p><strong>Головна ідея:</strong> Поєднання <code>input</code>, <code>submit</code>, <code>focus</code>, <code>blur</code> та делегування дозволяє реалізувати повноцінну інтерактивну форму без фреймворків.</p>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-meta\">&lt;!DOCTYPE <span class=\"hljs-keyword\">html</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">html</span> <span class=\"hljs-attr\">lang</span>=<span class=\"hljs-string\">\"uk\"</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">head</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">meta</span> <span class=\"hljs-attr\">charset</span>=<span class=\"hljs-string\">\"UTF-8\"</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">title</span>&gt;</span>Форма реєстрації<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">title</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">style</span>&gt;</span><span class=\"language-css\">\n    <span class=\"hljs-selector-class\">.field</span> { <span class=\"hljs-attribute\">margin-bottom</span>: <span class=\"hljs-number\">16px</span>; }\n    <span class=\"hljs-selector-tag\">label</span> { <span class=\"hljs-attribute\">display</span>: block; <span class=\"hljs-attribute\">margin-bottom</span>: <span class=\"hljs-number\">4px</span>; <span class=\"hljs-attribute\">font-weight</span>: bold; }\n    <span class=\"hljs-selector-tag\">input</span> { <span class=\"hljs-attribute\">width</span>: <span class=\"hljs-number\">300px</span>; <span class=\"hljs-attribute\">padding</span>: <span class=\"hljs-number\">8px</span>; <span class=\"hljs-attribute\">border</span>: <span class=\"hljs-number\">2px</span> solid <span class=\"hljs-number\">#ccc</span>; <span class=\"hljs-attribute\">border-radius</span>: <span class=\"hljs-number\">4px</span>; }\n    <span class=\"hljs-selector-tag\">input</span><span class=\"hljs-selector-class\">.valid</span>   { <span class=\"hljs-attribute\">border-color</span>: <span class=\"hljs-number\">#388e3c</span>; }\n    <span class=\"hljs-selector-tag\">input</span><span class=\"hljs-selector-class\">.invalid</span> { <span class=\"hljs-attribute\">border-color</span>: <span class=\"hljs-number\">#c62828</span>; }\n    <span class=\"hljs-selector-class\">.hint</span> { <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">13px</span>; <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#c62828</span>; <span class=\"hljs-attribute\">margin-top</span>: <span class=\"hljs-number\">4px</span>; <span class=\"hljs-attribute\">display</span>: none; }\n    <span class=\"hljs-selector-class\">.hint</span><span class=\"hljs-selector-class\">.visible</span> { <span class=\"hljs-attribute\">display</span>: block; }\n  </span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">style</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">head</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">body</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">form</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"reg-form\"</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"field\"</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">label</span> <span class=\"hljs-attr\">for</span>=<span class=\"hljs-string\">\"username\"</span>&gt;</span>Ім'я користувача<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">label</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">input</span> <span class=\"hljs-attr\">type</span>=<span class=\"hljs-string\">\"text\"</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"username\"</span> <span class=\"hljs-attr\">name</span>=<span class=\"hljs-string\">\"username\"</span> <span class=\"hljs-attr\">placeholder</span>=<span class=\"hljs-string\">\"Від 3 символів\"</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"hint\"</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"username-hint\"</span>&gt;</span>Мінімум 3 символи<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"field\"</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">label</span> <span class=\"hljs-attr\">for</span>=<span class=\"hljs-string\">\"email\"</span>&gt;</span>Email<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">label</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">input</span> <span class=\"hljs-attr\">type</span>=<span class=\"hljs-string\">\"email\"</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"email\"</span> <span class=\"hljs-attr\">name</span>=<span class=\"hljs-string\">\"email\"</span> <span class=\"hljs-attr\">placeholder</span>=<span class=\"hljs-string\">\"user@example.com\"</span>&gt;</span>\n      <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"hint\"</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"email-hint\"</span>&gt;</span>Введіть коректний email<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">button</span> <span class=\"hljs-attr\">type</span>=<span class=\"hljs-string\">\"submit\"</span>&gt;</span>Зареєструватись<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">button</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">form</span>&gt;</span>\n\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">script</span>&gt;</span><span class=\"language-javascript\">\n    <span class=\"hljs-comment\">// Валідація поля імені в реальному часі</span>\n    <span class=\"hljs-keyword\">const</span> usernameInput = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#username'</span>);\n    usernameInput.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'input'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">e</span>) {\n      <span class=\"hljs-keyword\">const</span> value = e.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">value</span>;\n      <span class=\"hljs-keyword\">const</span> isValid = value.<span class=\"hljs-property\">length</span> &gt;= <span class=\"hljs-number\">3</span>;\n      e.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">toggle</span>(<span class=\"hljs-string\">'valid'</span>, isValid);\n      e.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">toggle</span>(<span class=\"hljs-string\">'invalid'</span>, !isValid &amp;&amp; value.<span class=\"hljs-property\">length</span> &gt; <span class=\"hljs-number\">0</span>);\n      <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#username-hint'</span>).<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">toggle</span>(<span class=\"hljs-string\">'visible'</span>, !isValid &amp;&amp; value.<span class=\"hljs-property\">length</span> &gt; <span class=\"hljs-number\">0</span>);\n    });\n\n    <span class=\"hljs-comment\">// Валідація email при втраті фокусу — використовуємо вбудований метод браузера</span>\n    <span class=\"hljs-keyword\">const</span> emailInput = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#email'</span>);\n    emailInput.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'blur'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">e</span>) {\n      <span class=\"hljs-keyword\">const</span> isValid = e.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">validity</span>.<span class=\"hljs-property\">valid</span> &amp;&amp; e.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">value</span>.<span class=\"hljs-property\">length</span> &gt; <span class=\"hljs-number\">0</span>;\n      e.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">toggle</span>(<span class=\"hljs-string\">'valid'</span>, isValid);\n      e.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">toggle</span>(<span class=\"hljs-string\">'invalid'</span>, !isValid &amp;&amp; e.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">value</span>.<span class=\"hljs-property\">length</span> &gt; <span class=\"hljs-number\">0</span>);\n      <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#email-hint'</span>).<span class=\"hljs-property\">classList</span>.<span class=\"hljs-title function_\">toggle</span>(<span class=\"hljs-string\">'visible'</span>, !isValid &amp;&amp; e.<span class=\"hljs-property\">target</span>.<span class=\"hljs-property\">value</span>.<span class=\"hljs-property\">length</span> &gt; <span class=\"hljs-number\">0</span>);\n    });\n\n    <span class=\"hljs-comment\">// Перехоплення відправки форми</span>\n    <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#reg-form'</span>).<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">'submit'</span>, <span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">e</span>) {\n      e.<span class=\"hljs-title function_\">preventDefault</span>(); <span class=\"hljs-comment\">// Зупиняємо стандартну відправку</span>\n      <span class=\"hljs-keyword\">const</span> username = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#username'</span>).<span class=\"hljs-property\">value</span>;\n      <span class=\"hljs-keyword\">const</span> email = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'#email'</span>).<span class=\"hljs-property\">value</span>;\n      <span class=\"hljs-keyword\">if</span> (username.<span class=\"hljs-property\">length</span> &gt;= <span class=\"hljs-number\">3</span> &amp;&amp; email.<span class=\"hljs-title function_\">includes</span>(<span class=\"hljs-string\">'@'</span>)) {\n        <span class=\"hljs-title function_\">alert</span>(<span class=\"hljs-string\">`✅ Реєстрація: <span class=\"hljs-subst\">${username}</span> (<span class=\"hljs-subst\">${email}</span>)`</span>);\n      } <span class=\"hljs-keyword\">else</span> {\n        <span class=\"hljs-title function_\">alert</span>(<span class=\"hljs-string\">'❌ Заповніть форму коректно'</span>);\n      }\n    });\n  </span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">script</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">body</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">html</span>&gt;</span></code></pre><div class=\"note\"><strong>📝 Архітектурне рішення</strong> <p>У прикладі навмисно використані окремі обробники на кожне поле — для наочності. У реальних проєктах схожу логіку варто делегувати на <code>&lt;form&gt;</code> або винести у функцію-валідатор, щоб уникнути дублювання коду.</p>\n</div>\n\n","<h1>✅ Ключові висновки</h1>\n<div class=\"success\"><strong>✅ Підсумок лекції</strong> <p><strong>📌 Що ми вивчили:</strong></p>\n<ol>\n<li><p><strong>Подієво-орієнтована модель</strong> — браузер генерує події у відповідь на дії користувача, а JavaScript реагує на них через обробники</p>\n</li>\n<li><p><strong><code>addEventListener</code></strong> — єдиний рекомендований спосіб призначення обробників; дозволяє додавати кілька обробників на одну подію та видаляти їх через <code>removeEventListener</code></p>\n</li>\n<li><p><strong>Об'єкт <code>event</code></strong> — передається обробнику автоматично, містить тип, ціль, координати, клавіші; <code>preventDefault()</code> скасовує стандартну дію браузера</p>\n</li>\n<li><p><strong>Три фази поширення події</strong> — Capturing (зверху вниз), Target, Bubbling (знизу вгору); за замовчуванням обробники працюють у фазі bubbling; <code>stopPropagation()</code> зупиняє поширення у будь-якій фазі</p>\n</li>\n<li><p><strong>Делегування подій</strong> — один обробник на батьківському елементі замість обробників на кожному дочірньому; працює завдяки bubbling та методу <code>closest()</code></p>\n</li>\n<li><p><strong><code>input</code> vs <code>change</code></strong> — <code>input</code> спрацьовує миттєво на кожен символ, <code>change</code> — після завершення редагування і втрати фокусу</p>\n</li>\n</ol>\n</div>\n\n","<h1>❓ Контрольні питання</h1>\n<ol>\n<li><p>🤔 Чим <code>addEventListener</code> кращий за <code>onclick</code>-властивість? Коли один спосіб витісняє можливості іншого?</p>\n</li>\n<li><p>🤔 Що таке bubbling і як це впливає на поведінку вкладених обробників? Як зупинити поширення події?</p>\n</li>\n<li><p>🤔 Яка різниця між <code>event.target</code> і <code>event.currentTarget</code>? У яких ситуаціях вони збігаються, а в яких — ні?</p>\n</li>\n<li><p>🤔 Для чого використовується <code>event.preventDefault()</code>? Наведіть два практичних приклади.</p>\n</li>\n<li><p>🤔 Що таке делегування подій? Чому воно особливо корисне при роботі з динамічно доданими елементами?</p>\n</li>\n<li><p>🤔 Яка різниця між подіями <code>input</code> і <code>change</code>? Для яких задач підходить кожна?</p>\n</li>\n<li><p>🤔 Як видалити обробник події? Що потрібно враховувати при передачі функції у <code>removeEventListener</code>?</p>\n</li>\n</ol>\n","<h1>📖 Глосарій термінів</h1>\n<table>\n<thead>\n<tr>\n<th>Термін</th>\n<th>English</th>\n<th>Визначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Подія</td>\n<td>Event</td>\n<td>Сигнал браузера про дію користувача або зміну стану документа</td>\n</tr>\n<tr>\n<td>Обробник події</td>\n<td>Event Handler</td>\n<td>Функція, що виконується у відповідь на конкретну подію</td>\n</tr>\n<tr>\n<td>Спливання події</td>\n<td>Event Bubbling</td>\n<td>Поширення події від цільового елемента вгору по DOM-дереву</td>\n</tr>\n<tr>\n<td>Захоплення події</td>\n<td>Event Capturing</td>\n<td>Поширення події від кореня DOM вниз до цільового елемента</td>\n</tr>\n<tr>\n<td>Делегування подій</td>\n<td>Event Delegation</td>\n<td>Патерн обробки подій через батьківський елемент замість кожного дочірнього окремо</td>\n</tr>\n<tr>\n<td>Стандартна дія</td>\n<td>Default Action</td>\n<td>Вбудована поведінка браузера для певних елементів (перехід, відправка форми тощо)</td>\n</tr>\n<tr>\n<td>Фокус</td>\n<td>Focus</td>\n<td>Стан елемента форми, готового приймати введення з клавіатури</td>\n</tr>\n</tbody></table>\n","<h1>📖 Глосарій абревіатур</h1>\n<table>\n<thead>\n<tr>\n<th>Абревіатура</th>\n<th>Розшифровка</th>\n<th>Переклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>DOM</td>\n<td>Document Object Model</td>\n<td>Об'єктна модель документа</td>\n</tr>\n<tr>\n<td>HTML</td>\n<td>HyperText Markup Language</td>\n<td>Мова розмітки гіпертексту</td>\n</tr>\n</tbody></table>\n"];let currentSlideIndex=0;
+function renderMath(root){if(typeof renderMathInElement!=="function"||!root)return;try{renderMathInElement(root,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false,strict:"ignore",ignoredTags:["script","noscript","style","textarea","pre","code"]});}catch(e){console.warn("Math render error:",e);}}
+function showSlide(i){if(i<0||i>=slides.length)return;currentSlideIndex=i;const el=document.getElementById("current-slide");el.innerHTML=slides[i];el.scrollTop=0;renderMath(el);document.getElementById("progress-bar").style.width=((i+1)/slides.length*100)+"%";document.getElementById("slide-number").textContent=(i+1)+" / "+slides.length;updateSidebarActive();}
+function nextSlide(){if(currentSlideIndex<slides.length-1)showSlide(currentSlideIndex+1);}
+function previousSlide(){if(currentSlideIndex>0)showSlide(currentSlideIndex-1);}
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleHelp(){document.getElementById("help-overlay").classList.toggle("hidden");}
+function toggleFullscreen(){if(!document.fullscreenElement){const pc=document.getElementById("presentation-container");if(pc.requestFullscreen)pc.requestFullscreen();else if(pc.webkitRequestFullscreen)pc.webkitRequestFullscreen();else if(pc.msRequestFullscreen)pc.msRequestFullscreen();else if(pc.mozRequestFullScreen)pc.mozRequestFullScreen();}else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();else if(document.msExitFullscreen)document.msExitFullscreen();else if(document.mozCancelFullScreen)document.mozCancelFullScreen();}}
+function generateSidebar(){const sc=document.getElementById("sidebar-content");sc.innerHTML="";slides.forEach((html,idx)=>{const t=document.createElement("div");t.className="slide-thumbnail";if(idx===0)t.classList.add("active");const tmp=document.createElement("div");tmp.innerHTML=html;const title=tmp.querySelector("h1,h2");const titleText=title?title.textContent:("Слайд "+(idx+1));const textContent=tmp.textContent.replace(/s+/g," ").trim();const preview=textContent.substring(0,100)+(textContent.length>100?"...":"");t.innerHTML="<div class=\"slide-thumbnail-number\">"+(idx+1)+"</div><div class=\"slide-thumbnail-title\">"+titleText+"</div><div class=\"slide-thumbnail-content\">"+preview+"</div>";t.onclick=()=>{showSlide(idx);if(window.innerWidth<1024)toggleSidebar();};sc.appendChild(t);});}
+function updateSidebarActive(){document.querySelectorAll(".slide-thumbnail").forEach((th,idx)=>{if(idx===currentSlideIndex){th.classList.add("active");th.scrollIntoView({behavior:"smooth",block:"nearest"});}else th.classList.remove("active");});}
+document.addEventListener("keydown",e=>{switch(e.key){case"ArrowLeft":previousSlide();break;case"ArrowRight":case" ":e.preventDefault();nextSlide();break;case"f":case"F":toggleFullscreen();break;case"s":case"S":toggleSidebar();break;case"?":toggleHelp();break;case"Escape":const sb=document.getElementById("sidebar");const ho=document.getElementById("help-overlay");if(sb.classList.contains("open"))toggleSidebar();else if(!ho.classList.contains("hidden"))ho.classList.add("hidden");break;}});
+generateSidebar();showSlide(0);</script></body></html>
