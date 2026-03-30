@@ -1,0 +1,621 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Асинхронний JavaScript</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><style>* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor-container.hidden {
+            display: none;
+        }
+
+        #editor-header {
+            background: #2d3748;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor-header h2 {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #editor-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        #markdown-input {
+            flex: 1;
+            padding: 2rem;
+            background: #1a202c;
+            color: #e2e8f0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        #markdown-input:focus {
+            outline: none;
+        }
+
+        .slide-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .slide h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h2 {
+            color: #764ba2;
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide pre {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .slide pre code {
+            background: transparent;
+            color: #abb2bf;
+        }
+
+        .slide code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .slide h1 code, .slide h2 code, .slide h3 code {
+            font-size: 0.85em;
+            background: rgba(237, 242, 247, 0.5);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .slide p code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .slide blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        .slide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .slide th, .slide td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .slide th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .slide tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .note {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #c53030;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .warning strong {
+            color: #c05621;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .info strong {
+            color: #2c5282;
+        }
+
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #22543d;
+        }
+
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .danger strong {
+            color: #742a2a;
+        }
+
+        .tip {
+            background: #fefcbf;
+            border-left: 4px solid #ecc94b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #744210;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            transition: width 0.3s;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        #sidebar.open {
+            right: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #sidebar-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        #sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        #sidebar-close:hover {
+            color: #667eea;
+        }
+
+        .slide-thumbnail {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .slide-thumbnail:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .slide-thumbnail.active {
+            border-color: #667eea;
+            background: #f7faff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slide-thumbnail-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-thumbnail-content {
+            font-size: 0.85rem;
+            color: #2d3748;
+            line-height: 1.4;
+            max-height: 4.2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-thumbnail-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 1.4rem;
+            background: linear-gradient(to right, transparent, white);
+        }
+
+        .slide-thumbnail.active .slide-thumbnail-content::after {
+            background: linear-gradient(to right, transparent, #f7faff);
+        }
+
+        .slide-thumbnail-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+        }
+
+        #sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: visible; /* щоб не обрізати тіні / розширені ноди */
+        }
+
+        /* Запобігаємо обрізанню останньої літери в нодах Mermaid через зміну font-weight після розрахунку розміру */
+        .mermaid svg { overflow: visible !important; }
+        /* перестраховка проти обрізання foreignObject (на випадок інших діаграм) */
+        .mermaid svg foreignObject { overflow: visible !important; }
+
+        .plantuml-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        #help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #help-overlay kbd {
+            background: #2d3748;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .mermaid-error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #742a2a;
+            margin: 1.5rem 0;
+        }
+
+        .mermaid-error pre {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
+
+        /* Повноекранний режим - зберігаємо оригінальний фон */
+        #presentation-container:fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-webkit-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-moz-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-ms-fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+#presentation-container:fullscreen,#presentation-container:-webkit-full-screen,#presentation-container:-moz-full-screen,#presentation-container:-ms-fullscreen{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)!important;}</style></head><body><div id="presentation-container"><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><button id="sidebar-toggle" onclick="toggleSidebar()" title="Навігація слайдами (S)">☰</button><div id="sidebar"><div id="sidebar-header"><h3>📑 Слайди</h3><button id="sidebar-close" onclick="toggleSidebar()">✕</button></div><div id="sidebar-content"></div></div><div class="slide-container"><div class="slide" id="current-slide"></div></div><div class="controls"><button class="control-btn" onclick="previousSlide()" title="Попередній (←)">←</button><button class="control-btn" onclick="nextSlide()" title="Наступний (→)">→</button><button class="control-btn" onclick="toggleFullscreen()" title="Повноекранний режим (F)">⛶</button><button class="control-btn" onclick="toggleHelp()" title="Допомога (?)">?</button></div><div class="slide-number" id="slide-number">1 / 15</div><div id="help-overlay" class="hidden"><strong>Гарячі клавіші:</strong><br><kbd>←</kbd> <kbd>→</kbd> Навігація<br><kbd>F</kbd> Повноекранний режим<br><kbd>S</kbd> Sidebar<br><kbd>?</kbd> Допомога<br><kbd>Esc</kbd> Закрити</div></div><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script><script>const slides=["<h1>Асинхронний JavaScript</h1>\n<p><strong>Web-технології в автоматизованих системах</strong></p>\n<p>Лектор: Кобилянський Антон</p>\n","<h1>📋 План лекції</h1>\n<ol>\n<li>⏱️ Синхронний vs асинхронний код — у чому різниця</li>\n<li>🔁 Подієвий цикл — Event Loop</li>\n<li>📞 Функції зворотного виклику — Callbacks</li>\n<li>😱 Проблема вкладених callbacks — Callback Hell</li>\n<li>🤝 Проміси — Promise</li>\n<li>⛓️ Ланцюжки промісів та обробка помилок</li>\n<li>✨ Сучасний синтаксис — <code>async</code> / <code>await</code></li>\n<li>✅ Ключові висновки та контрольні питання</li>\n</ol>\n","<h1>⏱️ Синхронний vs Асинхронний код</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Синхронний код</strong> — виконується послідовно, рядок за рядком. Наступна операція починається лише після завершення попередньої.</p>\n<p><strong>Асинхронний код</strong> — дозволяє запустити тривалу операцію і продовжити виконання інших інструкцій, не чекаючи на результат.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> JavaScript є однопотоковою мовою — він виконує лише одну операцію одночасно. Асинхронність дозволяє не «заморожувати» сторінку під час тривалих операцій.</p>\n<h2>📊 Порівняння підходів</h2>\n<table>\n<thead>\n<tr>\n<th>Характеристика</th>\n<th>Синхронний</th>\n<th>Асинхронний</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Порядок виконання</td>\n<td>Суворо послідовний</td>\n<td>Запуск послідовний, завершення — ні</td>\n</tr>\n<tr>\n<td>Блокування потоку</td>\n<td>✅ Так</td>\n<td>❌ Ні</td>\n</tr>\n<tr>\n<td>Де застосовується</td>\n<td>Прості обчислення</td>\n<td>Мережеві запити, таймери, файли</td>\n</tr>\n<tr>\n<td>Складність коду</td>\n<td>Простий для читання</td>\n<td>Потребує особливих патернів</td>\n</tr>\n</tbody></table>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 🔴 Синхронний — виконується по черзі</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Крок 1\"</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Крок 2\"</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Крок 3\"</span>);\n<span class=\"hljs-comment\">// Виведе: Крок 1 → Крок 2 → Крок 3</span>\n\n<span class=\"hljs-comment\">// 🟢 Асинхронний — setTimeout не блокує потік</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Старт\"</span>);\n<span class=\"hljs-built_in\">setTimeout</span>(<span class=\"hljs-function\">() =&gt;</span> <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Таймер!\"</span>), <span class=\"hljs-number\">2000</span>); <span class=\"hljs-comment\">// Через 2 секунди</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Фініш\"</span>);\n<span class=\"hljs-comment\">// Виведе: Старт → Фініш → Таймер!</span></code></pre><div class=\"note\"><strong>📝 Де виникає асинхронність?</strong> <p>Типові асинхронні операції: <code>setTimeout</code> / <code>setInterval</code>, мережеві запити (<code>fetch</code>), читання файлів, запити до бази даних, операції з буфером обміну.</p>\n</div>\n\n","<h1>🔁 Подієвий цикл — Event Loop</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Event Loop</strong> (подієвий цикл) — механізм виконання JavaScript, що безперервно перевіряє чергу завдань і виконує їх після того, як основний стек викликів звільниться.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Браузер виконує JS у єдиному потоці, але асинхронні операції передаються зовнішнім API браузера, а їхні callback-функції ставляться у чергу і виконуються, коли стек вільний.</p>\n<h2>🏗️ Архітектура Event Loop</h2>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    CODE[&quot;📝 Ваш код&quot;] --&gt; STACK[&quot;📚 Call Stack&quot;]\n    STACK --&gt; |&quot;Async API&quot;| WEBAPI[&quot;🌐 Web APIs: setTimeout, fetch&quot;]\n    WEBAPI --&gt; QUEUE[&quot;📬 Callback Queue&quot;]\n    QUEUE --&gt; |&quot;Стек порожній?&quot;| LOOP[&quot;🔄 Event Loop&quot;]\n    LOOP --&gt; STACK\n    style CODE fill:#e3f2fd,stroke:#1565c0\n    style STACK fill:#fff3e0,stroke:#ef6c00\n    style WEBAPI fill:#e8f5e9,stroke:#388e3c\n    style QUEUE fill:#fce4ec,stroke:#c2185b\n    style LOOP fill:#f3e5f5,stroke:#7b1fa2\"><svg id=\"exp-1774891288782-3-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 1282.890625px;\" viewBox=\"0 0 1282.890625 123\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1774891288782-3-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1774891288782-3-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1774891288782-3-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1774891288782-3-0 .error-icon{fill:#552222;}#exp-1774891288782-3-0 .error-text{fill:#552222;stroke:#552222;}#exp-1774891288782-3-0 .edge-thickness-normal{stroke-width:1px;}#exp-1774891288782-3-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1774891288782-3-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1774891288782-3-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1774891288782-3-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1774891288782-3-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1774891288782-3-0 .marker{fill:#333333;stroke:#333333;}#exp-1774891288782-3-0 .marker.cross{stroke:#333333;}#exp-1774891288782-3-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1774891288782-3-0 p{margin:0;}#exp-1774891288782-3-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1774891288782-3-0 .cluster-label text{fill:#333;}#exp-1774891288782-3-0 .cluster-label span{color:#333;}#exp-1774891288782-3-0 .cluster-label span p{background-color:transparent;}#exp-1774891288782-3-0 .label text,#exp-1774891288782-3-0 span{fill:#333;color:#333;}#exp-1774891288782-3-0 .node rect,#exp-1774891288782-3-0 .node circle,#exp-1774891288782-3-0 .node ellipse,#exp-1774891288782-3-0 .node polygon,#exp-1774891288782-3-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1774891288782-3-0 .rough-node .label text,#exp-1774891288782-3-0 .node .label text,#exp-1774891288782-3-0 .image-shape .label,#exp-1774891288782-3-0 .icon-shape .label{text-anchor:middle;}#exp-1774891288782-3-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1774891288782-3-0 .rough-node .label,#exp-1774891288782-3-0 .node .label,#exp-1774891288782-3-0 .image-shape .label,#exp-1774891288782-3-0 .icon-shape .label{text-align:center;}#exp-1774891288782-3-0 .node.clickable{cursor:pointer;}#exp-1774891288782-3-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1774891288782-3-0 .arrowheadPath{fill:#333333;}#exp-1774891288782-3-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1774891288782-3-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1774891288782-3-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1774891288782-3-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1774891288782-3-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1774891288782-3-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1774891288782-3-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1774891288782-3-0 .cluster text{fill:#333;}#exp-1774891288782-3-0 .cluster span{color:#333;}#exp-1774891288782-3-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1774891288782-3-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1774891288782-3-0 rect.text{fill:none;stroke-width:0;}#exp-1774891288782-3-0 .icon-shape,#exp-1774891288782-3-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1774891288782-3-0 .icon-shape p,#exp-1774891288782-3-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1774891288782-3-0 .icon-shape .label rect,#exp-1774891288782-3-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1774891288782-3-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1774891288782-3-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1774891288782-3-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1774891288782-3-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774891288782-3-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774891288782-3-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1774891288782-3-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1774891288782-3-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774891288782-3-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M142.891,79.5L147.057,79.5C151.224,79.5,159.557,79.5,167.224,79.5C174.891,79.5,181.891,79.5,185.391,79.5L188.891,79.5\" id=\"L_CODE_STACK_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_CODE_STACK_0\" data-points=\"W3sieCI6MTQyLjg5MDYyNSwieSI6NzkuNX0seyJ4IjoxNjcuODkwNjI1LCJ5Ijo3OS41fSx7IngiOjE5Mi44OTA2MjUsInkiOjc5LjV9XQ==\" marker-end=\"url(#exp-1774891288782-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M337.313,60.588L347.868,57.823C358.424,55.059,379.536,49.529,399.982,46.765C420.427,44,440.206,44,450.095,44L459.984,44\" id=\"L_STACK_WEBAPI_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_STACK_WEBAPI_0\" data-points=\"W3sieCI6MzM3LjMxMjUsInkiOjYwLjU4NzgwOTc5ODI3MDl9LHsieCI6NDAwLjY0ODQzNzUsInkiOjQ0fSx7IngiOjQ2My45ODQzNzUsInkiOjQ0fV0=\" marker-end=\"url(#exp-1774891288782-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M711.984,44L716.151,44C720.318,44,728.651,44,736.318,44C743.984,44,750.984,44,754.484,44L757.984,44\" id=\"L_WEBAPI_QUEUE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_WEBAPI_QUEUE_0\" data-points=\"W3sieCI6NzExLjk4NDM3NSwieSI6NDR9LHsieCI6NzM2Ljk4NDM3NSwieSI6NDR9LHsieCI6NzYxLjk4NDM3NSwieSI6NDR9XQ==\" marker-end=\"url(#exp-1774891288782-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M948.266,44L962.725,44C977.185,44,1006.104,44,1034.372,47.002C1062.64,50.003,1090.256,56.006,1104.064,59.008L1117.873,62.009\" id=\"L_QUEUE_LOOP_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_QUEUE_LOOP_0\" data-points=\"W3sieCI6OTQ4LjI2NTYyNSwieSI6NDR9LHsieCI6MTAzNS4wMjM0Mzc1LCJ5Ijo0NH0seyJ4IjoxMTIxLjc4MTI1LCJ5Ijo2Mi44NTg5NTA0NDAxMDcxNn1d\" marker-end=\"url(#exp-1774891288782-3-0_flowchart-v2-pointEnd)\"></path><path d=\"M1121.781,96.141L1107.322,99.284C1092.862,102.427,1063.943,108.714,1019.5,111.857C975.057,115,915.091,115,865.418,115C815.745,115,776.365,115,731.841,115C687.318,115,637.651,115,581.595,115C525.539,115,463.094,115,421.96,112.404C380.826,109.809,361.004,104.617,351.093,102.021L341.182,99.426\" id=\"L_LOOP_STACK_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_LOOP_STACK_0\" data-points=\"W3sieCI6MTEyMS43ODEyNSwieSI6OTYuMTQxMDQ5NTU5ODkyODV9LHsieCI6MTAzNS4wMjM0Mzc1LCJ5IjoxMTV9LHsieCI6ODU1LjEyNSwieSI6MTE1fSx7IngiOjczNi45ODQzNzUsInkiOjExNX0seyJ4Ijo1ODcuOTg0Mzc1LCJ5IjoxMTV9LHsieCI6NDAwLjY0ODQzNzUsInkiOjExNX0seyJ4IjozMzcuMzEyNSwieSI6OTguNDEyMTkwMjAxNzI5MX1d\" marker-end=\"url(#exp-1774891288782-3-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_CODE_STACK_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\" transform=\"translate(400.6484375, 44)\"><g class=\"label\" data-id=\"L_STACK_WEBAPI_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-38.3359375\" y=\"-1\" width=\"76.671875\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">Async</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> API</tspan></tspan></text></g></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_WEBAPI_QUEUE_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\" transform=\"translate(1035.0234375, 44)\"><g class=\"label\" data-id=\"L_QUEUE_LOOP_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-61.7578125\" y=\"-1\" width=\"123.515625\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">Стек</tspan><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\"> порожній?</tspan></tspan></text></g></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_LOOP_STACK_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-CODE-0\" transform=\"translate(75.4453125, 79.5)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-67.4453125\" y=\"-24\" width=\"134.890625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-43.4453125, -12)\"><rect></rect><foreignObject width=\"86.890625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📝 Ваш код</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-STACK-1\" transform=\"translate(265.1015625, 79.5)\"><rect class=\"basic label-container\" style=\"fill:#fff3e0 !important;stroke:#ef6c00 !important\" x=\"-72.2109375\" y=\"-24\" width=\"144.421875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-48.2109375, -12)\"><rect></rect><foreignObject width=\"96.421875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📚 Call Stack</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-WEBAPI-3\" transform=\"translate(587.984375, 44)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-124\" y=\"-36\" width=\"248\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-100, -24)\"><rect></rect><foreignObject width=\"200\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;\"><span class=\"nodeLabel \"><p>🌐 Web APIs: setTimeout, fetch</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-QUEUE-5\" transform=\"translate(855.125, 44)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-93.140625\" y=\"-24\" width=\"186.28125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-69.140625, -12)\"><rect></rect><foreignObject width=\"138.28125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📬 Callback Queue</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-LOOP-7\" transform=\"translate(1198.3359375, 79.5)\"><rect class=\"basic label-container\" style=\"fill:#f3e5f5 !important;stroke:#7b1fa2 !important\" x=\"-76.5546875\" y=\"-24\" width=\"153.109375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-52.5546875, -12)\"><rect></rect><foreignObject width=\"105.109375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🔄 Event Loop</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<h2>📋 Покроковий приклад</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"1️⃣ Старт\"</span>); <span class=\"hljs-comment\">// → Call Stack → виконується одразу</span>\n\n<span class=\"hljs-built_in\">setTimeout</span>(<span class=\"hljs-function\">() =&gt;</span> {\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"3️⃣ Таймер\"</span>); <span class=\"hljs-comment\">// → Web API → Queue → виконається після 0 мс,</span>\n}, <span class=\"hljs-number\">0</span>); <span class=\"hljs-comment\">//   але лише коли стек звільниться</span>\n\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"2️⃣ Фініш\"</span>); <span class=\"hljs-comment\">// → Call Stack → виконується одразу</span>\n\n<span class=\"hljs-comment\">// Результат: 1️⃣ Старт  →  2️⃣ Фініш  →  3️⃣ Таймер</span></code></pre><div class=\"warning\"><strong>⚠️ Важливо</strong> <p><code>setTimeout(fn, 0)</code> <strong>не означає «одразу»</strong> — це означає «якомога швидше, але лише після того, як стек викликів стане порожнім». Event Loop завжди чекає звільнення стеку.</p>\n</div>\n\n","<h1>📞 Функції зворотного виклику — Callbacks</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Callback</strong> (функція зворотного виклику) — функція, яка передається як аргумент в іншу функцію і викликається нею після завершення асинхронної операції.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Callbacks — перший і найпростіший механізм керування асинхронним кодом у JavaScript.</p>\n<h2>🔧 Базовий приклад callback</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Функція, яка приймає callback як параметр</span>\n<span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">loadData</span>(<span class=\"hljs-params\">url, onSuccess, onError</span>) {\n  <span class=\"hljs-built_in\">setTimeout</span>(<span class=\"hljs-function\">() =&gt;</span> {\n    <span class=\"hljs-keyword\">if</span> (url) {\n      <span class=\"hljs-title function_\">onSuccess</span>({ <span class=\"hljs-attr\">id</span>: <span class=\"hljs-number\">1</span>, <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Data loaded\"</span> }); <span class=\"hljs-comment\">// Успіх</span>\n    } <span class=\"hljs-keyword\">else</span> {\n      <span class=\"hljs-title function_\">onError</span>(<span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">Error</span>(<span class=\"hljs-string\">\"URL is not provided\"</span>)); <span class=\"hljs-comment\">// Помилка</span>\n    }\n  }, <span class=\"hljs-number\">1000</span>);\n}\n\n<span class=\"hljs-comment\">// Виклик з callback-функціями</span>\n<span class=\"hljs-title function_\">loadData</span>(\n  <span class=\"hljs-string\">\"https://api.example.com/data\"</span>,\n  <span class=\"hljs-function\">(<span class=\"hljs-params\">data</span>) =&gt;</span> <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"✅ Успіх:\"</span>, data),\n  <span class=\"hljs-function\">(<span class=\"hljs-params\">err</span>) =&gt;</span> <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"❌ Помилка:\"</span>, err.<span class=\"hljs-property\">message</span>),\n);\n\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"⏳ Очікуємо відповідь...\"</span>);\n<span class=\"hljs-comment\">// Виведе: ⏳ Очікуємо відповідь...</span>\n<span class=\"hljs-comment\">//         ✅ Успіх: { id: 1, name: \"Data loaded\" }</span></code></pre><h2>📋 Стандарт Node.js: Error-First Callbacks</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Перший аргумент завжди — помилка (або null, якщо все добре)</span>\n<span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">readFile</span>(<span class=\"hljs-params\">path, callback</span>) {\n  <span class=\"hljs-built_in\">setTimeout</span>(<span class=\"hljs-function\">() =&gt;</span> {\n    <span class=\"hljs-title function_\">callback</span>(<span class=\"hljs-literal\">null</span>, <span class=\"hljs-string\">\"file content\"</span>); <span class=\"hljs-comment\">// null = немає помилки</span>\n  }, <span class=\"hljs-number\">500</span>);\n}\n\n<span class=\"hljs-title function_\">readFile</span>(<span class=\"hljs-string\">\"data.txt\"</span>, <span class=\"hljs-function\">(<span class=\"hljs-params\">err, data</span>) =&gt;</span> {\n  <span class=\"hljs-keyword\">if</span> (err) {\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(<span class=\"hljs-string\">\"Помилка:\"</span>, err);\n    <span class=\"hljs-keyword\">return</span>;\n  }\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Дані:\"</span>, data);\n});</code></pre><div class=\"tip\"><strong>💡 Конвенція error-first</strong> <p>У Node.js та більшості бібліотек прийнята угода: перший параметр callback — завжди об'єкт помилки (або <code>null</code>), другий — результат. Це дозволяє уніфіковано обробляти помилки.</p>\n</div>\n\n","<h1>😱 Проблема вкладених callbacks — Callback Hell</h1>\n<p><strong>Головна ідея:</strong> Вкладені callback-функції швидко утворюють нечитабельну структуру коду з глибокою горизонтальною вкладеністю, яку важко підтримувати та налагоджувати.</p>\n<h2>🔺 Класична вкладена структура callbacks</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Завантажити користувача → замовлення → деталі → доставку</span>\n<span class=\"hljs-title function_\">fetchUser</span>(userId, <span class=\"hljs-function\">(<span class=\"hljs-params\">err, user</span>) =&gt;</span> {\n  <span class=\"hljs-keyword\">if</span> (err) <span class=\"hljs-keyword\">return</span> <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(err);\n\n  <span class=\"hljs-title function_\">fetchOrders</span>(user.<span class=\"hljs-property\">id</span>, <span class=\"hljs-function\">(<span class=\"hljs-params\">err, order</span>) =&gt;</span> {\n    <span class=\"hljs-keyword\">if</span> (err) <span class=\"hljs-keyword\">return</span> <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(err);\n\n    <span class=\"hljs-title function_\">fetchDetails</span>(order.<span class=\"hljs-property\">id</span>, <span class=\"hljs-function\">(<span class=\"hljs-params\">err, details</span>) =&gt;</span> {\n      <span class=\"hljs-keyword\">if</span> (err) <span class=\"hljs-keyword\">return</span> <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(err);\n\n      <span class=\"hljs-title function_\">fetchDelivery</span>(details.<span class=\"hljs-property\">id</span>, <span class=\"hljs-function\">(<span class=\"hljs-params\">err, delivery</span>) =&gt;</span> {\n        <span class=\"hljs-keyword\">if</span> (err) <span class=\"hljs-keyword\">return</span> <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(err);\n\n        <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"✅ Всі дані:\"</span>, user, order, details, delivery);\n        <span class=\"hljs-comment\">// ← Кожен рівень вкладеності = +2 пробіли зліва</span>\n      });\n    });\n  });\n});</code></pre><h2>❌ Проблеми Callback Hell</h2>\n<table>\n<thead>\n<tr>\n<th>Проблема</th>\n<th>Наслідок</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Глибока вкладеність</td>\n<td>Код читається справа наліво, важко розуміти</td>\n</tr>\n<tr>\n<td>Дублювання помилок</td>\n<td><code>if (err) return</code> повторюється на кожному рівні</td>\n</tr>\n<tr>\n<td>Складне налагодження</td>\n<td>Стек викликів заплутується</td>\n</tr>\n<tr>\n<td>Важке тестування</td>\n<td>Ізолювати кожен рівень майже неможливо</td>\n</tr>\n</tbody></table>\n<div class=\"danger\"><strong>🚫 Антипатерн</strong> <p>Callback hell — антипатерн, що виникає через вкладену асинхронну логіку. Саме для його вирішення були введені <strong>Promise</strong> і надалі <strong>async/await</strong>.</p>\n</div>\n\n","<h1>🤝 Проміси — Promise</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Promise</strong> (проміс) — об'єкт, що представляє результат асинхронної операції, яка ще не завершилась. Проміс гарантує, що в майбутньому він перейде в один із двох станів: <strong>fulfilled</strong> (виконано) або <strong>rejected</strong> (відхилено).</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Promise — це «обіцянка» повернути результат. Замість передачі callback у функцію, ми отримуємо об'єкт, з яким можемо взаємодіяти.</p>\n<h2>📊 Три стани Promise</h2>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    PENDING[&quot;⏳ pending -- Очікування&quot;] --&gt; |&quot;resolve()&quot;| FULFILLED[&quot;✅ fulfilled -- Виконано&quot;]\n    PENDING --&gt; |&quot;reject()&quot;| REJECTED[&quot;❌ rejected -- Відхилено&quot;]\n    style PENDING fill:#fff9c4,stroke:#f9a825\n    style FULFILLED fill:#e8f5e9,stroke:#388e3c\n    style REJECTED fill:#fce4ec,stroke:#c2185b\"><svg id=\"exp-1774891288800-6-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 605.046875px;\" viewBox=\"0 0 605.046875 162\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1774891288800-6-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1774891288800-6-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1774891288800-6-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1774891288800-6-0 .error-icon{fill:#552222;}#exp-1774891288800-6-0 .error-text{fill:#552222;stroke:#552222;}#exp-1774891288800-6-0 .edge-thickness-normal{stroke-width:1px;}#exp-1774891288800-6-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1774891288800-6-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1774891288800-6-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1774891288800-6-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1774891288800-6-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1774891288800-6-0 .marker{fill:#333333;stroke:#333333;}#exp-1774891288800-6-0 .marker.cross{stroke:#333333;}#exp-1774891288800-6-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1774891288800-6-0 p{margin:0;}#exp-1774891288800-6-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1774891288800-6-0 .cluster-label text{fill:#333;}#exp-1774891288800-6-0 .cluster-label span{color:#333;}#exp-1774891288800-6-0 .cluster-label span p{background-color:transparent;}#exp-1774891288800-6-0 .label text,#exp-1774891288800-6-0 span{fill:#333;color:#333;}#exp-1774891288800-6-0 .node rect,#exp-1774891288800-6-0 .node circle,#exp-1774891288800-6-0 .node ellipse,#exp-1774891288800-6-0 .node polygon,#exp-1774891288800-6-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1774891288800-6-0 .rough-node .label text,#exp-1774891288800-6-0 .node .label text,#exp-1774891288800-6-0 .image-shape .label,#exp-1774891288800-6-0 .icon-shape .label{text-anchor:middle;}#exp-1774891288800-6-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1774891288800-6-0 .rough-node .label,#exp-1774891288800-6-0 .node .label,#exp-1774891288800-6-0 .image-shape .label,#exp-1774891288800-6-0 .icon-shape .label{text-align:center;}#exp-1774891288800-6-0 .node.clickable{cursor:pointer;}#exp-1774891288800-6-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1774891288800-6-0 .arrowheadPath{fill:#333333;}#exp-1774891288800-6-0 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#exp-1774891288800-6-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1774891288800-6-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1774891288800-6-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1774891288800-6-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1774891288800-6-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1774891288800-6-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1774891288800-6-0 .cluster text{fill:#333;}#exp-1774891288800-6-0 .cluster span{color:#333;}#exp-1774891288800-6-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1774891288800-6-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1774891288800-6-0 rect.text{fill:none;stroke-width:0;}#exp-1774891288800-6-0 .icon-shape,#exp-1774891288800-6-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1774891288800-6-0 .icon-shape p,#exp-1774891288800-6-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1774891288800-6-0 .icon-shape .label rect,#exp-1774891288800-6-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1774891288800-6-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1774891288800-6-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1774891288800-6-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1774891288800-6-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774891288800-6-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774891288800-6-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1774891288800-6-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1774891288800-6-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1774891288800-6-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M214.98,57L230.155,52.833C245.33,48.667,275.681,40.333,300.874,36.167C326.068,32,346.104,32,356.122,32L366.141,32\" id=\"L_PENDING_FULFILLED_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_PENDING_FULFILLED_0\" data-points=\"W3sieCI6MjE0Ljk3OTc1MTI3NTUxMDIsInkiOjU3fSx7IngiOjMwNi4wMzEyNSwieSI6MzJ9LHsieCI6MzcwLjE0MDYyNSwieSI6MzJ9XQ==\" marker-end=\"url(#exp-1774891288800-6-0_flowchart-v2-pointEnd)\"></path><path d=\"M214.98,105L230.155,109.167C245.33,113.333,275.681,121.667,300.004,125.833C324.328,130,342.625,130,351.773,130L360.922,130\" id=\"L_PENDING_REJECTED_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_PENDING_REJECTED_0\" data-points=\"W3sieCI6MjE0Ljk3OTc1MTI3NTUxMDIsInkiOjEwNX0seyJ4IjozMDYuMDMxMjUsInkiOjEzMH0seyJ4IjozNjQuOTIxODc1LCJ5IjoxMzB9XQ==\" marker-end=\"url(#exp-1774891288800-6-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\" transform=\"translate(306.03125, 32)\"><g class=\"label\" data-id=\"L_PENDING_FULFILLED_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-33.890625\" y=\"-1\" width=\"67.78125\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">resolve()</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(306.03125, 130)\"><g class=\"label\" data-id=\"L_PENDING_REJECTED_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-28.3671875\" y=\"-1\" width=\"56.734375\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">reject()</tspan></tspan></text></g></g></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"flowchart-PENDING-0\" transform=\"translate(127.5703125, 81)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-119.5703125\" y=\"-24\" width=\"239.140625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-95.5703125, -12)\"><rect></rect><foreignObject width=\"191.140625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>⏳ pending -- Очікування</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-FULFILLED-1\" transform=\"translate(480.984375, 32)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-110.84375\" y=\"-24\" width=\"221.6875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-86.84375, -12)\"><rect></rect><foreignObject width=\"173.6875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>✅ fulfilled -- Виконано</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"flowchart-REJECTED-3\" transform=\"translate(480.984375, 130)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-116.0625\" y=\"-24\" width=\"232.125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-92.0625, -12)\"><rect></rect><foreignObject width=\"184.125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>❌ rejected -- Відхилено</p></span></div></foreignObject></g></g></g></g></g></svg></div>\n<h2>🔧 Створення та використання Promise</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Створення Promise</span>\n<span class=\"hljs-keyword\">const</span> myPromise = <span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">Promise</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">resolve, reject</span>) =&gt;</span> {\n  <span class=\"hljs-built_in\">setTimeout</span>(<span class=\"hljs-function\">() =&gt;</span> {\n    <span class=\"hljs-keyword\">const</span> success = <span class=\"hljs-literal\">true</span>;\n    <span class=\"hljs-keyword\">if</span> (success) {\n      <span class=\"hljs-title function_\">resolve</span>(<span class=\"hljs-string\">\"✅ Data loaded!\"</span>); <span class=\"hljs-comment\">// Перехід у fulfilled</span>\n    } <span class=\"hljs-keyword\">else</span> {\n      <span class=\"hljs-title function_\">reject</span>(<span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">Error</span>(<span class=\"hljs-string\">\"Something went wrong\"</span>)); <span class=\"hljs-comment\">// Перехід у rejected</span>\n    }\n  }, <span class=\"hljs-number\">1000</span>);\n});\n\n<span class=\"hljs-comment\">// Використання Promise</span>\nmyPromise\n  .<span class=\"hljs-title function_\">then</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">result</span>) =&gt;</span> {\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(result); <span class=\"hljs-comment\">// \"✅ Дані отримано!\"</span>\n  })\n  .<span class=\"hljs-title function_\">catch</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">error</span>) =&gt;</span> {\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(error.<span class=\"hljs-property\">message</span>);\n  })\n  .<span class=\"hljs-title function_\">finally</span>(<span class=\"hljs-function\">() =&gt;</span> {\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"🏁 Операція завершена (завжди)\"</span>);\n  });</code></pre><div class=\"note\"><strong>📝 <code>.finally()</code></strong> <p>Блок <code>.finally()</code> виконується <strong>завжди</strong> — незалежно від того, чи був проміс виконаний успішно чи відхилений. Використовується для закриття з'єднань, приховування індикатора завантаження тощо.</p>\n</div>\n\n","<h1>⛓️ Ланцюжки промісів</h1>\n<p><strong>Головна ідея:</strong> Проміси можна об'єднувати у ланцюжки через <code>.then()</code>, уникаючи глибокої вкладеності. Кожен <code>.then()</code> повертає новий проміс.</p>\n<h2>🔗 Порівняння: Callbacks vs Promise chain</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// ✅ Те саме завдання, але через ланцюжок Promise</span>\n<span class=\"hljs-title function_\">fetchUser</span>(userId)\n  .<span class=\"hljs-title function_\">then</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">user</span>) =&gt;</span> <span class=\"hljs-title function_\">fetchOrders</span>(user.<span class=\"hljs-property\">id</span>))\n  .<span class=\"hljs-title function_\">then</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">order</span>) =&gt;</span> <span class=\"hljs-title function_\">fetchDetails</span>(order.<span class=\"hljs-property\">id</span>))\n  .<span class=\"hljs-title function_\">then</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">details</span>) =&gt;</span> <span class=\"hljs-title function_\">fetchDelivery</span>(details.<span class=\"hljs-property\">id</span>))\n  .<span class=\"hljs-title function_\">then</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">delivery</span>) =&gt;</span> <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"✅ Готово:\"</span>, delivery))\n  .<span class=\"hljs-title function_\">catch</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">err</span>) =&gt;</span> <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(<span class=\"hljs-string\">\"❌ Помилка на будь-якому кроці:\"</span>, err));</code></pre><h2>🚀 Паралельне виконання Promise.all</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Запустити кілька промісів одночасно і дочекатись усіх</span>\n<span class=\"hljs-title class_\">Promise</span>.<span class=\"hljs-title function_\">all</span>([\n  <span class=\"hljs-title function_\">fetch</span>(<span class=\"hljs-string\">\"https://api.example.com/users\"</span>),\n  <span class=\"hljs-title function_\">fetch</span>(<span class=\"hljs-string\">\"https://api.example.com/orders\"</span>),\n  <span class=\"hljs-title function_\">fetch</span>(<span class=\"hljs-string\">\"https://api.example.com/products\"</span>),\n])\n  .<span class=\"hljs-title function_\">then</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">[users, orders, products]</span>) =&gt;</span> {\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"✅ Всі три запити завершено\"</span>);\n  })\n  .<span class=\"hljs-title function_\">catch</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">err</span>) =&gt;</span> {\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(<span class=\"hljs-string\">\"❌ Хоча б один запит провалився:\"</span>, err);\n  });</code></pre><h2>📊 Методи Promise</h2>\n<table>\n<thead>\n<tr>\n<th>Метод</th>\n<th>Опис</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>Promise.all(arr)</code></td>\n<td>Чекає на всі; відхиляється при першій помилці</td>\n</tr>\n<tr>\n<td><code>Promise.allSettled(arr)</code></td>\n<td>Чекає на всі; повертає результат кожного незалежно</td>\n</tr>\n<tr>\n<td><code>Promise.race(arr)</code></td>\n<td>Повертає результат того, хто завершився першим</td>\n</tr>\n<tr>\n<td><code>Promise.any(arr)</code></td>\n<td>Повертає перший успішний; відхиляється лише якщо всі впали</td>\n</tr>\n</tbody></table>\n","<h1>✨ <code>async</code> / <code>await</code></h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong><code>async</code></strong> — ключове слово перед функцією, що перетворює її на асинхронну. Така функція завжди повертає Promise.</p>\n<p><strong><code>await</code></strong> — ключове слово, що «призупиняє» виконання <code>async</code>-функції до завершення Promise, не блокуючи основний потік.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> <code>async/await</code> — синтаксичний цукор над Promise, що дозволяє писати асинхронний код у стилі синхронного — зрозуміло та лінійно.</p>\n<h2>🔧 Синтаксис async/await</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Аналог попереднього ланцюжка .then(), але читається як синхронний код</span>\n<span class=\"hljs-keyword\">async</span> <span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">loadAll</span>(<span class=\"hljs-params\">userId</span>) {\n  <span class=\"hljs-keyword\">const</span> user = <span class=\"hljs-keyword\">await</span> <span class=\"hljs-title function_\">fetchUser</span>(userId);\n  <span class=\"hljs-keyword\">const</span> order = <span class=\"hljs-keyword\">await</span> <span class=\"hljs-title function_\">fetchOrders</span>(user.<span class=\"hljs-property\">id</span>);\n  <span class=\"hljs-keyword\">const</span> details = <span class=\"hljs-keyword\">await</span> <span class=\"hljs-title function_\">fetchDetails</span>(order.<span class=\"hljs-property\">id</span>);\n  <span class=\"hljs-keyword\">const</span> delivery = <span class=\"hljs-keyword\">await</span> <span class=\"hljs-title function_\">fetchDelivery</span>(details.<span class=\"hljs-property\">id</span>);\n\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"✅ Готово:\"</span>, delivery);\n}\n\n<span class=\"hljs-title function_\">loadAll</span>(<span class=\"hljs-number\">42</span>);</code></pre><h2>🛡️ Обробка помилок через try/catch</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">async</span> <span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">getData</span>(<span class=\"hljs-params\">url</span>) {\n  <span class=\"hljs-keyword\">try</span> {\n    <span class=\"hljs-keyword\">const</span> response = <span class=\"hljs-keyword\">await</span> <span class=\"hljs-title function_\">fetch</span>(url); <span class=\"hljs-comment\">// Чекаємо відповідь сервера</span>\n\n    <span class=\"hljs-keyword\">if</span> (!response.<span class=\"hljs-property\">ok</span>) {\n      <span class=\"hljs-keyword\">throw</span> <span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">Error</span>(<span class=\"hljs-string\">`HTTP помилка: <span class=\"hljs-subst\">${response.status}</span>`</span>);\n    }\n\n    <span class=\"hljs-keyword\">const</span> data = <span class=\"hljs-keyword\">await</span> response.<span class=\"hljs-title function_\">json</span>(); <span class=\"hljs-comment\">// Чекаємо парсинг JSON</span>\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"✅ Дані:\"</span>, data);\n    <span class=\"hljs-keyword\">return</span> data;\n  } <span class=\"hljs-keyword\">catch</span> (err) {\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(<span class=\"hljs-string\">\"❌ Помилка:\"</span>, err.<span class=\"hljs-property\">message</span>); <span class=\"hljs-comment\">// Будь-яка помилка потрапляє сюди</span>\n    <span class=\"hljs-keyword\">throw</span> err; <span class=\"hljs-comment\">// Прокидаємо далі, якщо потрібно</span>\n  } <span class=\"hljs-keyword\">finally</span> {\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"🏁 Запит завершено\"</span>); <span class=\"hljs-comment\">// Виконується завжди</span>\n  }\n}</code></pre><div class=\"tip\"><strong>💡 await — лише всередині async</strong> <p><code>await</code> можна використовувати <strong>лише всередині <code>async</code>-функції</strong>. Спроба використати <code>await</code> на верхньому рівні звичайного скрипта призведе до синтаксичної помилки (окрім ES-модулів, де дозволений Top-level await).</p>\n</div>\n\n","<h1>⚖️ Порівняння: Callback → Promise → async/await</h1>\n<p><strong>Головна ідея:</strong> Три підходи вирішують одне завдання, але відрізняються за читабельністю та зручністю обробки помилок.</p>\n<h2>📝 Одне завдання — три підходи</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// 📞 Callbacks — вкладено, важко читати</span>\n<span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">step1Callback</span>(<span class=\"hljs-params\"></span>) {\n  <span class=\"hljs-title function_\">operation1</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">err, res1</span>) =&gt;</span> {\n    <span class=\"hljs-keyword\">if</span> (err) <span class=\"hljs-keyword\">return</span> <span class=\"hljs-title function_\">handleError</span>(err);\n    <span class=\"hljs-title function_\">operation2</span>(res1, <span class=\"hljs-function\">(<span class=\"hljs-params\">err, res2</span>) =&gt;</span> {\n      <span class=\"hljs-keyword\">if</span> (err) <span class=\"hljs-keyword\">return</span> <span class=\"hljs-title function_\">handleError</span>(err);\n      <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Результат:\"</span>, res2);\n    });\n  });\n}\n\n<span class=\"hljs-comment\">// 🤝 Promise chain — плоско, один catch</span>\n<span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">step2Promise</span>(<span class=\"hljs-params\"></span>) {\n  <span class=\"hljs-title function_\">operation1</span>()\n    .<span class=\"hljs-title function_\">then</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">res1</span>) =&gt;</span> <span class=\"hljs-title function_\">operation2</span>(res1))\n    .<span class=\"hljs-title function_\">then</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">res2</span>) =&gt;</span> <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Результат:\"</span>, res2))\n    .<span class=\"hljs-title function_\">catch</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">err</span>) =&gt;</span> <span class=\"hljs-title function_\">handleError</span>(err));\n}\n\n<span class=\"hljs-comment\">// ✨ async/await — як синхронний код</span>\n<span class=\"hljs-keyword\">async</span> <span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">step3Async</span>(<span class=\"hljs-params\"></span>) {\n  <span class=\"hljs-keyword\">try</span> {\n    <span class=\"hljs-keyword\">const</span> res1 = <span class=\"hljs-keyword\">await</span> <span class=\"hljs-title function_\">operation1</span>();\n    <span class=\"hljs-keyword\">const</span> res2 = <span class=\"hljs-keyword\">await</span> <span class=\"hljs-title function_\">operation2</span>(res1);\n    <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Результат:\"</span>, res2);\n  } <span class=\"hljs-keyword\">catch</span> (err) {\n    <span class=\"hljs-title function_\">handleError</span>(err);\n  }\n}</code></pre><h2>📊 Коли що обирати</h2>\n<table>\n<thead>\n<tr>\n<th>Підхід</th>\n<th>Коли використовувати</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Callbacks</td>\n<td>Проста одноразова асинхронна дія, стара кодова база</td>\n</tr>\n<tr>\n<td>Promise chain</td>\n<td>Послідовні або паралельні операції, <code>Promise.all</code></td>\n</tr>\n<tr>\n<td>async/await</td>\n<td><strong>Більшість сучасного коду</strong> — найкраща читабельність</td>\n</tr>\n</tbody></table>\n","<h1>🛠️ Практичний приклад: завантаження даних</h1>\n<p><strong>Головна ідея:</strong> Поєднання <code>async/await</code> з обробкою помилок — стандартна техніка для роботи з мережею в реальних застосунках.</p>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-meta\">&lt;!DOCTYPE <span class=\"hljs-keyword\">html</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">html</span> <span class=\"hljs-attr\">lang</span>=<span class=\"hljs-string\">\"uk\"</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">head</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">meta</span> <span class=\"hljs-attr\">charset</span>=<span class=\"hljs-string\">\"UTF-8\"</span> /&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">title</span>&gt;</span>Async Demo<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">title</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">head</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">body</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">button</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"loadBtn\"</span>&gt;</span>📥 Завантажити користувача<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">button</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"output\"</span>&gt;</span>Результат з'явиться тут...<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">script</span>&gt;</span><span class=\"language-javascript\">\n      <span class=\"hljs-comment\">// Імітуємо асинхронний запит до API</span>\n      <span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">fetchUser</span>(<span class=\"hljs-params\">id</span>) {\n        <span class=\"hljs-keyword\">return</span> <span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">Promise</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">resolve, reject</span>) =&gt;</span> {\n          <span class=\"hljs-built_in\">setTimeout</span>(<span class=\"hljs-function\">() =&gt;</span> {\n            <span class=\"hljs-keyword\">if</span> (id &gt; <span class=\"hljs-number\">0</span>) {\n              <span class=\"hljs-title function_\">resolve</span>({ id, <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Олена Коваль\"</span>, <span class=\"hljs-attr\">role</span>: <span class=\"hljs-string\">\"Студент\"</span> });\n            } <span class=\"hljs-keyword\">else</span> {\n              <span class=\"hljs-title function_\">reject</span>(<span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">Error</span>(<span class=\"hljs-string\">\"Invalid user ID\"</span>));\n            }\n          }, <span class=\"hljs-number\">1500</span>);\n        });\n      }\n\n      <span class=\"hljs-keyword\">async</span> <span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">loadUser</span>(<span class=\"hljs-params\"></span>) {\n        <span class=\"hljs-keyword\">const</span> output = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"output\"</span>);\n        <span class=\"hljs-keyword\">const</span> btn = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"loadBtn\"</span>);\n\n        <span class=\"hljs-keyword\">try</span> {\n          btn.<span class=\"hljs-property\">disabled</span> = <span class=\"hljs-literal\">true</span>;\n          output.<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">\"⏳ Завантажується...\"</span>;\n\n          <span class=\"hljs-keyword\">const</span> user = <span class=\"hljs-keyword\">await</span> <span class=\"hljs-title function_\">fetchUser</span>(<span class=\"hljs-number\">1</span>); <span class=\"hljs-comment\">// Чекаємо 1.5 секунди</span>\n\n          output.<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">`✅ <span class=\"hljs-subst\">${user.name}</span> — <span class=\"hljs-subst\">${user.role}</span>`</span>;\n        } <span class=\"hljs-keyword\">catch</span> (err) {\n          output.<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">`❌ Помилка: <span class=\"hljs-subst\">${err.message}</span>`</span>;\n        } <span class=\"hljs-keyword\">finally</span> {\n          btn.<span class=\"hljs-property\">disabled</span> = <span class=\"hljs-literal\">false</span>; <span class=\"hljs-comment\">// Кнопка завжди стає активною знову</span>\n        }\n      }\n\n      <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"loadBtn\"</span>).<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">\"click\"</span>, loadUser);\n    </span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">script</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">body</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">html</span>&gt;</span></code></pre><div class=\"note\"><strong>📝 Що демонструє цей приклад</strong> <p>Реальна практика: блокування кнопки під час запиту, індикатор завантаження, обробка помилок у <code>catch</code>, гарантоване розблокування у <code>finally</code>. Цей шаблон застосовується в будь-якому застосунку, що працює з API.</p>\n</div>\n\n","<h1>✅ Ключові висновки</h1>\n<div class=\"success\"><strong>✅ Підсумок лекції</strong> <p><strong>📌 Що ми вивчили:</strong></p>\n<ol>\n<li><p><strong>Синхронний vs асинхронний код</strong> — JavaScript однопотоковий, але Event Loop дозволяє не блокувати виконання під час очікування</p>\n</li>\n<li><p><strong>Event Loop</strong> — безперервно перевіряє чергу задач і виконує callbacks після звільнення стеку викликів</p>\n</li>\n<li><p><strong>Callbacks</strong> — перший механізм асинхронності; зручні для простих сценаріїв, але при вкладеності призводять до надмірно складної структури коду (Callback Hell)</p>\n</li>\n<li><p><strong>Promise</strong> — об'єкт з трьома станами (pending → fulfilled / rejected); ланцюжки <code>.then().catch()</code> роблять код плоским та читабельним</p>\n</li>\n<li><p><strong><code>Promise.all</code></strong> — запускає кілька промісів паралельно і чекає на всі результати одночасно</p>\n</li>\n<li><p><strong><code>async/await</code></strong> — сучасний синтаксис над Promise; дозволяє писати асинхронний код у лінійному стилі</p>\n</li>\n<li><p><strong><code>try/catch/finally</code></strong> — стандартний спосіб обробки помилок в <code>async</code>-функціях; <code>finally</code> виконується завжди</p>\n</li>\n</ol>\n</div>\n\n","<h1>❓ Контрольні питання</h1>\n<ol>\n<li><p>🤔 Чому JavaScript є однопотоковою мовою? Як Event Loop вирішує проблему асинхронності?</p>\n</li>\n<li><p>🤔 Що таке callback-функція? Наведіть приклад її використання для асинхронної операції.</p>\n</li>\n<li><p>🤔 Що таке «Callback Hell» і чому це вважається антипатерном? Як його уникнути?</p>\n</li>\n<li><p>🤔 Які три стани може мати Promise? Чи може Promise перейти зі стану <code>fulfilled</code> назад у <code>pending</code>?</p>\n</li>\n<li><p>🤔 Яка різниця між <code>Promise.all()</code> і <code>Promise.allSettled()</code>? Коли доцільно використовувати кожен?</p>\n</li>\n<li><p>🤔 Що станеться, якщо використати <code>await</code> поза межами <code>async</code>-функції?</p>\n</li>\n<li><p>🤔 Навіщо використовувати блок <code>finally</code> в <code>async/await</code>? Наведіть практичний приклад.</p>\n</li>\n</ol>\n","<h1>📖 Глосарій термінів</h1>\n<table>\n<thead>\n<tr>\n<th>Термін</th>\n<th>English</th>\n<th>Визначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Асинхронне програмування</td>\n<td>Async programming</td>\n<td>Стиль написання коду, при якому тривалі операції не блокують виконання програми</td>\n</tr>\n<tr>\n<td>Подієвий цикл</td>\n<td>Event Loop</td>\n<td>Механізм виконання JS, що обробляє чергу завдань після звільнення стеку</td>\n</tr>\n<tr>\n<td>Стек викликів</td>\n<td>Call Stack</td>\n<td>Структура даних, що відстежує порядок виклику функцій</td>\n</tr>\n<tr>\n<td>Функція зворотного виклику</td>\n<td>Callback</td>\n<td>Функція, що передається як аргумент і викликається після завершення операції</td>\n</tr>\n<tr>\n<td>Проміс</td>\n<td>Promise</td>\n<td>Об'єкт, що представляє майбутній результат асинхронної операції</td>\n</tr>\n<tr>\n<td>Ланцюжок промісів</td>\n<td>Promise chain</td>\n<td>Послідовне з'єднання промісів через <code>.then()</code></td>\n</tr>\n<tr>\n<td>Вкладені callbacks</td>\n<td>Callback Hell</td>\n<td>Антипатерн глибоко вкладених callback-функцій</td>\n</tr>\n<tr>\n<td>Паралельне виконання</td>\n<td>Parallel execution</td>\n<td>Одночасний запуск кількох асинхронних операцій</td>\n</tr>\n</tbody></table>\n","<h1>📖 Глосарій абревіатур</h1>\n<table>\n<thead>\n<tr>\n<th>Абревіатура</th>\n<th>Розшифровка</th>\n<th>Переклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>JS</td>\n<td>JavaScript</td>\n<td>JavaScript</td>\n</tr>\n<tr>\n<td>API</td>\n<td>Application Programming Interface</td>\n<td>Програмний інтерфейс застосунку</td>\n</tr>\n<tr>\n<td>HTTP</td>\n<td>HyperText Transfer Protocol</td>\n<td>Протокол передачі гіпертексту</td>\n</tr>\n<tr>\n<td>JSON</td>\n<td>JavaScript Object Notation</td>\n<td>Текстовий формат обміну даними</td>\n</tr>\n<tr>\n<td>URL</td>\n<td>Uniform Resource Locator</td>\n<td>Уніфікований локатор ресурсу</td>\n</tr>\n</tbody></table>\n"];let currentSlideIndex=0;
+function renderMath(root){if(typeof renderMathInElement!=="function"||!root)return;try{renderMathInElement(root,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false,strict:"ignore",ignoredTags:["script","noscript","style","textarea","pre","code"]});}catch(e){console.warn("Math render error:",e);}}
+function showSlide(i){if(i<0||i>=slides.length)return;currentSlideIndex=i;const el=document.getElementById("current-slide");el.innerHTML=slides[i];el.scrollTop=0;renderMath(el);document.getElementById("progress-bar").style.width=((i+1)/slides.length*100)+"%";document.getElementById("slide-number").textContent=(i+1)+" / "+slides.length;updateSidebarActive();}
+function nextSlide(){if(currentSlideIndex<slides.length-1)showSlide(currentSlideIndex+1);}
+function previousSlide(){if(currentSlideIndex>0)showSlide(currentSlideIndex-1);}
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleHelp(){document.getElementById("help-overlay").classList.toggle("hidden");}
+function toggleFullscreen(){if(!document.fullscreenElement){const pc=document.getElementById("presentation-container");if(pc.requestFullscreen)pc.requestFullscreen();else if(pc.webkitRequestFullscreen)pc.webkitRequestFullscreen();else if(pc.msRequestFullscreen)pc.msRequestFullscreen();else if(pc.mozRequestFullScreen)pc.mozRequestFullScreen();}else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();else if(document.msExitFullscreen)document.msExitFullscreen();else if(document.mozCancelFullScreen)document.mozCancelFullScreen();}}
+function generateSidebar(){const sc=document.getElementById("sidebar-content");sc.innerHTML="";slides.forEach((html,idx)=>{const t=document.createElement("div");t.className="slide-thumbnail";if(idx===0)t.classList.add("active");const tmp=document.createElement("div");tmp.innerHTML=html;const title=tmp.querySelector("h1,h2");const titleText=title?title.textContent:("Слайд "+(idx+1));const textContent=tmp.textContent.replace(/s+/g," ").trim();const preview=textContent.substring(0,100)+(textContent.length>100?"...":"");t.innerHTML="<div class=\"slide-thumbnail-number\">"+(idx+1)+"</div><div class=\"slide-thumbnail-title\">"+titleText+"</div><div class=\"slide-thumbnail-content\">"+preview+"</div>";t.onclick=()=>{showSlide(idx);if(window.innerWidth<1024)toggleSidebar();};sc.appendChild(t);});}
+function updateSidebarActive(){document.querySelectorAll(".slide-thumbnail").forEach((th,idx)=>{if(idx===currentSlideIndex){th.classList.add("active");th.scrollIntoView({behavior:"smooth",block:"nearest"});}else th.classList.remove("active");});}
+document.addEventListener("keydown",e=>{switch(e.key){case"ArrowLeft":previousSlide();break;case"ArrowRight":case" ":e.preventDefault();nextSlide();break;case"f":case"F":toggleFullscreen();break;case"s":case"S":toggleSidebar();break;case"?":toggleHelp();break;case"Escape":const sb=document.getElementById("sidebar");const ho=document.getElementById("help-overlay");if(sb.classList.contains("open"))toggleSidebar();else if(!ho.classList.contains("hidden"))ho.classList.add("hidden");break;}});
+generateSidebar();showSlide(0);</script></body></html>
