@@ -1,0 +1,621 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Робота з формами та валідація</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><style>* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor-container.hidden {
+            display: none;
+        }
+
+        #editor-header {
+            background: #2d3748;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor-header h2 {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #editor-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        #markdown-input {
+            flex: 1;
+            padding: 2rem;
+            background: #1a202c;
+            color: #e2e8f0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        #markdown-input:focus {
+            outline: none;
+        }
+
+        .slide-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .slide h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h2 {
+            color: #764ba2;
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide pre {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .slide pre code {
+            background: transparent;
+            color: #abb2bf;
+        }
+
+        .slide code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .slide h1 code, .slide h2 code, .slide h3 code {
+            font-size: 0.85em;
+            background: rgba(237, 242, 247, 0.5);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .slide p code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .slide blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        .slide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .slide th, .slide td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .slide th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .slide tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .note {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #c53030;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .warning strong {
+            color: #c05621;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .info strong {
+            color: #2c5282;
+        }
+
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #22543d;
+        }
+
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .danger strong {
+            color: #742a2a;
+        }
+
+        .tip {
+            background: #fefcbf;
+            border-left: 4px solid #ecc94b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #744210;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            transition: width 0.3s;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        #sidebar.open {
+            right: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #sidebar-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        #sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        #sidebar-close:hover {
+            color: #667eea;
+        }
+
+        .slide-thumbnail {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .slide-thumbnail:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .slide-thumbnail.active {
+            border-color: #667eea;
+            background: #f7faff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slide-thumbnail-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-thumbnail-content {
+            font-size: 0.85rem;
+            color: #2d3748;
+            line-height: 1.4;
+            max-height: 4.2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-thumbnail-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 1.4rem;
+            background: linear-gradient(to right, transparent, white);
+        }
+
+        .slide-thumbnail.active .slide-thumbnail-content::after {
+            background: linear-gradient(to right, transparent, #f7faff);
+        }
+
+        .slide-thumbnail-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+        }
+
+        #sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: visible; /* щоб не обрізати тіні / розширені ноди */
+        }
+
+        /* Запобігаємо обрізанню останньої літери в нодах Mermaid через зміну font-weight після розрахунку розміру */
+        .mermaid svg { overflow: visible !important; }
+        /* перестраховка проти обрізання foreignObject (на випадок інших діаграм) */
+        .mermaid svg foreignObject { overflow: visible !important; }
+
+        .plantuml-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        #help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #help-overlay kbd {
+            background: #2d3748;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .mermaid-error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #742a2a;
+            margin: 1.5rem 0;
+        }
+
+        .mermaid-error pre {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
+
+        /* Повноекранний режим - зберігаємо оригінальний фон */
+        #presentation-container:fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-webkit-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-moz-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-ms-fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+#presentation-container:fullscreen,#presentation-container:-webkit-full-screen,#presentation-container:-moz-full-screen,#presentation-container:-ms-fullscreen{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)!important;}</style></head><body><div id="presentation-container"><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><button id="sidebar-toggle" onclick="toggleSidebar()" title="Навігація слайдами (S)">☰</button><div id="sidebar"><div id="sidebar-header"><h3>📑 Слайди</h3><button id="sidebar-close" onclick="toggleSidebar()">✕</button></div><div id="sidebar-content"></div></div><div class="slide-container"><div class="slide" id="current-slide"></div></div><div class="controls"><button class="control-btn" onclick="previousSlide()" title="Попередній (←)">←</button><button class="control-btn" onclick="nextSlide()" title="Наступний (→)">→</button><button class="control-btn" onclick="toggleFullscreen()" title="Повноекранний режим (F)">⛶</button><button class="control-btn" onclick="toggleHelp()" title="Допомога (?)">?</button></div><div class="slide-number" id="slide-number">1 / 16</div><div id="help-overlay" class="hidden"><strong>Гарячі клавіші:</strong><br><kbd>←</kbd> <kbd>→</kbd> Навігація<br><kbd>F</kbd> Повноекранний режим<br><kbd>S</kbd> Sidebar<br><kbd>?</kbd> Допомога<br><kbd>Esc</kbd> Закрити</div></div><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script><script>const slides=["<h1>Робота з формами та валідація</h1>\n<p><strong>Web-технології в автоматизованих системах</strong></p>\n<p>Лектор: Кобилянський Антон</p>\n","<h1>📋 План лекції</h1>\n<ol>\n<li>📝 Навіщо потрібна валідація форм</li>\n<li>🎯 Доступ до форм та їх полів з JavaScript</li>\n<li>📦 FormData — зручний збір даних форми</li>\n<li>🔡 Регулярні вирази для перевірки формату</li>\n<li>⚡ Подія <code>submit</code> та обробка форми</li>\n<li>✨ Валідація в реальному часі</li>\n<li>✅ Ключові висновки та контрольні питання</li>\n</ol>\n","<h1>📝 Навіщо потрібна валідація форм</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Валідація</strong> — перевірка введених користувачем даних на відповідність очікуваним правилам (формат, довжина, діапазон значень).</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Форми — точка входу будь-яких даних від користувача: реєстрація, авторизація, замовлення, пошук. Якщо не перевіряти ці дані, у систему потраплять помилки та некоректні значення, які можуть зламати логіку або збити в оману інших користувачів.</p>\n<h2>🎯 Два рівні валідації</h2>\n<table>\n<thead>\n<tr>\n<th>Рівень</th>\n<th>Де виконується</th>\n<th>Призначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>🌐 На клієнті</td>\n<td>Браузер</td>\n<td>Миттєвий зворотний зв'язок, зручність користувача</td>\n</tr>\n<tr>\n<td>🖥️ На сервері</td>\n<td>Сервер</td>\n<td>Остаточна перевірка, захист від некоректних даних</td>\n</tr>\n</tbody></table>\n<div class=\"warning\"><strong>⚠️ Клієнтська валідація — не заміна серверної</strong> <p>Будь-яку перевірку на клієнті легко обійти: вимкнути JavaScript, змінити HTML через DevTools або надіслати запит напряму. Клієнтська валідація існує лише для зручності користувача. Остаточна перевірка завжди на сервері.</p>\n</div>\n\n","<h1>🎯 Доступ до форм та полів</h1>\n<p><strong>Головна ідея:</strong> Щоб працювати з формою з JavaScript, спочатку потрібно отримати посилання на неї та її поля.</p>\n<h2>📌 Отримання форми та полів</h2>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">form</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"registration-form\"</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">input</span> <span class=\"hljs-attr\">type</span>=<span class=\"hljs-string\">\"text\"</span> <span class=\"hljs-attr\">name</span>=<span class=\"hljs-string\">\"username\"</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"username\"</span> /&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">input</span> <span class=\"hljs-attr\">type</span>=<span class=\"hljs-string\">\"email\"</span> <span class=\"hljs-attr\">name</span>=<span class=\"hljs-string\">\"email\"</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"email\"</span> /&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">button</span> <span class=\"hljs-attr\">type</span>=<span class=\"hljs-string\">\"submit\"</span>&gt;</span>Зареєструватись<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">button</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">form</span>&gt;</span></code></pre><pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Отримуємо форму</span>\n<span class=\"hljs-keyword\">const</span> form = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"registration-form\"</span>);\n\n<span class=\"hljs-comment\">// Доступ до полів — через form.elements за атрибутом name</span>\n<span class=\"hljs-keyword\">const</span> username = form.<span class=\"hljs-property\">elements</span>.<span class=\"hljs-property\">username</span>;\n<span class=\"hljs-keyword\">const</span> email = form.<span class=\"hljs-property\">elements</span>.<span class=\"hljs-property\">email</span>;\n\n<span class=\"hljs-comment\">// Читаємо значення</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(username.<span class=\"hljs-property\">value</span>); <span class=\"hljs-comment\">// Те, що ввів користувач</span>\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(email.<span class=\"hljs-property\">value</span>);</code></pre><div class=\"tip\"><strong>💡 Зручна колекція form.elements</strong> <p>Властивість <code>form.elements</code> містить усі поля форми і дозволяє звертатися до них за атрибутом <code>name</code>. Це зручніше, ніж кожного разу писати <code>document.getElementById</code> для кожного поля.</p>\n</div>\n\n","<h1>🔧 Властивості різних типів полів</h1>\n<p><strong>Головна ідея:</strong> Для більшості полів значення читається через <code>.value</code>, але у checkbox та radio є своя особливість.</p>\n<h2>📊 Як читати значення</h2>\n<table>\n<thead>\n<tr>\n<th>Тип поля</th>\n<th>Властивість</th>\n<th>Що повертає</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>input[type=text]</code></td>\n<td><code>.value</code></td>\n<td>Рядок з текстом</td>\n</tr>\n<tr>\n<td><code>input[type=email]</code></td>\n<td><code>.value</code></td>\n<td>Рядок</td>\n</tr>\n<tr>\n<td><code>input[type=number]</code></td>\n<td><code>.value</code></td>\n<td>Рядок — треба перетворити в число</td>\n</tr>\n<tr>\n<td><code>input[type=checkbox]</code></td>\n<td><code>.checked</code></td>\n<td><code>true</code> / <code>false</code></td>\n</tr>\n<tr>\n<td><code>input[type=radio]</code></td>\n<td><code>.checked</code></td>\n<td><code>true</code> / <code>false</code> для обраної кнопки</td>\n</tr>\n<tr>\n<td><code>select</code></td>\n<td><code>.value</code></td>\n<td>Значення обраного <code>&lt;option&gt;</code></td>\n</tr>\n<tr>\n<td><code>textarea</code></td>\n<td><code>.value</code></td>\n<td>Текст</td>\n</tr>\n</tbody></table>\n<h2>💡 Приклад читання значень</h2>\n<pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> form = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"user-form\"</span>);\n\n<span class=\"hljs-comment\">// Текст — просто .value</span>\n<span class=\"hljs-keyword\">const</span> username = form.<span class=\"hljs-property\">elements</span>.<span class=\"hljs-property\">username</span>.<span class=\"hljs-property\">value</span>.<span class=\"hljs-title function_\">trim</span>();\n\n<span class=\"hljs-comment\">// Число — .value завжди рядок, треба перетворити</span>\n<span class=\"hljs-keyword\">const</span> age = <span class=\"hljs-title class_\">Number</span>(form.<span class=\"hljs-property\">elements</span>.<span class=\"hljs-property\">age</span>.<span class=\"hljs-property\">value</span>);\n\n<span class=\"hljs-comment\">// Checkbox — .checked повертає true або false</span>\n<span class=\"hljs-keyword\">const</span> subscribed = form.<span class=\"hljs-property\">elements</span>.<span class=\"hljs-property\">subscribe</span>.<span class=\"hljs-property\">checked</span>;\n\n<span class=\"hljs-comment\">// Select — так само через .value</span>\n<span class=\"hljs-keyword\">const</span> country = form.<span class=\"hljs-property\">elements</span>.<span class=\"hljs-property\">country</span>.<span class=\"hljs-property\">value</span>;</code></pre><div class=\"note\"><strong>📝 Про radio-групу</strong> <p>Усі radio-кнопки однієї групи мають однаковий <code>name</code>. Щоб дізнатись, яку обрано, використовують CSS-селектор <code>:checked</code>:</p>\n<pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> gender = form.<span class=\"hljs-title function_\">querySelector</span>(<span class=\"hljs-string\">'input[name=\"gender\"]:checked'</span>).<span class=\"hljs-property\">value</span>;</code></pre></div>\n\n","<h1>📦 FormData — збір даних форми</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>FormData</strong> — вбудований об'єкт JavaScript, що автоматично збирає всі пари «name — value» з форми у готову структуру.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Замість того щоб звертатися до кожного поля окремо, можна одним рядком зібрати всі дані форми.</p>\n<h2>🔧 Створення та використання</h2>\n<pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> form = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"order-form\"</span>);\n\n<span class=\"hljs-comment\">// Створюємо FormData з форми</span>\n<span class=\"hljs-keyword\">const</span> formData = <span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">FormData</span>(form);\n\n<span class=\"hljs-comment\">// Отримати значення за name</span>\n<span class=\"hljs-keyword\">const</span> email = formData.<span class=\"hljs-title function_\">get</span>(<span class=\"hljs-string\">\"email\"</span>);\n<span class=\"hljs-keyword\">const</span> quantity = formData.<span class=\"hljs-title function_\">get</span>(<span class=\"hljs-string\">\"quantity\"</span>);\n\n<span class=\"hljs-comment\">// Перетворити на звичайний об'єкт — найзручніше</span>\n<span class=\"hljs-keyword\">const</span> data = <span class=\"hljs-title class_\">Object</span>.<span class=\"hljs-title function_\">fromEntries</span>(formData.<span class=\"hljs-title function_\">entries</span>());\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(data);\n<span class=\"hljs-comment\">// { email: \"user@example.com\", quantity: \"2\", ... }</span></code></pre><h2>📋 Основні методи</h2>\n<table>\n<thead>\n<tr>\n<th>Метод</th>\n<th>Призначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>get(name)</code></td>\n<td>Отримати значення поля</td>\n</tr>\n<tr>\n<td><code>has(name)</code></td>\n<td>Перевірити, чи є поле з таким name</td>\n</tr>\n<tr>\n<td><code>entries()</code></td>\n<td>Отримати всі пари <code>[name, value]</code></td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 Універсальний патерн</strong> <p>Два рядки коду — і всі дані форми у вигляді зручного об'єкта:</p>\n<pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> formData = <span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">FormData</span>(form);\n<span class=\"hljs-keyword\">const</span> data = <span class=\"hljs-title class_\">Object</span>.<span class=\"hljs-title function_\">fromEntries</span>(formData.<span class=\"hljs-title function_\">entries</span>());</code></pre><p>Цей підхід працює для форм з будь-якою кількістю полів.</p>\n</div>\n\n\n\n\n\n<div class=\"warning\"><strong>⚠️ Особливість checkbox у FormData</strong> <p>Невідмічений checkbox у FormData просто <strong>не потрапляє</strong> — відповідного ключа в об'єкті даних не буде. Для перевірки стану checkbox надійніше використовувати властивість <code>.checked</code> напряму: <code>form.elements.subscribe.checked</code>.</p>\n</div>\n\n","<h1>🔡 Регулярні вирази для перевірки формату</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Регулярний вираз</strong> — шаблон для перевірки, чи відповідає рядок певній структурі (наприклад, чи це коректний email або телефон).</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Щоб перевірити email, телефон або поштовий індекс, не треба писати складну логіку з циклами — достатньо одного шаблону та методу <code>.test()</code>.</p>\n<h2>🔧 Як це виглядає</h2>\n<pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Створення шаблону — між двома слешами</span>\n<span class=\"hljs-keyword\">const</span> pattern = <span class=\"hljs-regexp\">/^\\+380\\d{9}$/</span>;\n\n<span class=\"hljs-comment\">// Перевірка — test() повертає true або false</span>\npattern.<span class=\"hljs-title function_\">test</span>(<span class=\"hljs-string\">\"+380671234567\"</span>); <span class=\"hljs-comment\">// true</span>\npattern.<span class=\"hljs-title function_\">test</span>(<span class=\"hljs-string\">\"0671234567\"</span>); <span class=\"hljs-comment\">// false</span></code></pre><h2>📋 Базові символи шаблону</h2>\n<table>\n<thead>\n<tr>\n<th>Символ</th>\n<th>Значення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>^</code></td>\n<td>Початок рядка</td>\n</tr>\n<tr>\n<td><code>$</code></td>\n<td>Кінець рядка</td>\n</tr>\n<tr>\n<td><code>\\d</code></td>\n<td>Будь-яка цифра (0–9)</td>\n</tr>\n<tr>\n<td><code>[a-z]</code></td>\n<td>Будь-яка мала літера</td>\n</tr>\n<tr>\n<td><code>+</code></td>\n<td>Один або більше разів</td>\n</tr>\n<tr>\n<td><code>{n}</code></td>\n<td>Рівно n разів</td>\n</tr>\n<tr>\n<td><code>{n,m}</code></td>\n<td>Від n до m разів</td>\n</tr>\n</tbody></table>\n<h2>💡 Готові шаблони</h2>\n<pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Український номер телефону: +380XXXXXXXXX</span>\n<span class=\"hljs-keyword\">const</span> phonePattern = <span class=\"hljs-regexp\">/^\\+380\\d{9}$/</span>;\n\n<span class=\"hljs-comment\">// Email — спрощений шаблон</span>\n<span class=\"hljs-keyword\">const</span> emailPattern = <span class=\"hljs-regexp\">/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/</span>;\n\n<span class=\"hljs-comment\">// Поштовий індекс України: 5 цифр</span>\n<span class=\"hljs-keyword\">const</span> zipPattern = <span class=\"hljs-regexp\">/^\\d{5}$/</span>;\n\n<span class=\"hljs-comment\">// Перевірка</span>\nphonePattern.<span class=\"hljs-title function_\">test</span>(<span class=\"hljs-string\">\"+380671234567\"</span>); <span class=\"hljs-comment\">// true</span>\nemailPattern.<span class=\"hljs-title function_\">test</span>(<span class=\"hljs-string\">\"user@example.com\"</span>); <span class=\"hljs-comment\">// true</span>\nzipPattern.<span class=\"hljs-title function_\">test</span>(<span class=\"hljs-string\">\"49000\"</span>); <span class=\"hljs-comment\">// true</span></code></pre><div class=\"note\"><strong>📝 Відмінність від HTML-атрибута <code>pattern</code></strong> <p>У HTML-атрибуті <code>pattern</code> (наприклад, <code>pattern=\"\\+380\\d{9}\"</code>) символи <code>^</code> та <code>$</code> додаються автоматично — шаблон перевіряється на всю рядок. У JavaScript-регексі їх треба писати явно, інакше <code>/^\\+380\\d{9}/</code> пропустить рядок <code>+380671234567ABC</code> — шаблон збігається лише з початком.</p>\n</div>\n\n","<h1>⚡ Подія <code>submit</code> — обробка форми</h1>\n<p><strong>Головна ідея:</strong> Коли користувач натискає кнопку відправки, форма за замовчуванням перезавантажує сторінку. Щоб обробити її з JavaScript, цю поведінку потрібно скасувати.</p>\n<h2>🔧 Базовий шаблон</h2>\n<pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> form = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"feedback-form\"</span>);\n\nform.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">\"submit\"</span>, <span class=\"hljs-function\">(<span class=\"hljs-params\">event</span>) =&gt;</span> {\n  <span class=\"hljs-comment\">// 1. Скасувати стандартну відправку</span>\n  event.<span class=\"hljs-title function_\">preventDefault</span>();\n\n  <span class=\"hljs-comment\">// 2. Зібрати дані</span>\n  <span class=\"hljs-keyword\">const</span> data = <span class=\"hljs-title class_\">Object</span>.<span class=\"hljs-title function_\">fromEntries</span>(<span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">FormData</span>(form).<span class=\"hljs-title function_\">entries</span>());\n\n  <span class=\"hljs-comment\">// 3. Перевірити</span>\n  <span class=\"hljs-keyword\">if</span> (data.<span class=\"hljs-property\">name</span>.<span class=\"hljs-title function_\">trim</span>() === <span class=\"hljs-string\">\"\"</span>) {\n    <span class=\"hljs-title function_\">alert</span>(<span class=\"hljs-string\">\"Введіть ім'я\"</span>);\n    <span class=\"hljs-keyword\">return</span>;\n  }\n\n  <span class=\"hljs-comment\">// 4. Обробити</span>\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Форма відправлена:\"</span>, data);\n});</code></pre><h2>📊 Потік обробки</h2>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    CLICK[&quot;🖱️ Клік по submit&quot;] --&gt; PD[&quot;🛑 preventDefault&quot;]\n    PD --&gt; COLLECT[&quot;📦 Збір даних&quot;]\n    COLLECT --&gt; VALIDATE[&quot;✅ Валідація&quot;]\n    VALIDATE --&gt; OK[&quot;✔️ Успіх&quot;]\n    VALIDATE --&gt; FAIL[&quot;❌ Помилка&quot;]\n    style CLICK fill:#fff3e0,stroke:#ef6c00\n    style PD fill:#fce4ec,stroke:#c2185b\n    style COLLECT fill:#f3e5f5,stroke:#7b1fa2\n    style VALIDATE fill:#fff9c4,stroke:#f9a825\n    style OK fill:#e8f5e9,stroke:#388e3c\n    style FAIL fill:#fce4ec,stroke:#c2185b\"><svg id=\"exp-1776925948780-7-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 992.28125px;\" viewBox=\"0 0 992.28125 162\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1776925948780-7-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1776925948780-7-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1776925948780-7-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1776925948780-7-0 .error-icon{fill:#552222;}#exp-1776925948780-7-0 .error-text{fill:#552222;stroke:#552222;}#exp-1776925948780-7-0 .edge-thickness-normal{stroke-width:1px;}#exp-1776925948780-7-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1776925948780-7-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1776925948780-7-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1776925948780-7-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1776925948780-7-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1776925948780-7-0 .marker{fill:#333333;stroke:#333333;}#exp-1776925948780-7-0 .marker.cross{stroke:#333333;}#exp-1776925948780-7-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1776925948780-7-0 p{margin:0;}#exp-1776925948780-7-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1776925948780-7-0 .cluster-label text{fill:#333;}#exp-1776925948780-7-0 .cluster-label span{color:#333;}#exp-1776925948780-7-0 .cluster-label span p{background-color:transparent;}#exp-1776925948780-7-0 .label text,#exp-1776925948780-7-0 span{fill:#333;color:#333;}#exp-1776925948780-7-0 .node rect,#exp-1776925948780-7-0 .node circle,#exp-1776925948780-7-0 .node ellipse,#exp-1776925948780-7-0 .node polygon,#exp-1776925948780-7-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1776925948780-7-0 .rough-node .label text,#exp-1776925948780-7-0 .node .label text,#exp-1776925948780-7-0 .image-shape .label,#exp-1776925948780-7-0 .icon-shape .label{text-anchor:middle;}#exp-1776925948780-7-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1776925948780-7-0 .rough-node .label,#exp-1776925948780-7-0 .node .label,#exp-1776925948780-7-0 .image-shape .label,#exp-1776925948780-7-0 .icon-shape .label{text-align:center;}#exp-1776925948780-7-0 .node.clickable{cursor:pointer;}#exp-1776925948780-7-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1776925948780-7-0 .arrowheadPath{fill:#333333;}#exp-1776925948780-7-0 .edgePath .path{stroke:#333333;stroke-width:1px;}#exp-1776925948780-7-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1776925948780-7-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1776925948780-7-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1776925948780-7-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1776925948780-7-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1776925948780-7-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1776925948780-7-0 .cluster text{fill:#333;}#exp-1776925948780-7-0 .cluster span{color:#333;}#exp-1776925948780-7-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1776925948780-7-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1776925948780-7-0 rect.text{fill:none;stroke-width:0;}#exp-1776925948780-7-0 .icon-shape,#exp-1776925948780-7-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1776925948780-7-0 .icon-shape p,#exp-1776925948780-7-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1776925948780-7-0 .icon-shape .label rect,#exp-1776925948780-7-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1776925948780-7-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1776925948780-7-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1776925948780-7-0 .node .neo-node{stroke:#667eea;}#exp-1776925948780-7-0 [data-look=\"neo\"].node rect,#exp-1776925948780-7-0 [data-look=\"neo\"].cluster rect,#exp-1776925948780-7-0 [data-look=\"neo\"].node polygon{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1776925948780-7-0 [data-look=\"neo\"].node path{stroke:#667eea;stroke-width:1px;}#exp-1776925948780-7-0 [data-look=\"neo\"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1776925948780-7-0 [data-look=\"neo\"].node .neo-line path{stroke:#667eea;filter:none;}#exp-1776925948780-7-0 [data-look=\"neo\"].node circle{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1776925948780-7-0 [data-look=\"neo\"].node circle .state-start{fill:#000000;}#exp-1776925948780-7-0 [data-look=\"neo\"].icon-shape .icon{fill:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1776925948780-7-0 [data-look=\"neo\"].icon-shape .icon-neo path{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1776925948780-7-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1776925948780-7-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-pointEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"11.5\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"10.5\" markerHeight=\"14\" orient=\"auto\"><path d=\"M 0 0 L 11.5 7 L 0 14 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-pointStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"1\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11.5\" markerHeight=\"14\" orient=\"auto\"><polygon points=\"0,7 11.5,14 11.5,0\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></polygon></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-circleEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refY=\"5\" refX=\"12.25\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-circleStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-2\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-crossEnd-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"17.7\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5;\"></path></marker><marker id=\"exp-1776925948780-7-0_flowchart-v2-crossStart-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"-3.5\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M183.57,81L187.737,81C191.904,81,200.237,81,207.904,81C215.57,81,222.57,81,226.07,81L229.57,81\" id=\"exp-1776925948780-7-0-L_CLICK_PD_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_CLICK_PD_0\" data-points=\"W3sieCI6MTgzLjU3MDMxMjUsInkiOjgxfSx7IngiOjIwOC41NzAzMTI1LCJ5Ijo4MX0seyJ4IjoyMzMuNTcwMzEyNSwieSI6ODF9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1776925948780-7-0_flowchart-v2-pointEnd)\"></path><path d=\"M408.984,81L413.151,81C417.318,81,425.651,81,433.318,81C440.984,81,447.984,81,451.484,81L454.984,81\" id=\"exp-1776925948780-7-0-L_PD_COLLECT_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_PD_COLLECT_0\" data-points=\"W3sieCI6NDA4Ljk4NDM3NSwieSI6ODF9LHsieCI6NDMzLjk4NDM3NSwieSI6ODF9LHsieCI6NDU4Ljk4NDM3NSwieSI6ODF9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1776925948780-7-0_flowchart-v2-pointEnd)\"></path><path d=\"M608.664,81L612.831,81C616.997,81,625.331,81,632.997,81C640.664,81,647.664,81,651.164,81L654.664,81\" id=\"exp-1776925948780-7-0-L_COLLECT_VALIDATE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_COLLECT_VALIDATE_0\" data-points=\"W3sieCI6NjA4LjY2NDA2MjUsInkiOjgxfSx7IngiOjYzMy42NjQwNjI1LCJ5Ijo4MX0seyJ4Ijo2NTguNjY0MDYyNSwieSI6ODF9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1776925948780-7-0_flowchart-v2-pointEnd)\"></path><path d=\"M774.985,57L783.051,52.833C791.118,48.667,807.25,40.333,821.192,36.167C835.134,32,846.885,32,852.761,32L858.637,32\" id=\"exp-1776925948780-7-0-L_VALIDATE_OK_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_VALIDATE_OK_0\" data-points=\"W3sieCI6Nzc0Ljk4NTE3MjE5Mzg3NzYsInkiOjU3fSx7IngiOjgyMy4zODI4MTI1LCJ5IjozMn0seyJ4Ijo4NjIuNjM2NzE4NzUsInkiOjMyfV0=\" data-look=\"classic\" marker-end=\"url(#exp-1776925948780-7-0_flowchart-v2-pointEnd)\"></path><path d=\"M774.985,105L783.051,109.167C791.118,113.333,807.25,121.667,818.817,125.833C830.383,130,837.383,130,840.883,130L844.383,130\" id=\"exp-1776925948780-7-0-L_VALIDATE_FAIL_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_VALIDATE_FAIL_0\" data-points=\"W3sieCI6Nzc0Ljk4NTE3MjE5Mzg3NzYsInkiOjEwNX0seyJ4Ijo4MjMuMzgyODEyNSwieSI6MTMwfSx7IngiOjg0OC4zODI4MTI1LCJ5IjoxMzB9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1776925948780-7-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_CLICK_PD_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_PD_COLLECT_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_COLLECT_VALIDATE_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_VALIDATE_OK_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_VALIDATE_FAIL_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"exp-1776925948780-7-0-flowchart-CLICK-0\" data-look=\"classic\" transform=\"translate(95.78515625, 81)\"><rect class=\"basic label-container\" style=\"fill:#fff3e0 !important;stroke:#ef6c00 !important\" x=\"-87.78515625\" y=\"-24\" width=\"175.5703125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-63.78515625, -12)\"><rect></rect><foreignObject width=\"127.5703125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🖱️ Клік по submit</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1776925948780-7-0-flowchart-PD-1\" data-look=\"classic\" transform=\"translate(321.27734375, 81)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-87.70703125\" y=\"-24\" width=\"175.4140625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-63.70703125, -12)\"><rect></rect><foreignObject width=\"127.4140625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🛑 preventDefault</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1776925948780-7-0-flowchart-COLLECT-3\" data-look=\"classic\" transform=\"translate(533.82421875, 81)\"><rect class=\"basic label-container\" style=\"fill:#f3e5f5 !important;stroke:#7b1fa2 !important\" x=\"-74.83984375\" y=\"-24\" width=\"149.6796875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-50.83984375, -12)\"><rect></rect><foreignObject width=\"101.6796875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📦 Збір даних</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1776925948780-7-0-flowchart-VALIDATE-5\" data-look=\"classic\" transform=\"translate(728.5234375, 81)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-69.859375\" y=\"-24\" width=\"139.71875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-45.859375, -12)\"><rect></rect><foreignObject width=\"91.71875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>✅ Валідація</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1776925948780-7-0-flowchart-OK-7\" data-look=\"classic\" transform=\"translate(916.33203125, 32)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-53.6953125\" y=\"-24\" width=\"107.390625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-29.6953125, -12)\"><rect></rect><foreignObject width=\"59.390625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>✔️ Успіх</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1776925948780-7-0-flowchart-FAIL-9\" data-look=\"classic\" transform=\"translate(916.33203125, 130)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-67.94921875\" y=\"-24\" width=\"135.8984375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-43.94921875, -12)\"><rect></rect><foreignObject width=\"87.8984375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>❌ Помилка</p></span></div></foreignObject></g></g></g></g></g><defs><filter id=\"exp-1776925948780-7-0-drop-shadow\" height=\"130%\" width=\"130%\"><feDropShadow dx=\"4\" dy=\"4\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs><defs><filter id=\"exp-1776925948780-7-0-drop-shadow-small\" height=\"150%\" width=\"150%\"><feDropShadow dx=\"2\" dy=\"2\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs></svg></div>\n<div class=\"warning\"><strong>⚠️ Типова помилка</strong> <p>Якщо забути <code>event.preventDefault()</code>, сторінка перезавантажиться — і весь JavaScript-код після обробника не виконається. Це перше, що треба додати в обробник <code>submit</code>.</p>\n</div>\n\n","<h1>🧩 Приклад: форма реєстрації з валідацією</h1>\n<p><strong>Головна ідея:</strong> Збираємо дані, перевіряємо кожне поле і показуємо помилки поруч із проблемними полями.</p>\n<pre><code class=\"language-html hljs language-xml\" data-highlighted=\"yes\"><span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">form</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"register-form\"</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">label</span> <span class=\"hljs-attr\">for</span>=<span class=\"hljs-string\">\"username\"</span>&gt;</span>Ім'я користувача:<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">label</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">input</span> <span class=\"hljs-attr\">type</span>=<span class=\"hljs-string\">\"text\"</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"username\"</span> <span class=\"hljs-attr\">name</span>=<span class=\"hljs-string\">\"username\"</span> /&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">span</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"error\"</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"username-error\"</span>&gt;</span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">span</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">label</span> <span class=\"hljs-attr\">for</span>=<span class=\"hljs-string\">\"email\"</span>&gt;</span>Email:<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">label</span>&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">input</span> <span class=\"hljs-attr\">type</span>=<span class=\"hljs-string\">\"email\"</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"email\"</span> <span class=\"hljs-attr\">name</span>=<span class=\"hljs-string\">\"email\"</span> /&gt;</span>\n    <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">span</span> <span class=\"hljs-attr\">class</span>=<span class=\"hljs-string\">\"error\"</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"email-error\"</span>&gt;</span><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">span</span>&gt;</span>\n  <span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n\n  <span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">button</span> <span class=\"hljs-attr\">type</span>=<span class=\"hljs-string\">\"submit\"</span>&gt;</span>Зареєструватись<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">button</span>&gt;</span>\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">form</span>&gt;</span></code></pre><pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> form = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"register-form\"</span>);\n\nform.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">\"submit\"</span>, <span class=\"hljs-function\">(<span class=\"hljs-params\">event</span>) =&gt;</span> {\n  event.<span class=\"hljs-title function_\">preventDefault</span>();\n\n  <span class=\"hljs-comment\">// Очистити попередні помилки</span>\n  <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"username-error\"</span>).<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">\"\"</span>;\n  <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"email-error\"</span>).<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">\"\"</span>;\n\n  <span class=\"hljs-keyword\">const</span> data = <span class=\"hljs-title class_\">Object</span>.<span class=\"hljs-title function_\">fromEntries</span>(<span class=\"hljs-keyword\">new</span> <span class=\"hljs-title class_\">FormData</span>(form).<span class=\"hljs-title function_\">entries</span>());\n  <span class=\"hljs-keyword\">let</span> hasErrors = <span class=\"hljs-literal\">false</span>;\n\n  <span class=\"hljs-comment\">// Перевірка username</span>\n  <span class=\"hljs-keyword\">if</span> (data.<span class=\"hljs-property\">username</span>.<span class=\"hljs-title function_\">trim</span>().<span class=\"hljs-property\">length</span> &lt; <span class=\"hljs-number\">3</span>) {\n    <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"username-error\"</span>).<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">\"Мінімум 3 символи\"</span>;\n    hasErrors = <span class=\"hljs-literal\">true</span>;\n  }\n\n  <span class=\"hljs-comment\">// Перевірка email</span>\n  <span class=\"hljs-keyword\">const</span> emailPattern = <span class=\"hljs-regexp\">/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/</span>;\n  <span class=\"hljs-keyword\">if</span> (!emailPattern.<span class=\"hljs-title function_\">test</span>(data.<span class=\"hljs-property\">email</span>)) {\n    <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"email-error\"</span>).<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">\"Некоректний email\"</span>;\n    hasErrors = <span class=\"hljs-literal\">true</span>;\n  }\n\n  <span class=\"hljs-comment\">// Якщо є помилки — не відправляємо</span>\n  <span class=\"hljs-keyword\">if</span> (hasErrors) <span class=\"hljs-keyword\">return</span>;\n\n  <span class=\"hljs-comment\">// Успіх</span>\n  <span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Реєстрація успішна:\"</span>, data);\n  form.<span class=\"hljs-title function_\">reset</span>();\n});</code></pre>","<h1>✨ Валідація в реальному часі</h1>\n<p><strong>Головна ідея:</strong> Замість того щоб показувати всі помилки лише після натискання кнопки, краще давати зворотний зв'язок одразу під час введення.</p>\n<h2>🎯 Дві події для валідації</h2>\n<table>\n<thead>\n<tr>\n<th>Подія</th>\n<th>Коли спрацьовує</th>\n<th>Коли використовувати</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>input</code></td>\n<td>При кожній зміні значення</td>\n<td>Лічильник символів, миттєва підказка</td>\n</tr>\n<tr>\n<td><code>blur</code></td>\n<td>Коли поле втрачає фокус</td>\n<td>Перевірка після завершення введення</td>\n</tr>\n</tbody></table>\n<h2>💡 Приклад: лічильник символів</h2>\n<pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> textarea = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"message\"</span>);\n<span class=\"hljs-keyword\">const</span> counter = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"counter\"</span>);\n<span class=\"hljs-keyword\">const</span> maxLength = <span class=\"hljs-number\">200</span>;\n\ntextarea.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">\"input\"</span>, <span class=\"hljs-function\">() =&gt;</span> {\n  <span class=\"hljs-keyword\">const</span> remaining = maxLength - textarea.<span class=\"hljs-property\">value</span>.<span class=\"hljs-property\">length</span>;\n  counter.<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">`Залишилось символів: <span class=\"hljs-subst\">${remaining}</span>`</span>;\n});</code></pre><h2>💡 Приклад: перевірка email при втраті фокуса</h2>\n<pre><code class=\"language-js hljs language-javascript\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">const</span> emailInput = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"email\"</span>);\n<span class=\"hljs-keyword\">const</span> emailError = <span class=\"hljs-variable language_\">document</span>.<span class=\"hljs-title function_\">getElementById</span>(<span class=\"hljs-string\">\"email-error\"</span>);\n\nemailInput.<span class=\"hljs-title function_\">addEventListener</span>(<span class=\"hljs-string\">\"blur\"</span>, <span class=\"hljs-function\">() =&gt;</span> {\n  <span class=\"hljs-keyword\">const</span> pattern = <span class=\"hljs-regexp\">/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/</span>;\n  <span class=\"hljs-keyword\">if</span> (emailInput.<span class=\"hljs-property\">value</span> !== <span class=\"hljs-string\">\"\"</span> &amp;&amp; !pattern.<span class=\"hljs-title function_\">test</span>(emailInput.<span class=\"hljs-property\">value</span>)) {\n    emailError.<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">\"Некоректний email\"</span>;\n  } <span class=\"hljs-keyword\">else</span> {\n    emailError.<span class=\"hljs-property\">textContent</span> = <span class=\"hljs-string\">\"\"</span>;\n  }\n});</code></pre><div class=\"tip\"><strong>💡 Не заважайте користувачу</strong> <p>Не показуйте помилку одразу, коли людина починає вводити значення — це дратує. Перевіряйте поле, коли користувач перейшов далі (подія <code>blur</code>), або після натискання кнопки відправки.</p>\n</div>\n\n","<h1>🎨 CSS для стилізації форм</h1>\n<p><strong>Головна ідея:</strong> CSS має спеціальні псевдокласи для полів — можна позначати стан валідності без JavaScript.</p>\n<h2>📋 Основні псевдокласи</h2>\n<table>\n<thead>\n<tr>\n<th>Псевдоклас</th>\n<th>Коли спрацьовує</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>:focus</code></td>\n<td>Поле у фокусі</td>\n</tr>\n<tr>\n<td><code>:valid</code></td>\n<td>Поле пройшло перевірку</td>\n</tr>\n<tr>\n<td><code>:invalid</code></td>\n<td>Поле не пройшло перевірку</td>\n</tr>\n<tr>\n<td><code>:required</code></td>\n<td>Поле має атрибут <code>required</code></td>\n</tr>\n</tbody></table>\n<h2>💡 Приклад стилізації</h2>\n<pre><code class=\"language-css hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">/* Рамка у фокусі */</span>\n<span class=\"hljs-selector-tag\">input</span><span class=\"hljs-selector-pseudo\">:focus</span> {\n  <span class=\"hljs-attribute\">outline</span>: <span class=\"hljs-number\">2px</span> solid <span class=\"hljs-number\">#1565c0</span>;\n}\n\n<span class=\"hljs-comment\">/* Зелена рамка для валідних полів */</span>\n<span class=\"hljs-selector-tag\">input</span><span class=\"hljs-selector-pseudo\">:valid</span> {\n  <span class=\"hljs-attribute\">border-color</span>: <span class=\"hljs-number\">#2e7d32</span>;\n}\n\n<span class=\"hljs-comment\">/* Червона рамка для невалідних */</span>\n<span class=\"hljs-selector-tag\">input</span><span class=\"hljs-selector-pseudo\">:invalid</span> {\n  <span class=\"hljs-attribute\">border-color</span>: <span class=\"hljs-number\">#c62828</span>;\n}\n\n<span class=\"hljs-comment\">/* Стиль для повідомлень про помилки */</span>\n<span class=\"hljs-selector-class\">.error</span> {\n  <span class=\"hljs-attribute\">color</span>: <span class=\"hljs-number\">#c62828</span>;\n  <span class=\"hljs-attribute\">font-size</span>: <span class=\"hljs-number\">14px</span>;\n}</code></pre><div class=\"note\"><strong>📝 Нюанс із :invalid</strong> <p>За замовчуванням порожнє поле з атрибутом <code>required</code> одразу стає <code>:invalid</code> — користувач ще нічого не ввів, а вже бачить червону рамку. Щоб цього уникнути, стилі краще застосовувати після натискання кнопки або використовувати клас, який додається з JavaScript.</p>\n</div>\n\n","<h1>🛠️ Практичні поради</h1>\n<p><strong>Головна ідея:</strong> Кілька простих правил, які роблять форми зручнішими для користувача.</p>\n<h2>✅ Що робити</h2>\n<ul>\n<li><strong>Показуйте, які поля обов'язкові</strong> — зірочка <code>*</code> поруч із підписом</li>\n<li><strong>Зрозумілі повідомлення про помилки</strong> — «Мінімум 8 символів», а не «Помилка валідації»</li>\n<li><strong>Помилку показуйте поруч із полем</strong> — а не загальним списком внизу форми</li>\n<li><strong>Використовуйте правильний <code>type</code></strong> — <code>email</code>, <code>tel</code>, <code>number</code> замість <code>text</code>, щоб на мобільних з'являлась відповідна клавіатура</li>\n<li><strong>Атрибут <code>placeholder</code></strong> для підказки формату: <code>+380XXXXXXXXX</code></li>\n</ul>\n<h2>❌ Чого уникати</h2>\n<ul>\n<li><strong>Не перевіряйте все під час введення</strong> — показувати «Некоректний email» після першої літери — погано</li>\n<li><strong>Не очищайте форму при помилці</strong> — користувач не захоче вводити все заново</li>\n<li><strong>Не покладайтесь лише на клієнтську валідацію</strong> — сервер повинен перевіряти дані незалежно</li>\n</ul>\n<div class=\"tip\"><strong>💡 Правильний вибір атрибута type</strong> <p>HTML5 має спеціалізовані типи полів: <code>email</code>, <code>tel</code>, <code>url</code>, <code>number</code>, <code>date</code>. Навіть якщо ви робите свою валідацію з JavaScript, правильний <code>type</code> покращує досвід на мобільних пристроях — з'являється потрібна клавіатура, а не стандартна.</p>\n</div>\n\n","<h1>✅ Ключові висновки</h1>\n<div class=\"success\"><strong>✅ Підсумок лекції</strong> <p><strong>📌 Що ми вивчили:</strong></p>\n<ol>\n<li><p><strong>Два рівні валідації</strong> — на клієнті (для зручності) та на сервері (для безпеки); клієнтська не замінює серверну</p>\n</li>\n<li><p><strong>Доступ до форм</strong> — <code>document.getElementById</code> для отримання форми, <code>form.elements.назва</code> для доступу до полів за атрибутом <code>name</code></p>\n</li>\n<li><p><strong>Читання значень</strong> — для більшості полів через <code>.value</code>, для checkbox та radio — через <code>.checked</code></p>\n</li>\n<li><p><strong>FormData</strong> — автоматично збирає всі дані форми; <code>Object.fromEntries(new FormData(form).entries())</code> перетворює у зручний об'єкт</p>\n</li>\n<li><p><strong>Регулярні вирази</strong> — стандартний інструмент перевірки формату; метод <code>.test()</code> повертає <code>true</code> або <code>false</code></p>\n</li>\n<li><p><strong>Подія submit</strong> — обов'язково <code>event.preventDefault()</code>, щоб сторінка не перезавантажилась</p>\n</li>\n<li><p><strong>Валідація в реальному часі</strong> — <code>input</code> для миттєвих змін, <code>blur</code> для перевірки після завершення введення</p>\n</li>\n<li><p><strong>CSS-псевдокласи</strong> — <code>:valid</code>, <code>:invalid</code>, <code>:focus</code> для стилізації стану полів</p>\n</li>\n</ol>\n</div>\n\n","<h1>❓ Контрольні питання</h1>\n<ol>\n<li><p>🤔 Навіщо потрібна клієнтська валідація, якщо дані все одно перевіряє сервер?</p>\n</li>\n<li><p>🤔 Як отримати значення поля <code>&lt;input&gt;</code> з JavaScript? Чим відрізняється читання значення checkbox?</p>\n</li>\n<li><p>🤔 Що робить <code>new FormData(form)</code> і які переваги цього підходу порівняно з ручним зверненням до кожного поля?</p>\n</li>\n<li><p>🤔 Що станеться, якщо в обробнику події <code>submit</code> не викликати <code>event.preventDefault()</code>?</p>\n</li>\n<li><p>🤔 Для чого використовують регулярні вирази при валідації форм? Наведіть приклад шаблону для перевірки українського номера телефону.</p>\n</li>\n<li><p>🤔 У чому різниця між подіями <code>input</code> та <code>blur</code>? Коли доцільно використовувати кожну?</p>\n</li>\n<li><p>🤔 Чому не варто показувати помилку одразу, коли користувач починає вводити значення?</p>\n</li>\n</ol>\n","<h1>📖 Глосарій термінів</h1>\n<table>\n<thead>\n<tr>\n<th>Термін</th>\n<th>English</th>\n<th>Визначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Валідація</td>\n<td>Validation</td>\n<td>Перевірка даних на відповідність заданим правилам</td>\n</tr>\n<tr>\n<td>Клієнтська валідація</td>\n<td>Client-side Validation</td>\n<td>Перевірка даних у браузері з JavaScript</td>\n</tr>\n<tr>\n<td>Серверна валідація</td>\n<td>Server-side Validation</td>\n<td>Перевірка даних на сервері; обов'язкова для безпеки</td>\n</tr>\n<tr>\n<td>Регулярний вираз</td>\n<td>Regular Expression</td>\n<td>Шаблон для перевірки структури рядка</td>\n</tr>\n<tr>\n<td>Подія submit</td>\n<td>Submit Event</td>\n<td>Подія, що виникає при відправленні форми</td>\n</tr>\n<tr>\n<td>Стандартна поведінка</td>\n<td>Default Behavior</td>\n<td>Дії браузера за замовчуванням; скасовується через <code>preventDefault()</code></td>\n</tr>\n<tr>\n<td>Псевдоклас</td>\n<td>Pseudo-class</td>\n<td>CSS-селектор для стилізації елементів залежно від стану</td>\n</tr>\n<tr>\n<td>Фокус</td>\n<td>Focus</td>\n<td>Стан поля, з яким зараз взаємодіє користувач</td>\n</tr>\n<tr>\n<td>Зворотний зв'язок</td>\n<td>Feedback</td>\n<td>Реакція інтерфейсу на дії користувача (повідомлення, індикатори)</td>\n</tr>\n</tbody></table>\n","<h1>📖 Глосарій абревіатур</h1>\n<table>\n<thead>\n<tr>\n<th>Абревіатура</th>\n<th>Розшифровка</th>\n<th>Переклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>HTML</td>\n<td>HyperText Markup Language</td>\n<td>Мова розмітки гіпертексту</td>\n</tr>\n<tr>\n<td>CSS</td>\n<td>Cascading Style Sheets</td>\n<td>Каскадні таблиці стилів</td>\n</tr>\n<tr>\n<td>DOM</td>\n<td>Document Object Model</td>\n<td>Об'єктна модель документа</td>\n</tr>\n<tr>\n<td>UI</td>\n<td>User Interface</td>\n<td>Інтерфейс користувача</td>\n</tr>\n</tbody></table>\n"];let currentSlideIndex=0;
+function renderMath(root){if(typeof renderMathInElement!=="function"||!root)return;try{renderMathInElement(root,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false,strict:"ignore",ignoredTags:["script","noscript","style","textarea","pre","code"]});}catch(e){console.warn("Math render error:",e);}}
+function showSlide(i){if(i<0||i>=slides.length)return;currentSlideIndex=i;const el=document.getElementById("current-slide");el.innerHTML=slides[i];el.scrollTop=0;renderMath(el);document.getElementById("progress-bar").style.width=((i+1)/slides.length*100)+"%";document.getElementById("slide-number").textContent=(i+1)+" / "+slides.length;updateSidebarActive();}
+function nextSlide(){if(currentSlideIndex<slides.length-1)showSlide(currentSlideIndex+1);}
+function previousSlide(){if(currentSlideIndex>0)showSlide(currentSlideIndex-1);}
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleHelp(){document.getElementById("help-overlay").classList.toggle("hidden");}
+function toggleFullscreen(){if(!document.fullscreenElement){const pc=document.getElementById("presentation-container");if(pc.requestFullscreen)pc.requestFullscreen();else if(pc.webkitRequestFullscreen)pc.webkitRequestFullscreen();else if(pc.msRequestFullscreen)pc.msRequestFullscreen();else if(pc.mozRequestFullScreen)pc.mozRequestFullScreen();}else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();else if(document.msExitFullscreen)document.msExitFullscreen();else if(document.mozCancelFullScreen)document.mozCancelFullScreen();}}
+function generateSidebar(){const sc=document.getElementById("sidebar-content");sc.innerHTML="";slides.forEach((html,idx)=>{const t=document.createElement("div");t.className="slide-thumbnail";if(idx===0)t.classList.add("active");const tmp=document.createElement("div");tmp.innerHTML=html;const title=tmp.querySelector("h1,h2");const titleText=title?title.textContent:("Слайд "+(idx+1));const textContent=tmp.textContent.replace(/s+/g," ").trim();const preview=textContent.substring(0,100)+(textContent.length>100?"...":"");t.innerHTML="<div class=\"slide-thumbnail-number\">"+(idx+1)+"</div><div class=\"slide-thumbnail-title\">"+titleText+"</div><div class=\"slide-thumbnail-content\">"+preview+"</div>";t.onclick=()=>{showSlide(idx);if(window.innerWidth<1024)toggleSidebar();};sc.appendChild(t);});}
+function updateSidebarActive(){document.querySelectorAll(".slide-thumbnail").forEach((th,idx)=>{if(idx===currentSlideIndex){th.classList.add("active");th.scrollIntoView({behavior:"smooth",block:"nearest"});}else th.classList.remove("active");});}
+document.addEventListener("keydown",e=>{switch(e.key){case"ArrowLeft":previousSlide();break;case"ArrowRight":case" ":e.preventDefault();nextSlide();break;case"f":case"F":toggleFullscreen();break;case"s":case"S":toggleSidebar();break;case"?":toggleHelp();break;case"Escape":const sb=document.getElementById("sidebar");const ho=document.getElementById("help-overlay");if(sb.classList.contains("open"))toggleSidebar();else if(!ho.classList.contains("hidden"))ho.classList.add("hidden");break;}});
+generateSidebar();showSlide(0);</script></body></html>
