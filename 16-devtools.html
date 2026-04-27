@@ -1,0 +1,621 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DevTools та налагодження</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><style>* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor-container.hidden {
+            display: none;
+        }
+
+        #editor-header {
+            background: #2d3748;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor-header h2 {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #editor-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        #markdown-input {
+            flex: 1;
+            padding: 2rem;
+            background: #1a202c;
+            color: #e2e8f0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        #markdown-input:focus {
+            outline: none;
+        }
+
+        .slide-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .slide h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h2 {
+            color: #764ba2;
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide pre {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .slide pre code {
+            background: transparent;
+            color: #abb2bf;
+        }
+
+        .slide code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .slide h1 code, .slide h2 code, .slide h3 code {
+            font-size: 0.85em;
+            background: rgba(237, 242, 247, 0.5);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .slide p code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .slide blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        .slide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .slide th, .slide td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .slide th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .slide tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .note {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #c53030;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .warning strong {
+            color: #c05621;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .info strong {
+            color: #2c5282;
+        }
+
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #22543d;
+        }
+
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .danger strong {
+            color: #742a2a;
+        }
+
+        .tip {
+            background: #fefcbf;
+            border-left: 4px solid #ecc94b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #744210;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            transition: width 0.3s;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        #sidebar.open {
+            right: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #sidebar-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        #sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        #sidebar-close:hover {
+            color: #667eea;
+        }
+
+        .slide-thumbnail {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .slide-thumbnail:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .slide-thumbnail.active {
+            border-color: #667eea;
+            background: #f7faff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slide-thumbnail-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-thumbnail-content {
+            font-size: 0.85rem;
+            color: #2d3748;
+            line-height: 1.4;
+            max-height: 4.2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-thumbnail-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 1.4rem;
+            background: linear-gradient(to right, transparent, white);
+        }
+
+        .slide-thumbnail.active .slide-thumbnail-content::after {
+            background: linear-gradient(to right, transparent, #f7faff);
+        }
+
+        .slide-thumbnail-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+        }
+
+        #sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: visible; /* щоб не обрізати тіні / розширені ноди */
+        }
+
+        /* Запобігаємо обрізанню останньої літери в нодах Mermaid через зміну font-weight після розрахунку розміру */
+        .mermaid svg { overflow: visible !important; }
+        /* перестраховка проти обрізання foreignObject (на випадок інших діаграм) */
+        .mermaid svg foreignObject { overflow: visible !important; }
+
+        .plantuml-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        #help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #help-overlay kbd {
+            background: #2d3748;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .mermaid-error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #742a2a;
+            margin: 1.5rem 0;
+        }
+
+        .mermaid-error pre {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
+
+        /* Повноекранний режим - зберігаємо оригінальний фон */
+        #presentation-container:fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-webkit-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-moz-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-ms-fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+#presentation-container:fullscreen,#presentation-container:-webkit-full-screen,#presentation-container:-moz-full-screen,#presentation-container:-ms-fullscreen{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)!important;}</style></head><body><div id="presentation-container"><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><button id="sidebar-toggle" onclick="toggleSidebar()" title="Навігація слайдами (S)">☰</button><div id="sidebar"><div id="sidebar-header"><h3>📑 Слайди</h3><button id="sidebar-close" onclick="toggleSidebar()">✕</button></div><div id="sidebar-content"></div></div><div class="slide-container"><div class="slide" id="current-slide"></div></div><div class="controls"><button class="control-btn" onclick="previousSlide()" title="Попередній (←)">←</button><button class="control-btn" onclick="nextSlide()" title="Наступний (→)">→</button><button class="control-btn" onclick="toggleFullscreen()" title="Повноекранний режим (F)">⛶</button><button class="control-btn" onclick="toggleHelp()" title="Допомога (?)">?</button></div><div class="slide-number" id="slide-number">1 / 15</div><div id="help-overlay" class="hidden"><strong>Гарячі клавіші:</strong><br><kbd>←</kbd> <kbd>→</kbd> Навігація<br><kbd>F</kbd> Повноекранний режим<br><kbd>S</kbd> Sidebar<br><kbd>?</kbd> Допомога<br><kbd>Esc</kbd> Закрити</div></div><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script><script>const slides=["<h1>DevTools та налагодження</h1>\n<p><strong>Web-технології в автоматизованих системах</strong></p>\n<p>Лектор: Кобилянський Антон</p>\n","<h1>📋 План лекції</h1>\n<ol>\n<li>🛠️ Що таке DevTools та як їх відкрити</li>\n<li>🔍 Вкладка Elements: інспекція DOM та CSS</li>\n<li>💬 Вкладка Console: виведення та виконання коду</li>\n<li>🌐 Вкладка Network: аналіз мережевих запитів</li>\n<li>📄 Sources та точки зупинки: налагодження JavaScript</li>\n<li>💾 Application та 🚦 Lighthouse</li>\n<li>✅ Ключові висновки та контрольні питання</li>\n</ol>\n","<h1>🛠️ Що таке DevTools</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>DevTools</strong> (Developer Tools) є набором вбудованих у браузер інструментів, що дозволяють інспектувати, налагоджувати та профілювати веб-сторінки безпосередньо у середовищі їх виконання.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> DevTools перетворюють браузер з пасивного відображувача сторінок на повноцінне середовище розробки, де можна побачити та змінити будь-який аспект роботи додатку.</p>\n<h2>⌨️ Як відкрити</h2>\n<table>\n<thead>\n<tr>\n<th>Спосіб</th>\n<th>Windows / Linux</th>\n<th>macOS</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Універсальна комбінація</td>\n<td><code>F12</code></td>\n<td><code>F12</code></td>\n</tr>\n<tr>\n<td>Альтернативна</td>\n<td><code>Ctrl + Shift + I</code></td>\n<td><code>Cmd + Option + I</code></td>\n</tr>\n<tr>\n<td>Інспектувати елемент</td>\n<td><code>Ctrl + Shift + C</code></td>\n<td><code>Cmd + Option + C</code></td>\n</tr>\n<tr>\n<td>Контекстне меню</td>\n<td>ПКМ → \"Inspect\"</td>\n<td>ПКМ → \"Inspect\"</td>\n</tr>\n</tbody></table>\n<h2>🎯 Що дозволяють DevTools</h2>\n<table>\n<thead>\n<tr>\n<th>Вкладка</th>\n<th>Призначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Elements</td>\n<td>Інспекція HTML та CSS</td>\n</tr>\n<tr>\n<td>Console</td>\n<td>Виконання JavaScript, перегляд логів</td>\n</tr>\n<tr>\n<td>Network</td>\n<td>Моніторинг мережевих запитів</td>\n</tr>\n<tr>\n<td>Sources</td>\n<td>Налагодження коду, точки зупинки</td>\n</tr>\n<tr>\n<td>Application</td>\n<td>Клієнтське сховище (LocalStorage, Cookies)</td>\n</tr>\n<tr>\n<td>Lighthouse</td>\n<td>Автоматизований аудит сторінки</td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 Основний інструмент розробника</strong> <p>Жоден професійний веб-розробник не працює без DevTools. Це основний інструмент діагностики проблем: від некоректного відображення елемента до помилок взаємодії з сервером.</p>\n</div>\n\n","<h1>🔍 Вкладка Elements</h1>\n<p><strong>Головна ідея:</strong> Elements показує живий HTML-код сторінки та дозволяє у режимі реального часу редагувати структуру та стилі.</p>\n<h2>📋 Основні можливості</h2>\n<table>\n<thead>\n<tr>\n<th>Дія</th>\n<th>Як виконати</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Знайти елемент на сторінці</td>\n<td>Кнопка 🔍 у верхньому куті, потім клік</td>\n</tr>\n<tr>\n<td>Редагувати HTML</td>\n<td>Подвійний клік по тегу або тексту</td>\n</tr>\n<tr>\n<td>Видалити елемент</td>\n<td>Виділити та натиснути <code>Delete</code></td>\n</tr>\n<tr>\n<td>Скопіювати селектор</td>\n<td>ПКМ → Copy → Copy selector</td>\n</tr>\n</tbody></table>\n<h2>🎨 Панель стилів</h2>\n<p>Праворуч від дерева DOM знаходиться панель з трьома вкладками:</p>\n<ul>\n<li><strong>Styles</strong>: CSS-правила, що застосовані до елемента; перевизначені правила позначені закресленням</li>\n<li><strong>Computed</strong>: фінальні обчислені значення всіх властивостей</li>\n<li><strong>Layout</strong>: інтерактивна діаграма Box Model з реальними значеннями margin, padding, border та content</li>\n</ul>\n<h2>🎭 Імітація станів</h2>\n<p>Кнопка <strong><code>:hov</code></strong> над панеллю Styles дозволяє примусово увімкнути стани <code>:hover</code>, <code>:focus</code>, <code>:active</code>, <code>:visited</code> без необхідності взаємодії з елементом.</p>\n<div class=\"tip\"><strong>💡 Зміни не зберігаються</strong> <p>Усі зміни у вкладці Elements є тимчасовими: вони зникнуть після перезавантаження сторінки. Це безпечне середовище для експериментів, де можна вільно ламати верстку та підбирати стилі.</p>\n</div>\n\n","<h1>💬 Вкладка Console</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Console</strong> є інтерактивною командною оболонкою, що відображає повідомлення від сторінки (логи, попередження, помилки) та дозволяє виконувати JavaScript-код у контексті поточної сторінки.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Console є основним інструментом для перевірки гіпотез у JavaScript: достатньо ввести код і одразу побачити результат.</p>\n<h2>📝 Методи виведення</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">\"Звичайне повідомлення\"</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">warn</span>(<span class=\"hljs-string\">\"Попередження\"</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">error</span>(<span class=\"hljs-string\">\"Помилка\"</span>);\n<span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">table</span>([\n  { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Anna\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">25</span> },\n  { <span class=\"hljs-attr\">name</span>: <span class=\"hljs-string\">\"Petro\"</span>, <span class=\"hljs-attr\">age</span>: <span class=\"hljs-number\">30</span> },\n]);</code></pre><h2>🎯 Виконання коду в Console</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Швидкий доступ до елементів</span>\n$(<span class=\"hljs-string\">\"h1\"</span>);          <span class=\"hljs-comment\">// querySelector: перший елемент</span>\n$$(<span class=\"hljs-string\">\"p\"</span>);          <span class=\"hljs-comment\">// querySelectorAll: масив елементів</span>\n\n<span class=\"hljs-comment\">// Останній виділений у Elements елемент</span>\n$0;               <span class=\"hljs-comment\">// поточний</span>\n\n<span class=\"hljs-comment\">// Виконати запит</span>\n<span class=\"hljs-title function_\">fetch</span>(<span class=\"hljs-string\">\"/api/data\"</span>).<span class=\"hljs-title function_\">then</span>(<span class=\"hljs-function\">(<span class=\"hljs-params\">r</span>) =&gt;</span> r.<span class=\"hljs-title function_\">json</span>());</code></pre><table>\n<thead>\n<tr>\n<th>Можливість</th>\n<th>Команда / Дія</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Вивести змінну</td>\n<td><code>console.log(user)</code></td>\n</tr>\n<tr>\n<td>Очистити консоль</td>\n<td>Кнопка 🚫 або <code>Ctrl + L</code></td>\n</tr>\n<tr>\n<td>Фільтрувати за типом</td>\n<td>All / Errors / Warnings / Info</td>\n</tr>\n<tr>\n<td>Зберігати між переходами</td>\n<td>⚙️ → Preserve log</td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 console.table для масивів</strong> <p>Метод <code>console.table()</code> форматує масив об'єктів у вигляді таблиці зі стовпцями. Це значно зручніше за <code>console.log()</code> при роботі з даними з API.</p>\n</div>\n\n","<h1>🌐 Вкладка Network</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Network</strong> є вкладкою, що записує всі мережеві запити, які робить сторінка: завантаження HTML, CSS, JavaScript, зображень, шрифтів, AJAX/fetch-запити до API.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Network показує, що саме браузер передає та отримує по мережі, дозволяючи виявити проблеми з продуктивністю, помилки сервера та некоректні запити.</p>\n<h2>📋 Колонки таблиці запитів</h2>\n<table>\n<thead>\n<tr>\n<th>Колонка</th>\n<th>Що показує</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Name</td>\n<td>Назва ресурсу або URL запиту</td>\n</tr>\n<tr>\n<td>Status</td>\n<td>HTTP-код відповіді (200, 404, 500 тощо)</td>\n</tr>\n<tr>\n<td>Type</td>\n<td>Тип ресурсу (document, script, fetch)</td>\n</tr>\n<tr>\n<td>Size</td>\n<td>Розмір переданих даних</td>\n</tr>\n<tr>\n<td>Time</td>\n<td>Час виконання запиту</td>\n</tr>\n</tbody></table>\n<h2>🔧 Деталі запиту</h2>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    REQ[&quot;📤 Запит&quot;] --&gt; HEADERS[&quot;📋 Headers&lt;br&gt;заголовки&quot;]\n    REQ --&gt; PAYLOAD[&quot;📦 Payload&lt;br&gt;тіло запиту&quot;]\n    REQ --&gt; RESP[&quot;📥 Response&lt;br&gt;відповідь сервера&quot;]\n    REQ --&gt; PREV[&quot;👁️ Preview&lt;br&gt;розпарсена відповідь&quot;]\n    style REQ fill:#fff9c4,stroke:#f9a825\n    style HEADERS fill:#e3f2fd,stroke:#1565c0\n    style PAYLOAD fill:#e8f5e9,stroke:#388e3c\n    style RESP fill:#fce4ec,stroke:#c2185b\n    style PREV fill:#fff3e0,stroke:#ef6c00\"><svg id=\"exp-1777312465452-5-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 394.875px;\" viewBox=\"0 0 394.875 454\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1777312465452-5-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1777312465452-5-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1777312465452-5-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1777312465452-5-0 .error-icon{fill:#552222;}#exp-1777312465452-5-0 .error-text{fill:#552222;stroke:#552222;}#exp-1777312465452-5-0 .edge-thickness-normal{stroke-width:1px;}#exp-1777312465452-5-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1777312465452-5-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1777312465452-5-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1777312465452-5-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1777312465452-5-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1777312465452-5-0 .marker{fill:#333333;stroke:#333333;}#exp-1777312465452-5-0 .marker.cross{stroke:#333333;}#exp-1777312465452-5-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1777312465452-5-0 p{margin:0;}#exp-1777312465452-5-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1777312465452-5-0 .cluster-label text{fill:#333;}#exp-1777312465452-5-0 .cluster-label span{color:#333;}#exp-1777312465452-5-0 .cluster-label span p{background-color:transparent;}#exp-1777312465452-5-0 .label text,#exp-1777312465452-5-0 span{fill:#333;color:#333;}#exp-1777312465452-5-0 .node rect,#exp-1777312465452-5-0 .node circle,#exp-1777312465452-5-0 .node ellipse,#exp-1777312465452-5-0 .node polygon,#exp-1777312465452-5-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1777312465452-5-0 .rough-node .label text,#exp-1777312465452-5-0 .node .label text,#exp-1777312465452-5-0 .image-shape .label,#exp-1777312465452-5-0 .icon-shape .label{text-anchor:middle;}#exp-1777312465452-5-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1777312465452-5-0 .rough-node .label,#exp-1777312465452-5-0 .node .label,#exp-1777312465452-5-0 .image-shape .label,#exp-1777312465452-5-0 .icon-shape .label{text-align:center;}#exp-1777312465452-5-0 .node.clickable{cursor:pointer;}#exp-1777312465452-5-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1777312465452-5-0 .arrowheadPath{fill:#333333;}#exp-1777312465452-5-0 .edgePath .path{stroke:#333333;stroke-width:1px;}#exp-1777312465452-5-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1777312465452-5-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1777312465452-5-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1777312465452-5-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1777312465452-5-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1777312465452-5-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1777312465452-5-0 .cluster text{fill:#333;}#exp-1777312465452-5-0 .cluster span{color:#333;}#exp-1777312465452-5-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1777312465452-5-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1777312465452-5-0 rect.text{fill:none;stroke-width:0;}#exp-1777312465452-5-0 .icon-shape,#exp-1777312465452-5-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1777312465452-5-0 .icon-shape p,#exp-1777312465452-5-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1777312465452-5-0 .icon-shape .label rect,#exp-1777312465452-5-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1777312465452-5-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1777312465452-5-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1777312465452-5-0 .node .neo-node{stroke:#667eea;}#exp-1777312465452-5-0 [data-look=\"neo\"].node rect,#exp-1777312465452-5-0 [data-look=\"neo\"].cluster rect,#exp-1777312465452-5-0 [data-look=\"neo\"].node polygon{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465452-5-0 [data-look=\"neo\"].node path{stroke:#667eea;stroke-width:1px;}#exp-1777312465452-5-0 [data-look=\"neo\"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465452-5-0 [data-look=\"neo\"].node .neo-line path{stroke:#667eea;filter:none;}#exp-1777312465452-5-0 [data-look=\"neo\"].node circle{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465452-5-0 [data-look=\"neo\"].node circle .state-start{fill:#000000;}#exp-1777312465452-5-0 [data-look=\"neo\"].icon-shape .icon{fill:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465452-5-0 [data-look=\"neo\"].icon-shape .icon-neo path{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465452-5-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1777312465452-5-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-pointEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"11.5\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"10.5\" markerHeight=\"14\" orient=\"auto\"><path d=\"M 0 0 L 11.5 7 L 0 14 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-pointStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"1\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11.5\" markerHeight=\"14\" orient=\"auto\"><polygon points=\"0,7 11.5,14 11.5,0\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></polygon></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-circleEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refY=\"5\" refX=\"12.25\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-circleStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-2\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-crossEnd-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"17.7\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5;\"></path></marker><marker id=\"exp-1777312465452-5-0_flowchart-v2-crossStart-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"-3.5\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M77.256,203L89.323,176.5C101.39,150,125.523,97,147.681,70.5C169.839,44,190.021,44,200.112,44L210.203,44\" id=\"exp-1777312465452-5-0-L_REQ_HEADERS_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_REQ_HEADERS_0\" data-points=\"W3sieCI6NzcuMjU2NDAzNjg4NTI0NTksInkiOjIwM30seyJ4IjoxNDkuNjU2MjUsInkiOjQ0fSx7IngiOjIxNC4yMDMxMjUsInkiOjQ0fV0=\" data-look=\"classic\" marker-end=\"url(#exp-1777312465452-5-0_flowchart-v2-pointEnd)\"></path><path d=\"M99.113,203L107.537,196.833C115.961,190.667,132.808,178.333,151.286,172.167C169.763,166,189.87,166,199.923,166L209.977,166\" id=\"exp-1777312465452-5-0-L_REQ_PAYLOAD_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_REQ_PAYLOAD_0\" data-points=\"W3sieCI6OTkuMTEyOTYxMDY1NTczNzcsInkiOjIwM30seyJ4IjoxNDkuNjU2MjUsInkiOjE2Nn0seyJ4IjoyMTMuOTc2NTYyNSwieSI6MTY2fV0=\" data-look=\"classic\" marker-end=\"url(#exp-1777312465452-5-0_flowchart-v2-pointEnd)\"></path><path d=\"M99.113,251L107.537,257.167C115.961,263.333,132.808,275.667,146.989,281.833C161.169,288,172.682,288,178.439,288L184.195,288\" id=\"exp-1777312465452-5-0-L_REQ_RESP_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_REQ_RESP_0\" data-points=\"W3sieCI6OTkuMTEyOTYxMDY1NTczNzcsInkiOjI1MX0seyJ4IjoxNDkuNjU2MjUsInkiOjI4OH0seyJ4IjoxODguMTk1MzEyNSwieSI6Mjg4fV0=\" data-look=\"classic\" marker-end=\"url(#exp-1777312465452-5-0_flowchart-v2-pointEnd)\"></path><path d=\"M77.256,251L89.323,277.5C101.39,304,125.523,357,141.09,383.5C156.656,410,163.656,410,167.156,410L170.656,410\" id=\"exp-1777312465452-5-0-L_REQ_PREV_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_REQ_PREV_0\" data-points=\"W3sieCI6NzcuMjU2NDAzNjg4NTI0NTksInkiOjI1MX0seyJ4IjoxNDkuNjU2MjUsInkiOjQxMH0seyJ4IjoxNzQuNjU2MjUsInkiOjQxMH1d\" data-look=\"classic\" marker-end=\"url(#exp-1777312465452-5-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_REQ_HEADERS_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_REQ_PAYLOAD_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_REQ_RESP_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_REQ_PREV_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"exp-1777312465452-5-0-flowchart-REQ-0\" data-look=\"classic\" transform=\"translate(66.328125, 227)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-58.328125\" y=\"-24\" width=\"116.65625\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-34.328125, -12)\"><rect></rect><foreignObject width=\"68.65625\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📤 Запит</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465452-5-0-flowchart-HEADERS-1\" data-look=\"classic\" transform=\"translate(280.765625, 44)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-66.5625\" y=\"-36\" width=\"133.125\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-42.5625, -24)\"><rect></rect><foreignObject width=\"85.125\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📋 Headers<br>заголовки</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465452-5-0-flowchart-PAYLOAD-3\" data-look=\"classic\" transform=\"translate(280.765625, 166)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-66.7890625\" y=\"-36\" width=\"133.578125\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-42.7890625, -24)\"><rect></rect><foreignObject width=\"85.578125\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📦 Payload<br>тіло запиту</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465452-5-0-flowchart-RESP-5\" data-look=\"classic\" transform=\"translate(280.765625, 288)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-92.5703125\" y=\"-36\" width=\"185.140625\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-68.5703125, -24)\"><rect></rect><foreignObject width=\"137.140625\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📥 Response<br>відповідь сервера</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465452-5-0-flowchart-PREV-7\" data-look=\"classic\" transform=\"translate(280.765625, 410)\"><rect class=\"basic label-container\" style=\"fill:#fff3e0 !important;stroke:#ef6c00 !important\" x=\"-106.109375\" y=\"-36\" width=\"212.21875\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-82.109375, -24)\"><rect></rect><foreignObject width=\"164.21875\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>👁️ Preview<br>розпарсена відповідь</p></span></div></foreignObject></g></g></g></g></g><defs><filter id=\"exp-1777312465452-5-0-drop-shadow\" height=\"130%\" width=\"130%\"><feDropShadow dx=\"4\" dy=\"4\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs><defs><filter id=\"exp-1777312465452-5-0-drop-shadow-small\" height=\"150%\" width=\"150%\"><feDropShadow dx=\"2\" dy=\"2\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs></svg></div>\n<h2>🌍 Throttling: обмеження швидкості</h2>\n<p>Випадаючий список <strong>Throttling</strong> дозволяє імітувати повільне з'єднання: <code>Fast 4G</code>, <code>Slow 4G</code>, <code>3G</code>, <code>Offline</code>. Корисні також прапорці <code>Disable cache</code> та <code>Preserve log</code>.</p>\n<div class=\"warning\"><strong>⚠️ Тестування на повільному з'єднанні</strong> <p>Часто додаток працює бездоганно на швидкому з'єднанні розробника, але стає непридатним для користувача з мобільним інтернетом. Регулярно тестуйте свої сторінки з профілем \"Slow 4G\".</p>\n</div>\n\n","<h1>📄 Sources: налагодження JavaScript</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Sources</strong> є вкладкою, що містить вихідні файли сторінки, з можливістю встановлювати точки зупинки та налагоджувати код.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Sources перетворює браузер на повноцінний debugger: можна зупинити виконання JavaScript у будь-якому місці, оглянути значення змінних та пройти код по кроках.</p>\n<h2>📋 Структура вкладки</h2>\n<table>\n<thead>\n<tr>\n<th>Панель</th>\n<th>Призначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Page (зліва)</td>\n<td>Дерево файлів, завантажених сторінкою</td>\n</tr>\n<tr>\n<td>Редактор (центр)</td>\n<td>Перегляд коду; натискання на номер рядка ставить breakpoint</td>\n</tr>\n<tr>\n<td>Debugger (справа)</td>\n<td>Змінні (Scope), стек викликів (Call Stack), watch</td>\n</tr>\n</tbody></table>\n<h2>🔍 Швидкий пошук</h2>\n<table>\n<thead>\n<tr>\n<th>Комбінація</th>\n<th>Що робить</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>Ctrl + P</code></td>\n<td>Відкрити файл за назвою</td>\n</tr>\n<tr>\n<td><code>Ctrl + Shift + F</code></td>\n<td>Глобальний пошук по всіх файлах</td>\n</tr>\n<tr>\n<td><code>Ctrl + F</code></td>\n<td>Пошук у поточному файлі</td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 Редагування коду на льоту</strong> <p>У Sources можна редагувати JavaScript-файл прямо в браузері, і зміни застосуються одразу. Це зручно для швидкого тестування виправлень. Зміни зникнуть після перезавантаження, тож робочі правки треба перенести до справжнього файлу.</p>\n</div>\n\n","<h1>🛑 Точки зупинки: Breakpoints</h1>\n<p><strong>Головна ідея:</strong> Breakpoint є маркером у коді, який змушує браузер призупинити виконання JavaScript у заданому місці, щоб розробник міг оглянути поточний стан програми.</p>\n<h2>🎯 Типи точок зупинки</h2>\n<table>\n<thead>\n<tr>\n<th>Тип</th>\n<th>Як встановити</th>\n<th>Коли спрацьовує</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Line breakpoint</td>\n<td>Клік на номер рядка</td>\n<td>Перед виконанням рядка</td>\n</tr>\n<tr>\n<td>Conditional breakpoint</td>\n<td>ПКМ → Add conditional breakpoint</td>\n<td>Коли умова повертає <code>true</code></td>\n</tr>\n<tr>\n<td>DOM breakpoint</td>\n<td>ПКМ на елемент → Break on...</td>\n<td>При зміні атрибутів, видаленні</td>\n</tr>\n<tr>\n<td>XHR/fetch breakpoint</td>\n<td>Sources → XHR/fetch breakpoints</td>\n<td>При запиті, що містить заданий рядок</td>\n</tr>\n</tbody></table>\n<h2>🐛 Інструкція debugger</h2>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-keyword\">function</span> <span class=\"hljs-title function_\">calculateTotal</span>(<span class=\"hljs-params\">items</span>) {\n  <span class=\"hljs-keyword\">let</span> total = <span class=\"hljs-number\">0</span>;\n  <span class=\"hljs-keyword\">debugger</span>; <span class=\"hljs-comment\">// Виконання зупиниться тут, якщо DevTools відкриті</span>\n  <span class=\"hljs-keyword\">for</span> (<span class=\"hljs-keyword\">const</span> item <span class=\"hljs-keyword\">of</span> items) {\n    total += item.<span class=\"hljs-property\">price</span> * item.<span class=\"hljs-property\">quantity</span>;\n  }\n  <span class=\"hljs-keyword\">return</span> total;\n}</code></pre><div class=\"note\"><strong>📝 debugger у виробничому коді</strong> <p>Інструкція <code>debugger</code> корисна під час розробки, але її обов'язково потрібно прибирати перед публікацією коду. Залишена у production вона зупинить додаток у користувачів, що відкриють DevTools.</p>\n</div>\n\n","<h1>🚶 Покрокове виконання</h1>\n<p><strong>Головна ідея:</strong> Коли виконання зупинено на breakpoint, доступні кнопки керування, що дозволяють продовжити виконання різними способами.</p>\n<h2>🎮 Кнопки керування</h2>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    PAUSED[&quot;⏸️ Зупинено&lt;br&gt;на breakpoint&quot;] --&gt; RESUME[&quot;▶️ Resume&lt;br&gt;F8&quot;]\n    PAUSED --&gt; OVER[&quot;⤵️ Step over&lt;br&gt;F10&quot;]\n    PAUSED --&gt; INTO[&quot;⬇️ Step into&lt;br&gt;F11&quot;]\n    PAUSED --&gt; OUT[&quot;⬆️ Step out&lt;br&gt;Shift+F11&quot;]\n    RESUME --&gt; NEXT[&quot;До наступного breakpoint&lt;br&gt;або до кінця&quot;]\n    OVER --&gt; NEXTLINE[&quot;Наступний рядок&lt;br&gt;не заходячи в функцію&quot;]\n    INTO --&gt; INSIDE[&quot;Зайти всередину&lt;br&gt;виклику функції&quot;]\n    OUT --&gt; OUTSIDE[&quot;Вийти з поточної&lt;br&gt;функції&quot;]\n    style PAUSED fill:#fff9c4,stroke:#f9a825\n    style RESUME fill:#e8f5e9,stroke:#388e3c\n    style OVER fill:#e3f2fd,stroke:#1565c0\n    style INTO fill:#fce4ec,stroke:#c2185b\n    style OUT fill:#fff3e0,stroke:#ef6c00\"><svg id=\"exp-1777312465472-8-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 646.34375px;\" viewBox=\"0 0 646.34375 454\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1777312465472-8-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1777312465472-8-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1777312465472-8-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1777312465472-8-0 .error-icon{fill:#552222;}#exp-1777312465472-8-0 .error-text{fill:#552222;stroke:#552222;}#exp-1777312465472-8-0 .edge-thickness-normal{stroke-width:1px;}#exp-1777312465472-8-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1777312465472-8-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1777312465472-8-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1777312465472-8-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1777312465472-8-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1777312465472-8-0 .marker{fill:#333333;stroke:#333333;}#exp-1777312465472-8-0 .marker.cross{stroke:#333333;}#exp-1777312465472-8-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1777312465472-8-0 p{margin:0;}#exp-1777312465472-8-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1777312465472-8-0 .cluster-label text{fill:#333;}#exp-1777312465472-8-0 .cluster-label span{color:#333;}#exp-1777312465472-8-0 .cluster-label span p{background-color:transparent;}#exp-1777312465472-8-0 .label text,#exp-1777312465472-8-0 span{fill:#333;color:#333;}#exp-1777312465472-8-0 .node rect,#exp-1777312465472-8-0 .node circle,#exp-1777312465472-8-0 .node ellipse,#exp-1777312465472-8-0 .node polygon,#exp-1777312465472-8-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1777312465472-8-0 .rough-node .label text,#exp-1777312465472-8-0 .node .label text,#exp-1777312465472-8-0 .image-shape .label,#exp-1777312465472-8-0 .icon-shape .label{text-anchor:middle;}#exp-1777312465472-8-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1777312465472-8-0 .rough-node .label,#exp-1777312465472-8-0 .node .label,#exp-1777312465472-8-0 .image-shape .label,#exp-1777312465472-8-0 .icon-shape .label{text-align:center;}#exp-1777312465472-8-0 .node.clickable{cursor:pointer;}#exp-1777312465472-8-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1777312465472-8-0 .arrowheadPath{fill:#333333;}#exp-1777312465472-8-0 .edgePath .path{stroke:#333333;stroke-width:1px;}#exp-1777312465472-8-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1777312465472-8-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1777312465472-8-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1777312465472-8-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1777312465472-8-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1777312465472-8-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1777312465472-8-0 .cluster text{fill:#333;}#exp-1777312465472-8-0 .cluster span{color:#333;}#exp-1777312465472-8-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1777312465472-8-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1777312465472-8-0 rect.text{fill:none;stroke-width:0;}#exp-1777312465472-8-0 .icon-shape,#exp-1777312465472-8-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1777312465472-8-0 .icon-shape p,#exp-1777312465472-8-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1777312465472-8-0 .icon-shape .label rect,#exp-1777312465472-8-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1777312465472-8-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1777312465472-8-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1777312465472-8-0 .node .neo-node{stroke:#667eea;}#exp-1777312465472-8-0 [data-look=\"neo\"].node rect,#exp-1777312465472-8-0 [data-look=\"neo\"].cluster rect,#exp-1777312465472-8-0 [data-look=\"neo\"].node polygon{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465472-8-0 [data-look=\"neo\"].node path{stroke:#667eea;stroke-width:1px;}#exp-1777312465472-8-0 [data-look=\"neo\"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465472-8-0 [data-look=\"neo\"].node .neo-line path{stroke:#667eea;filter:none;}#exp-1777312465472-8-0 [data-look=\"neo\"].node circle{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465472-8-0 [data-look=\"neo\"].node circle .state-start{fill:#000000;}#exp-1777312465472-8-0 [data-look=\"neo\"].icon-shape .icon{fill:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465472-8-0 [data-look=\"neo\"].icon-shape .icon-neo path{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465472-8-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1777312465472-8-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-pointEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"11.5\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"10.5\" markerHeight=\"14\" orient=\"auto\"><path d=\"M 0 0 L 11.5 7 L 0 14 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-pointStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"1\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11.5\" markerHeight=\"14\" orient=\"auto\"><polygon points=\"0,7 11.5,14 11.5,0\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></polygon></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-circleEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refY=\"5\" refX=\"12.25\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-circleStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-2\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-crossEnd-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"17.7\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5;\"></path></marker><marker id=\"exp-1777312465472-8-0_flowchart-v2-crossStart-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"-3.5\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M101.27,191L114.501,166.5C127.732,142,154.194,93,171.838,68.5C189.482,44,198.307,44,202.72,44L207.133,44\" id=\"exp-1777312465472-8-0-L_PAUSED_RESUME_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_PAUSED_RESUME_0\" data-points=\"W3sieCI6MTAxLjI2OTcyMzM2MDY1NTc1LCJ5IjoxOTF9LHsieCI6MTgwLjY1NjI1LCJ5Ijo0NH0seyJ4IjoyMTEuMTMyODEyNSwieSI6NDR9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1777312465472-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M140.153,191L146.903,186.833C153.654,182.667,167.155,174.333,177.406,170.167C187.656,166,194.656,166,198.156,166L201.656,166\" id=\"exp-1777312465472-8-0-L_PAUSED_OVER_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_PAUSED_OVER_0\" data-points=\"W3sieCI6MTQwLjE1MjkyMDA4MTk2NzIsInkiOjE5MX0seyJ4IjoxODAuNjU2MjUsInkiOjE2Nn0seyJ4IjoyMDUuNjU2MjUsInkiOjE2Nn1d\" data-look=\"classic\" marker-end=\"url(#exp-1777312465472-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M140.153,263L146.903,267.167C153.654,271.333,167.155,279.667,177.764,283.833C188.372,288,196.089,288,199.947,288L203.805,288\" id=\"exp-1777312465472-8-0-L_PAUSED_INTO_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_PAUSED_INTO_0\" data-points=\"W3sieCI6MTQwLjE1MjkyMDA4MTk2NzIsInkiOjI2M30seyJ4IjoxODAuNjU2MjUsInkiOjI4OH0seyJ4IjoyMDcuODA0Njg3NSwieSI6Mjg4fV0=\" data-look=\"classic\" marker-end=\"url(#exp-1777312465472-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M101.27,263L114.501,287.5C127.732,312,154.194,361,171.576,385.5C188.958,410,197.26,410,201.411,410L205.563,410\" id=\"exp-1777312465472-8-0-L_PAUSED_OUT_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_PAUSED_OUT_0\" data-points=\"W3sieCI6MTAxLjI2OTcyMzM2MDY1NTc1LCJ5IjoyNjN9LHsieCI6MTgwLjY1NjI1LCJ5Ijo0MTB9LHsieCI6MjA5LjU2MjUsInkiOjQxMH1d\" data-look=\"classic\" marker-end=\"url(#exp-1777312465472-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M341.586,44L346.665,44C351.745,44,361.904,44,370.483,44C379.063,44,386.063,44,389.563,44L393.063,44\" id=\"exp-1777312465472-8-0-L_RESUME_NEXT_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_RESUME_NEXT_0\" data-points=\"W3sieCI6MzQxLjU4NTkzNzUsInkiOjQ0fSx7IngiOjM3Mi4wNjI1LCJ5Ijo0NH0seyJ4IjozOTcuMDYyNSwieSI6NDR9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1777312465472-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M347.063,166L351.229,166C355.396,166,363.729,166,373.151,166C382.573,166,393.083,166,398.339,166L403.594,166\" id=\"exp-1777312465472-8-0-L_OVER_NEXTLINE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_OVER_NEXTLINE_0\" data-points=\"W3sieCI6MzQ3LjA2MjUsInkiOjE2Nn0seyJ4IjozNzIuMDYyNSwieSI6MTY2fSx7IngiOjQwNy41OTM3NSwieSI6MTY2fV0=\" data-look=\"classic\" marker-end=\"url(#exp-1777312465472-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M344.914,288L349.439,288C353.964,288,363.013,288,376.297,288C389.581,288,407.099,288,415.858,288L424.617,288\" id=\"exp-1777312465472-8-0-L_INTO_INSIDE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_INTO_INSIDE_0\" data-points=\"W3sieCI6MzQ0LjkxNDA2MjUsInkiOjI4OH0seyJ4IjozNzIuMDYyNSwieSI6Mjg4fSx7IngiOjQyOC42MTcxODc1LCJ5IjoyODh9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1777312465472-8-0_flowchart-v2-pointEnd)\"></path><path d=\"M343.156,410L347.974,410C352.792,410,362.427,410,376.158,410C389.888,410,407.714,410,416.626,410L425.539,410\" id=\"exp-1777312465472-8-0-L_OUT_OUTSIDE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_OUT_OUTSIDE_0\" data-points=\"W3sieCI6MzQzLjE1NjI1LCJ5Ijo0MTB9LHsieCI6MzcyLjA2MjUsInkiOjQxMH0seyJ4Ijo0MjkuNTM5MDYyNSwieSI6NDEwfV0=\" data-look=\"classic\" marker-end=\"url(#exp-1777312465472-8-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_PAUSED_RESUME_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_PAUSED_OVER_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_PAUSED_INTO_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_PAUSED_OUT_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_RESUME_NEXT_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_OVER_NEXTLINE_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_INTO_INSIDE_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_OUT_OUTSIDE_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"exp-1777312465472-8-0-flowchart-PAUSED-0\" data-look=\"classic\" transform=\"translate(81.828125, 227)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-73.828125\" y=\"-36\" width=\"147.65625\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-49.828125, -24)\"><rect></rect><foreignObject width=\"99.65625\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>⏸️ Зупинено<br>на breakpoint</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465472-8-0-flowchart-RESUME-1\" data-look=\"classic\" transform=\"translate(276.359375, 44)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-65.2265625\" y=\"-36\" width=\"130.453125\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-41.2265625, -24)\"><rect></rect><foreignObject width=\"82.453125\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>▶️ Resume<br>F8</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465472-8-0-flowchart-OVER-3\" data-look=\"classic\" transform=\"translate(276.359375, 166)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-70.703125\" y=\"-36\" width=\"141.40625\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-46.703125, -24)\"><rect></rect><foreignObject width=\"93.40625\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>⤵️ Step over<br>F10</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465472-8-0-flowchart-INTO-5\" data-look=\"classic\" transform=\"translate(276.359375, 288)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-68.5546875\" y=\"-36\" width=\"137.109375\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-44.5546875, -24)\"><rect></rect><foreignObject width=\"89.109375\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>⬇️ Step into<br>F11</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465472-8-0-flowchart-OUT-7\" data-look=\"classic\" transform=\"translate(276.359375, 410)\"><rect class=\"basic label-container\" style=\"fill:#fff3e0 !important;stroke:#ef6c00 !important\" x=\"-66.796875\" y=\"-36\" width=\"133.59375\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-42.796875, -24)\"><rect></rect><foreignObject width=\"85.59375\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>⬆️ Step out<br>Shift+F11</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465472-8-0-flowchart-NEXT-9\" data-look=\"classic\" transform=\"translate(517.703125, 44)\"><rect class=\"basic label-container\" style=\"\" x=\"-120.640625\" y=\"-36\" width=\"241.28125\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-96.640625, -24)\"><rect></rect><foreignObject width=\"193.28125\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>До наступного breakpoint<br>або до кінця</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465472-8-0-flowchart-NEXTLINE-11\" data-look=\"classic\" transform=\"translate(517.703125, 166)\"><rect class=\"basic label-container\" style=\"\" x=\"-110.109375\" y=\"-36\" width=\"220.21875\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-86.109375, -24)\"><rect></rect><foreignObject width=\"172.21875\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>Наступний рядок<br>не заходячи в функцію</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465472-8-0-flowchart-INSIDE-13\" data-look=\"classic\" transform=\"translate(517.703125, 288)\"><rect class=\"basic label-container\" style=\"\" x=\"-89.0859375\" y=\"-36\" width=\"178.171875\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-65.0859375, -24)\"><rect></rect><foreignObject width=\"130.171875\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>Зайти всередину<br>виклику функції</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465472-8-0-flowchart-OUTSIDE-15\" data-look=\"classic\" transform=\"translate(517.703125, 410)\"><rect class=\"basic label-container\" style=\"\" x=\"-88.1640625\" y=\"-36\" width=\"176.328125\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-64.1640625, -24)\"><rect></rect><foreignObject width=\"128.328125\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>Вийти з поточної<br>функції</p></span></div></foreignObject></g></g></g></g></g><defs><filter id=\"exp-1777312465472-8-0-drop-shadow\" height=\"130%\" width=\"130%\"><feDropShadow dx=\"4\" dy=\"4\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs><defs><filter id=\"exp-1777312465472-8-0-drop-shadow-small\" height=\"150%\" width=\"150%\"><feDropShadow dx=\"2\" dy=\"2\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs></svg></div>\n<h2>🔬 Огляд стану під час паузи</h2>\n<table>\n<thead>\n<tr>\n<th>Панель</th>\n<th>Що показує</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Scope</td>\n<td>Змінні у поточній області (local, closure, global)</td>\n</tr>\n<tr>\n<td>Watch</td>\n<td>Спостереження за виразами, доданими вручну</td>\n</tr>\n<tr>\n<td>Call Stack</td>\n<td>Ланцюжок викликів функцій до поточної точки</td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 Наведення на змінну</strong> <p>Під час паузи можна навести курсор на будь-яку змінну у редакторі коду, і DevTools відобразить її поточне значення у спливаючій підказці. Це швидший спосіб перевірити значення, ніж панель Scope.</p>\n</div>\n\n","<h1>💾 Application та 🚦 Lighthouse</h1>\n<h2>💾 Application: клієнтське сховище</h2>\n<table>\n<thead>\n<tr>\n<th>Розділ</th>\n<th>Призначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Local Storage</td>\n<td>Постійне сховище ключ-значення</td>\n</tr>\n<tr>\n<td>Session Storage</td>\n<td>Сховище на час сесії (до закриття вкладки)</td>\n</tr>\n<tr>\n<td>Cookies</td>\n<td>Cookies сайту з усіма атрибутами</td>\n</tr>\n<tr>\n<td>IndexedDB</td>\n<td>Структуроване сховище для великих обсягів</td>\n</tr>\n</tbody></table>\n<p>У всіх розділах можна переглядати, додавати, редагувати та видаляти записи. Ці інструменти необхідні для діагностики проблем зі станом додатку.</p>\n<h2>🚦 Lighthouse: автоматизований аудит</h2>\n<table>\n<thead>\n<tr>\n<th>Категорія</th>\n<th>Що оцінює</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Performance</td>\n<td>Швидкість завантаження та відображення</td>\n</tr>\n<tr>\n<td>Accessibility</td>\n<td>Доступність для людей з обмеженими можливостями</td>\n</tr>\n<tr>\n<td>Best Practices</td>\n<td>Дотримання сучасних веб-стандартів та безпеки</td>\n</tr>\n<tr>\n<td>SEO</td>\n<td>Оптимізація для пошукових систем</td>\n</tr>\n</tbody></table>\n<p><strong>Запуск аудиту:</strong> DevTools → вкладка Lighthouse → обрати категорії та тип пристрою (Mobile / Desktop) → <strong>Analyze page load</strong>.</p>\n<table>\n<thead>\n<tr>\n<th>Діапазон</th>\n<th>Колір</th>\n<th>Значення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>90...100</td>\n<td>🟢 Зелений</td>\n<td>Добре</td>\n</tr>\n<tr>\n<td>50...89</td>\n<td>🟠 Жовтий</td>\n<td>Потребує покращення</td>\n</tr>\n<tr>\n<td>0...49</td>\n<td>🔴 Червоний</td>\n<td>Погано</td>\n</tr>\n</tbody></table>\n<div class=\"warning\"><strong>⚠️ Безпека cookies</strong> <p>Cookies можуть містити сесійні токени та інші чутливі дані. Не передавайте скріншоти DevTools з вкладкою Application третім особам, оскільки вони можуть містити інформацію, що дозволяє увійти у ваш акаунт від вашого імені.</p>\n</div>\n\n","<h1>🐛 Практичний сценарій: пошук помилки</h1>\n<p><strong>Головна ідея:</strong> DevTools є щоденним інструментом пошуку та виправлення проблем, а не теоретичним.</p>\n<h2>📋 Сценарій: кнопка не реагує на клік</h2>\n<table>\n<thead>\n<tr>\n<th>Крок</th>\n<th>Дія</th>\n<th>Що перевіряємо</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>1</td>\n<td>Відкрити Console</td>\n<td>Чи є помилки JavaScript</td>\n</tr>\n<tr>\n<td>2</td>\n<td>Інспектувати кнопку у Elements</td>\n<td>Правильність <code>id</code> та <code>class</code></td>\n</tr>\n<tr>\n<td>3</td>\n<td>Перевірити Event Listeners</td>\n<td>Чи прив'язаний обробник</td>\n</tr>\n<tr>\n<td>4</td>\n<td>Поставити breakpoint у функції-обробнику</td>\n<td>Чи спрацьовує при кліку</td>\n</tr>\n<tr>\n<td>5</td>\n<td>Оглянути стан у Scope</td>\n<td>Що відбувається всередині обробника</td>\n</tr>\n</tbody></table>\n<h2>💡 Алгоритм мислення розробника</h2>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    PROBLEM[&quot;❓ Проблема&quot;] --&gt; CONSOLE[&quot;💬 Чи є помилки&lt;br&gt;у Console?&quot;]\n    CONSOLE --&gt;|&quot;Так&quot;| FIX1[&quot;🔧 Виправити помилку&quot;]\n    CONSOLE --&gt;|&quot;Ні&quot;| ELEMENTS[&quot;🔍 Інспект&lt;br&gt;у Elements&quot;]\n    ELEMENTS --&gt; NETWORK[&quot;🌐 Перевірити&lt;br&gt;Network&quot;]\n    NETWORK --&gt; SOURCES[&quot;📄 Поставити&lt;br&gt;breakpoint&quot;]\n    SOURCES --&gt; ANALYZE[&quot;🔬 Аналізувати&lt;br&gt;стан змінних&quot;]\n    style PROBLEM fill:#fff9c4,stroke:#f9a825\n    style CONSOLE fill:#e3f2fd,stroke:#1565c0\n    style ELEMENTS fill:#e8f5e9,stroke:#388e3c\n    style NETWORK fill:#fce4ec,stroke:#c2185b\n    style SOURCES fill:#fff3e0,stroke:#ef6c00\n    style ANALYZE fill:#f3e5f5,stroke:#7b1fa2\"><svg id=\"exp-1777312465489-10-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 1321.9375px;\" viewBox=\"0 0 1321.9375 186\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1777312465489-10-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1777312465489-10-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1777312465489-10-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1777312465489-10-0 .error-icon{fill:#552222;}#exp-1777312465489-10-0 .error-text{fill:#552222;stroke:#552222;}#exp-1777312465489-10-0 .edge-thickness-normal{stroke-width:1px;}#exp-1777312465489-10-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1777312465489-10-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1777312465489-10-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1777312465489-10-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1777312465489-10-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1777312465489-10-0 .marker{fill:#333333;stroke:#333333;}#exp-1777312465489-10-0 .marker.cross{stroke:#333333;}#exp-1777312465489-10-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1777312465489-10-0 p{margin:0;}#exp-1777312465489-10-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1777312465489-10-0 .cluster-label text{fill:#333;}#exp-1777312465489-10-0 .cluster-label span{color:#333;}#exp-1777312465489-10-0 .cluster-label span p{background-color:transparent;}#exp-1777312465489-10-0 .label text,#exp-1777312465489-10-0 span{fill:#333;color:#333;}#exp-1777312465489-10-0 .node rect,#exp-1777312465489-10-0 .node circle,#exp-1777312465489-10-0 .node ellipse,#exp-1777312465489-10-0 .node polygon,#exp-1777312465489-10-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1777312465489-10-0 .rough-node .label text,#exp-1777312465489-10-0 .node .label text,#exp-1777312465489-10-0 .image-shape .label,#exp-1777312465489-10-0 .icon-shape .label{text-anchor:middle;}#exp-1777312465489-10-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1777312465489-10-0 .rough-node .label,#exp-1777312465489-10-0 .node .label,#exp-1777312465489-10-0 .image-shape .label,#exp-1777312465489-10-0 .icon-shape .label{text-align:center;}#exp-1777312465489-10-0 .node.clickable{cursor:pointer;}#exp-1777312465489-10-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1777312465489-10-0 .arrowheadPath{fill:#333333;}#exp-1777312465489-10-0 .edgePath .path{stroke:#333333;stroke-width:1px;}#exp-1777312465489-10-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1777312465489-10-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1777312465489-10-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1777312465489-10-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1777312465489-10-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1777312465489-10-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1777312465489-10-0 .cluster text{fill:#333;}#exp-1777312465489-10-0 .cluster span{color:#333;}#exp-1777312465489-10-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1777312465489-10-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1777312465489-10-0 rect.text{fill:none;stroke-width:0;}#exp-1777312465489-10-0 .icon-shape,#exp-1777312465489-10-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1777312465489-10-0 .icon-shape p,#exp-1777312465489-10-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1777312465489-10-0 .icon-shape .label rect,#exp-1777312465489-10-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1777312465489-10-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1777312465489-10-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1777312465489-10-0 .node .neo-node{stroke:#667eea;}#exp-1777312465489-10-0 [data-look=\"neo\"].node rect,#exp-1777312465489-10-0 [data-look=\"neo\"].cluster rect,#exp-1777312465489-10-0 [data-look=\"neo\"].node polygon{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465489-10-0 [data-look=\"neo\"].node path{stroke:#667eea;stroke-width:1px;}#exp-1777312465489-10-0 [data-look=\"neo\"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465489-10-0 [data-look=\"neo\"].node .neo-line path{stroke:#667eea;filter:none;}#exp-1777312465489-10-0 [data-look=\"neo\"].node circle{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465489-10-0 [data-look=\"neo\"].node circle .state-start{fill:#000000;}#exp-1777312465489-10-0 [data-look=\"neo\"].icon-shape .icon{fill:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465489-10-0 [data-look=\"neo\"].icon-shape .icon-neo path{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1777312465489-10-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1777312465489-10-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-pointEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"11.5\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"10.5\" markerHeight=\"14\" orient=\"auto\"><path d=\"M 0 0 L 11.5 7 L 0 14 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-pointStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"1\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11.5\" markerHeight=\"14\" orient=\"auto\"><polygon points=\"0,7 11.5,14 11.5,0\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></polygon></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-circleEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refY=\"5\" refX=\"12.25\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-circleStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-2\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-crossEnd-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"17.7\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5;\"></path></marker><marker id=\"exp-1777312465489-10-0_flowchart-v2-crossStart-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"-3.5\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M158.281,87L162.448,87C166.615,87,174.948,87,182.615,87C190.281,87,197.281,87,200.781,87L204.281,87\" id=\"exp-1777312465489-10-0-L_PROBLEM_CONSOLE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_PROBLEM_CONSOLE_0\" data-points=\"W3sieCI6MTU4LjI4MTI1LCJ5Ijo4N30seyJ4IjoxODMuMjgxMjUsInkiOjg3fSx7IngiOjIwOC4yODEyNSwieSI6ODd9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1777312465489-10-0_flowchart-v2-pointEnd)\"></path><path d=\"M379.828,51L387.188,47.833C394.547,44.667,409.266,38.333,422.615,35.167C435.964,32,447.943,32,453.932,32L459.922,32\" id=\"exp-1777312465489-10-0-L_CONSOLE_FIX1_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_CONSOLE_FIX1_0\" data-points=\"W3sieCI6Mzc5LjgyODI2NzA0NTQ1NDU0LCJ5Ijo1MX0seyJ4Ijo0MjMuOTg0Mzc1LCJ5IjozMn0seyJ4Ijo0NjMuOTIxODc1LCJ5IjozMn1d\" data-look=\"classic\" marker-end=\"url(#exp-1777312465489-10-0_flowchart-v2-pointEnd)\"></path><path d=\"M379.828,123L387.188,126.167C394.547,129.333,409.266,135.667,430.559,138.833C451.852,142,479.719,142,493.652,142L507.586,142\" id=\"exp-1777312465489-10-0-L_CONSOLE_ELEMENTS_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_CONSOLE_ELEMENTS_0\" data-points=\"W3sieCI6Mzc5LjgyODI2NzA0NTQ1NDU0LCJ5IjoxMjN9LHsieCI6NDIzLjk4NDM3NSwieSI6MTQyfSx7IngiOjUxMS41ODU5Mzc1LCJ5IjoxNDJ9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1777312465489-10-0_flowchart-v2-pointEnd)\"></path><path d=\"M639.852,142L651.962,142C664.073,142,688.294,142,703.905,142C719.516,142,726.516,142,730.016,142L733.516,142\" id=\"exp-1777312465489-10-0-L_ELEMENTS_NETWORK_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_ELEMENTS_NETWORK_0\" data-points=\"W3sieCI6NjM5Ljg1MTU2MjUsInkiOjE0Mn0seyJ4Ijo3MTIuNTE1NjI1LCJ5IjoxNDJ9LHsieCI6NzM3LjUxNTYyNSwieSI6MTQyfV0=\" data-look=\"classic\" marker-end=\"url(#exp-1777312465489-10-0_flowchart-v2-pointEnd)\"></path><path d=\"M897.188,142L901.354,142C905.521,142,913.854,142,921.521,142C929.188,142,936.188,142,939.688,142L943.188,142\" id=\"exp-1777312465489-10-0-L_NETWORK_SOURCES_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_NETWORK_SOURCES_0\" data-points=\"W3sieCI6ODk3LjE4NzUsInkiOjE0Mn0seyJ4Ijo5MjIuMTg3NSwieSI6MTQyfSx7IngiOjk0Ny4xODc1LCJ5IjoxNDJ9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1777312465489-10-0_flowchart-v2-pointEnd)\"></path><path d=\"M1099.891,142L1104.057,142C1108.224,142,1116.557,142,1124.224,142C1131.891,142,1138.891,142,1142.391,142L1145.891,142\" id=\"exp-1777312465489-10-0-L_SOURCES_ANALYZE_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_SOURCES_ANALYZE_0\" data-points=\"W3sieCI6MTA5OS44OTA2MjUsInkiOjE0Mn0seyJ4IjoxMTI0Ljg5MDYyNSwieSI6MTQyfSx7IngiOjExNDkuODkwNjI1LCJ5IjoxNDJ9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1777312465489-10-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_PROBLEM_CONSOLE_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\" transform=\"translate(423.984375, 32)\"><g class=\"label\" data-id=\"L_CONSOLE_FIX1_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-14.9375\" y=\"-1\" width=\"29.875\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">Так</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(423.984375, 142)\"><g class=\"label\" data-id=\"L_CONSOLE_ELEMENTS_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-9.7578125\" y=\"-1\" width=\"19.515625\" height=\"22\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">Ні</tspan></tspan></text></g></g></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_ELEMENTS_NETWORK_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_NETWORK_SOURCES_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_SOURCES_ANALYZE_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"exp-1777312465489-10-0-flowchart-PROBLEM-0\" data-look=\"classic\" transform=\"translate(83.140625, 87)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-75.140625\" y=\"-24\" width=\"150.28125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-51.140625, -12)\"><rect></rect><foreignObject width=\"102.28125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>❓ Проблема</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465489-10-0-flowchart-CONSOLE-1\" data-look=\"classic\" transform=\"translate(296.1640625, 87)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-87.8828125\" y=\"-36\" width=\"175.765625\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-63.8828125, -24)\"><rect></rect><foreignObject width=\"127.765625\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>💬 Чи є помилки<br>у Console?</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465489-10-0-flowchart-FIX1-3\" data-look=\"classic\" transform=\"translate(575.71875, 32)\"><rect class=\"basic label-container\" style=\"\" x=\"-111.796875\" y=\"-24\" width=\"223.59375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-87.796875, -12)\"><rect></rect><foreignObject width=\"175.59375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🔧 Виправити помилку</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465489-10-0-flowchart-ELEMENTS-5\" data-look=\"classic\" transform=\"translate(575.71875, 142)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-64.1328125\" y=\"-36\" width=\"128.265625\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-40.1328125, -24)\"><rect></rect><foreignObject width=\"80.265625\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🔍 Інспект<br>у Elements</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465489-10-0-flowchart-NETWORK-7\" data-look=\"classic\" transform=\"translate(817.3515625, 142)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-79.8359375\" y=\"-36\" width=\"159.671875\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-55.8359375, -24)\"><rect></rect><foreignObject width=\"111.671875\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🌐 Перевірити<br>Network</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465489-10-0-flowchart-SOURCES-9\" data-look=\"classic\" transform=\"translate(1023.5390625, 142)\"><rect class=\"basic label-container\" style=\"fill:#fff3e0 !important;stroke:#ef6c00 !important\" x=\"-76.3515625\" y=\"-36\" width=\"152.703125\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-52.3515625, -24)\"><rect></rect><foreignObject width=\"104.703125\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📄 Поставити<br>breakpoint</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1777312465489-10-0-flowchart-ANALYZE-11\" data-look=\"classic\" transform=\"translate(1231.9140625, 142)\"><rect class=\"basic label-container\" style=\"fill:#f3e5f5 !important;stroke:#7b1fa2 !important\" x=\"-82.0234375\" y=\"-36\" width=\"164.046875\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-58.0234375, -24)\"><rect></rect><foreignObject width=\"116.046875\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🔬 Аналізувати<br>стан змінних</p></span></div></foreignObject></g></g></g></g></g><defs><filter id=\"exp-1777312465489-10-0-drop-shadow\" height=\"130%\" width=\"130%\"><feDropShadow dx=\"4\" dy=\"4\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs><defs><filter id=\"exp-1777312465489-10-0-drop-shadow-small\" height=\"150%\" width=\"150%\"><feDropShadow dx=\"2\" dy=\"2\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs></svg></div>\n<div class=\"tip\"><strong>💡 Принцип \"знизу вгору\"</strong> <p>При пошуку помилки рухайтесь від симптому до причини: побачили помилку у Console → відкрили відповідний файл у Sources → поставили breakpoint → дійшли до коду, що генерує помилку. Не намагайтесь одразу зрозуміти всю систему, а рухайтесь крок за кроком.</p>\n</div>\n\n","<h1>✅ Ключові висновки</h1>\n<div class=\"success\"><strong>✅ Підсумок лекції</strong> <p><strong>📌 Що ми вивчили:</strong></p>\n<ol>\n<li><p><strong>DevTools</strong> є основним інструментом веб-розробника та відкривається клавішею <code>F12</code> у будь-якому сучасному браузері</p>\n</li>\n<li><p><strong>Elements</strong> забезпечує інспекцію DOM, редагування HTML і CSS у реальному часі, перегляд Box Model та імітацію станів елементів</p>\n</li>\n<li><p><strong>Console</strong> дозволяє виводити повідомлення (<code>log</code>, <code>warn</code>, <code>error</code>, <code>table</code>), виконувати JavaScript-код, отримувати швидкий доступ до елементів через <code>$</code> та <code>$0</code></p>\n</li>\n<li><p><strong>Network</strong> забезпечує моніторинг мережевих запитів, аналіз заголовків та відповідей, імітацію повільного з'єднання через Throttling</p>\n</li>\n<li><p><strong>Sources</strong> використовується для налагодження JavaScript: точки зупинки, покрокове виконання (Step over / into / out), огляд стану змінних та стеку викликів</p>\n</li>\n<li><p><strong>Application</strong> забезпечує перегляд та редагування LocalStorage, SessionStorage, Cookies, IndexedDB</p>\n</li>\n<li><p><strong>Lighthouse</strong> виконує автоматизований аудит сторінки за категоріями Performance, Accessibility, Best Practices, SEO</p>\n</li>\n<li><p><strong>Алгоритм налагодження</strong> полягає у русі від симптому до причини: Console → Elements → Network → Sources</p>\n</li>\n</ol>\n</div>\n\n","<h1>❓ Контрольні питання</h1>\n<ol>\n<li><p>🤔 Які основні вкладки містять DevTools та яке призначення кожної з них?</p>\n</li>\n<li><p>🤔 Як перевірити, які CSS-правила застосовані до елемента і чому одне з них перекреслене?</p>\n</li>\n<li><p>🤔 У чому різниця між методами <code>console.log()</code>, <code>console.warn()</code>, <code>console.error()</code> та <code>console.table()</code>?</p>\n</li>\n<li><p>🤔 Як за допомогою Network визначити, що запит до API повернув помилку, та як побачити деталі цієї помилки?</p>\n</li>\n<li><p>🤔 Що таке breakpoint? Які типи breakpoint існують та коли застосовується кожен?</p>\n</li>\n<li><p>🤔 У чому різниця між кнопками Step over та Step into під час налагодження?</p>\n</li>\n<li><p>🤔 Як за допомогою DevTools перевірити, які дані зберігаються у LocalStorage поточного сайту?</p>\n</li>\n</ol>\n","<h1>📖 Глосарій термінів</h1>\n<table>\n<thead>\n<tr>\n<th>Термін</th>\n<th>English</th>\n<th>Визначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Інструменти розробника</td>\n<td>DevTools</td>\n<td>Набір вбудованих у браузер інструментів для інспекції та налагодження</td>\n</tr>\n<tr>\n<td>Інспекція</td>\n<td>Inspection</td>\n<td>Перегляд внутрішньої структури сторінки (DOM, стилі, скрипти)</td>\n</tr>\n<tr>\n<td>Налагодження</td>\n<td>Debugging</td>\n<td>Процес пошуку та виправлення помилок у коді</td>\n</tr>\n<tr>\n<td>Точка зупинки</td>\n<td>Breakpoint</td>\n<td>Маркер у коді, що зупиняє виконання у заданому місці</td>\n</tr>\n<tr>\n<td>Покрокове виконання</td>\n<td>Stepping</td>\n<td>Виконання коду по одному рядку для огляду стану програми</td>\n</tr>\n<tr>\n<td>Стек викликів</td>\n<td>Call Stack</td>\n<td>Ланцюжок функцій, виклик яких привів до поточної точки виконання</td>\n</tr>\n<tr>\n<td>Область видимості</td>\n<td>Scope</td>\n<td>Простір, у якому доступні змінні (local, closure, global)</td>\n</tr>\n<tr>\n<td>Аудит</td>\n<td>Audit</td>\n<td>Автоматизована оцінка якості сторінки за стандартними метриками</td>\n</tr>\n<tr>\n<td>Доступність</td>\n<td>Accessibility</td>\n<td>Адаптація сайту для людей з обмеженими можливостями</td>\n</tr>\n<tr>\n<td>Обмеження швидкості</td>\n<td>Throttling</td>\n<td>Імітація повільного з'єднання або процесора для тестування</td>\n</tr>\n</tbody></table>\n","<h1>📖 Глосарій абревіатур</h1>\n<table>\n<thead>\n<tr>\n<th>Абревіатура</th>\n<th>Розшифровка</th>\n<th>Переклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>DevTools</td>\n<td>Developer Tools</td>\n<td>Інструменти розробника</td>\n</tr>\n<tr>\n<td>DOM</td>\n<td>Document Object Model</td>\n<td>Об'єктна модель документа</td>\n</tr>\n<tr>\n<td>CSS</td>\n<td>Cascading Style Sheets</td>\n<td>Каскадні таблиці стилів</td>\n</tr>\n<tr>\n<td>HTML</td>\n<td>HyperText Markup Language</td>\n<td>Мова розмітки гіпертексту</td>\n</tr>\n<tr>\n<td>HTTP</td>\n<td>HyperText Transfer Protocol</td>\n<td>Протокол передачі гіпертексту</td>\n</tr>\n<tr>\n<td>API</td>\n<td>Application Programming Interface</td>\n<td>Програмний інтерфейс застосунку</td>\n</tr>\n<tr>\n<td>URL</td>\n<td>Uniform Resource Locator</td>\n<td>Уніфікований локатор ресурсу</td>\n</tr>\n<tr>\n<td>XHR</td>\n<td>XMLHttpRequest</td>\n<td>Об'єкт для асинхронних HTTP-запитів</td>\n</tr>\n<tr>\n<td>AJAX</td>\n<td>Asynchronous JavaScript and XML</td>\n<td>Асинхронний JavaScript та XML</td>\n</tr>\n<tr>\n<td>JSON</td>\n<td>JavaScript Object Notation</td>\n<td>Формат запису об'єктів JavaScript</td>\n</tr>\n<tr>\n<td>SEO</td>\n<td>Search Engine Optimization</td>\n<td>Оптимізація для пошукових систем</td>\n</tr>\n</tbody></table>\n"];let currentSlideIndex=0;
+function renderMath(root){if(typeof renderMathInElement!=="function"||!root)return;try{renderMathInElement(root,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false,strict:"ignore",ignoredTags:["script","noscript","style","textarea","pre","code"]});}catch(e){console.warn("Math render error:",e);}}
+function showSlide(i){if(i<0||i>=slides.length)return;currentSlideIndex=i;const el=document.getElementById("current-slide");el.innerHTML=slides[i];el.scrollTop=0;renderMath(el);document.getElementById("progress-bar").style.width=((i+1)/slides.length*100)+"%";document.getElementById("slide-number").textContent=(i+1)+" / "+slides.length;updateSidebarActive();}
+function nextSlide(){if(currentSlideIndex<slides.length-1)showSlide(currentSlideIndex+1);}
+function previousSlide(){if(currentSlideIndex>0)showSlide(currentSlideIndex-1);}
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleHelp(){document.getElementById("help-overlay").classList.toggle("hidden");}
+function toggleFullscreen(){if(!document.fullscreenElement){const pc=document.getElementById("presentation-container");if(pc.requestFullscreen)pc.requestFullscreen();else if(pc.webkitRequestFullscreen)pc.webkitRequestFullscreen();else if(pc.msRequestFullscreen)pc.msRequestFullscreen();else if(pc.mozRequestFullScreen)pc.mozRequestFullScreen();}else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();else if(document.msExitFullscreen)document.msExitFullscreen();else if(document.mozCancelFullScreen)document.mozCancelFullScreen();}}
+function generateSidebar(){const sc=document.getElementById("sidebar-content");sc.innerHTML="";slides.forEach((html,idx)=>{const t=document.createElement("div");t.className="slide-thumbnail";if(idx===0)t.classList.add("active");const tmp=document.createElement("div");tmp.innerHTML=html;const title=tmp.querySelector("h1,h2");const titleText=title?title.textContent:("Слайд "+(idx+1));const textContent=tmp.textContent.replace(/s+/g," ").trim();const preview=textContent.substring(0,100)+(textContent.length>100?"...":"");t.innerHTML="<div class=\"slide-thumbnail-number\">"+(idx+1)+"</div><div class=\"slide-thumbnail-title\">"+titleText+"</div><div class=\"slide-thumbnail-content\">"+preview+"</div>";t.onclick=()=>{showSlide(idx);if(window.innerWidth<1024)toggleSidebar();};sc.appendChild(t);});}
+function updateSidebarActive(){document.querySelectorAll(".slide-thumbnail").forEach((th,idx)=>{if(idx===currentSlideIndex){th.classList.add("active");th.scrollIntoView({behavior:"smooth",block:"nearest"});}else th.classList.remove("active");});}
+document.addEventListener("keydown",e=>{switch(e.key){case"ArrowLeft":previousSlide();break;case"ArrowRight":case" ":e.preventDefault();nextSlide();break;case"f":case"F":toggleFullscreen();break;case"s":case"S":toggleSidebar();break;case"?":toggleHelp();break;case"Escape":const sb=document.getElementById("sidebar");const ho=document.getElementById("help-overlay");if(sb.classList.contains("open"))toggleSidebar();else if(!ho.classList.contains("hidden"))ho.classList.add("hidden");break;}});
+generateSidebar();showSlide(0);</script></body></html>
