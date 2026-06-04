@@ -1,0 +1,621 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Протокол MQTT та інтеграція з IoT</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><style>* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor-container.hidden {
+            display: none;
+        }
+
+        #editor-header {
+            background: #2d3748;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor-header h2 {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #editor-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        #markdown-input {
+            flex: 1;
+            padding: 2rem;
+            background: #1a202c;
+            color: #e2e8f0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        #markdown-input:focus {
+            outline: none;
+        }
+
+        .slide-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .slide h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h2 {
+            color: #764ba2;
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            color: #2d3748;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide pre {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .slide pre code {
+            background: transparent;
+            color: #abb2bf;
+        }
+
+        .slide code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .slide h1 code, .slide h2 code, .slide h3 code {
+            font-size: 0.85em;
+            background: rgba(237, 242, 247, 0.5);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .slide p code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .slide blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        .slide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .slide th, .slide td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .slide th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .slide tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .note {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #c53030;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .warning strong {
+            color: #c05621;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .info strong {
+            color: #2c5282;
+        }
+
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #22543d;
+        }
+
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .danger strong {
+            color: #742a2a;
+        }
+
+        .tip {
+            background: #fefcbf;
+            border-left: 4px solid #ecc94b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #744210;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            transition: width 0.3s;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        #sidebar.open {
+            right: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #sidebar-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        #sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        #sidebar-close:hover {
+            color: #667eea;
+        }
+
+        .slide-thumbnail {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .slide-thumbnail:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .slide-thumbnail.active {
+            border-color: #667eea;
+            background: #f7faff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slide-thumbnail-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-thumbnail-content {
+            font-size: 0.85rem;
+            color: #2d3748;
+            line-height: 1.4;
+            max-height: 4.2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-thumbnail-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 1.4rem;
+            background: linear-gradient(to right, transparent, white);
+        }
+
+        .slide-thumbnail.active .slide-thumbnail-content::after {
+            background: linear-gradient(to right, transparent, #f7faff);
+        }
+
+        .slide-thumbnail-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+        }
+
+        #sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: visible; /* щоб не обрізати тіні / розширені ноди */
+        }
+
+        /* Запобігаємо обрізанню останньої літери в нодах Mermaid через зміну font-weight після розрахунку розміру */
+        .mermaid svg { overflow: visible !important; }
+        /* перестраховка проти обрізання foreignObject (на випадок інших діаграм) */
+        .mermaid svg foreignObject { overflow: visible !important; }
+
+        .plantuml-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        #help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #help-overlay kbd {
+            background: #2d3748;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .mermaid-error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #742a2a;
+            margin: 1.5rem 0;
+        }
+
+        .mermaid-error pre {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
+
+        /* Повноекранний режим - зберігаємо оригінальний фон */
+        #presentation-container:fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-webkit-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-moz-full-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #presentation-container:-ms-fullscreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+#presentation-container:fullscreen,#presentation-container:-webkit-full-screen,#presentation-container:-moz-full-screen,#presentation-container:-ms-fullscreen{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)!important;}</style></head><body><div id="presentation-container"><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><button id="sidebar-toggle" onclick="toggleSidebar()" title="Навігація слайдами (S)">☰</button><div id="sidebar"><div id="sidebar-header"><h3>📑 Слайди</h3><button id="sidebar-close" onclick="toggleSidebar()">✕</button></div><div id="sidebar-content"></div></div><div class="slide-container"><div class="slide" id="current-slide"></div></div><div class="controls"><button class="control-btn" onclick="previousSlide()" title="Попередній (←)">←</button><button class="control-btn" onclick="nextSlide()" title="Наступний (→)">→</button><button class="control-btn" onclick="toggleFullscreen()" title="Повноекранний режим (F)">⛶</button><button class="control-btn" onclick="toggleHelp()" title="Допомога (?)">?</button></div><div class="slide-number" id="slide-number">1 / 21</div><div id="help-overlay" class="hidden"><strong>Гарячі клавіші:</strong><br><kbd>←</kbd> <kbd>→</kbd> Навігація<br><kbd>F</kbd> Повноекранний режим<br><kbd>S</kbd> Sidebar<br><kbd>?</kbd> Допомога<br><kbd>Esc</kbd> Закрити</div></div><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script><script>const slides=["<h1>Протокол MQTT та інтеграція з IoT</h1>\n<p><strong>Web-технології в автоматизованих системах</strong></p>\n<p>Лектор: Кобилянський Антон</p>\n","<h1>📋 План лекції</h1>\n<ol>\n<li>🌐 Виклики IoT та обмеження класичного HTTP</li>\n<li>📨 MQTT — що це таке та ключові характеристики</li>\n<li>🔁 Модель Publish/Subscribe та роль брокера</li>\n<li>🗂️ Структура тем (topics) та символи підстановки</li>\n<li>🎯 Рівні якості обслуговування — QoS</li>\n<li>🧩 Спеціальні механізми: Retained, LWT, Keep Alive</li>\n<li>🔌 MQTT-ноди в Node-RED: підписка та публікація</li>\n<li>🛠️ Практичні сценарії інтеграції та безпека</li>\n</ol>\n","<h1>🌐 Виклики IoT та обмеження HTTP</h1>\n<div class=\"info\"><strong>ℹ️ Контекст</strong> <p><strong>IoT</strong> (Internet of Things / Інтернет речей) — мережа фізичних пристроїв (датчиків, контролерів, виконавчих механізмів), що обмінюються даними через інтернет без постійного втручання людини.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Типовий обмін «запит — відповідь» через HTTP погано підходить для тисяч маломіжних пристроїв, які працюють у ненадійних мережах.</p>\n<h2>⚠️ Чому HTTP незручний для IoT</h2>\n<table>\n<thead>\n<tr>\n<th>Обмеження HTTP</th>\n<th>Наслідок для IoT</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Модель «запит — відповідь»</td>\n<td>Пристрій не може отримати дані, поки сам не запитає (polling)</td>\n</tr>\n<tr>\n<td>Значний обсяг заголовків</td>\n<td>Зайвий трафік для датчика, що надсилає кілька байтів</td>\n</tr>\n<tr>\n<td>Накладні витрати на з'єднання та рукостискання</td>\n<td>Витрати енергії й часу, особливо за частих коротких запитів</td>\n</tr>\n<tr>\n<td>Жорстка прив'язка клієнт-сервер</td>\n<td>Складно розсилати дані одразу багатьом отримувачам</td>\n</tr>\n</tbody></table>\n<div class=\"note\"><strong>📝 Приклад проблеми</strong> <p>Уявіть 1000 датчиків, кожен з яких раз на секунду має дізнатися нове значення уставки. За HTTP кожен робив би окремий запит — це 1000 запитів щосекунди лише заради можливого оновлення. MQTT натомість працює за моделлю push: публікатор сам надсилає дані, коли настає подія (наприклад, змінюється значення), і споживачам не потрібно постійно опитувати джерело.</p>\n</div>\n\n","<h1>📨 MQTT — що це таке</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>MQTT</strong> — легкий мережевий протокол передавання повідомлень за моделлю «видавець — підписник», розроблений для пристроїв з обмеженими ресурсами та мереж із низькою пропускною здатністю.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> MQTT мінімізує обсяг службових даних і дозволяє пристроям обмінюватися повідомленнями асинхронно через посередника.</p>\n<h2>🔑 Ключові характеристики</h2>\n<ul>\n<li>🪶 <strong>Легкість</strong> — мінімальний заголовок (від 2 байтів), економія трафіку та енергії</li>\n<li>🔗 <strong>Працює поверх TCP/IP</strong> — стандартний порт <code>1883</code>, захищений (TLS) — <code>8883</code></li>\n<li>📭 <strong>Асинхронність</strong> — пристрій надсилає дані, не очікуючи на відповідь конкретного отримувача</li>\n<li>🔀 <strong>Розв'язаність</strong> — видавець і підписник нічого не знають один про одного</li>\n<li>📡 <strong>Багатоадресність</strong> — одне повідомлення може отримати багато підписників одночасно</li>\n</ul>\n<div class=\"note\"><strong>📝 Походження назви</strong> <p>Протокол створили Енді Стенфорд-Кларк (IBM) та Арлен Ніппер у 1999 році. Абревіатура історично походить від «MQ Telemetry Transport» (за назвою продукту IBM MQ); у сучасному стандарті OASIS MQTT розглядається вже як власна назва протоколу, а не абревіатура. Актуальні версії — MQTT 3.1.1 та MQTT 5.0.</p>\n</div>\n\n","<h1>🔁 Модель Publish/Subscribe</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Publish/Subscribe</strong> (видавець — підписник) — архітектурний шаблон, у якому відправники повідомлень (<strong>publishers</strong>) і отримувачі (<strong>subscribers</strong>) не взаємодіють напряму, а обмінюються даними через посередника — <strong>брокера</strong>.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Видавець публікує повідомлення у певну тему, а брокер пересилає його всім, хто на цю тему підписаний.</p>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    PUB1[&quot;📡 Датчик температури&lt;br&gt;Publisher&quot;] --&gt;|&quot;publish&lt;br&gt;sensors/temp&quot;| BROKER[&quot;🖥️ MQTT-брокер&quot;]\n    PUB2[&quot;📡 Датчик вологості&lt;br&gt;Publisher&quot;] --&gt;|&quot;publish&lt;br&gt;sensors/hum&quot;| BROKER\n    BROKER --&gt;|&quot;sensors/temp&quot;| SUB1[&quot;📊 Дашборд&lt;br&gt;Subscriber&quot;]\n    BROKER --&gt;|&quot;sensors/temp&quot;| SUB2[&quot;💾 База даних&lt;br&gt;Subscriber&quot;]\n    style BROKER fill:#fff9c4,stroke:#f9a825\n    style PUB1 fill:#e3f2fd,stroke:#1565c0\n    style PUB2 fill:#e3f2fd,stroke:#1565c0\n    style SUB1 fill:#e8f5e9,stroke:#388e3c\n    style SUB2 fill:#e8f5e9,stroke:#388e3c\"><svg id=\"exp-1780552356768-4-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 874.65625px;\" viewBox=\"0 0 874.65625 210\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1780552356768-4-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1780552356768-4-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1780552356768-4-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1780552356768-4-0 .error-icon{fill:#552222;}#exp-1780552356768-4-0 .error-text{fill:#552222;stroke:#552222;}#exp-1780552356768-4-0 .edge-thickness-normal{stroke-width:1px;}#exp-1780552356768-4-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1780552356768-4-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1780552356768-4-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1780552356768-4-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1780552356768-4-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1780552356768-4-0 .marker{fill:#333333;stroke:#333333;}#exp-1780552356768-4-0 .marker.cross{stroke:#333333;}#exp-1780552356768-4-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1780552356768-4-0 p{margin:0;}#exp-1780552356768-4-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1780552356768-4-0 .cluster-label text{fill:#333;}#exp-1780552356768-4-0 .cluster-label span{color:#333;}#exp-1780552356768-4-0 .cluster-label span p{background-color:transparent;}#exp-1780552356768-4-0 .label text,#exp-1780552356768-4-0 span{fill:#333;color:#333;}#exp-1780552356768-4-0 .node rect,#exp-1780552356768-4-0 .node circle,#exp-1780552356768-4-0 .node ellipse,#exp-1780552356768-4-0 .node polygon,#exp-1780552356768-4-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1780552356768-4-0 .rough-node .label text,#exp-1780552356768-4-0 .node .label text,#exp-1780552356768-4-0 .image-shape .label,#exp-1780552356768-4-0 .icon-shape .label{text-anchor:middle;}#exp-1780552356768-4-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1780552356768-4-0 .rough-node .label,#exp-1780552356768-4-0 .node .label,#exp-1780552356768-4-0 .image-shape .label,#exp-1780552356768-4-0 .icon-shape .label{text-align:center;}#exp-1780552356768-4-0 .node.clickable{cursor:pointer;}#exp-1780552356768-4-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1780552356768-4-0 .arrowheadPath{fill:#333333;}#exp-1780552356768-4-0 .edgePath .path{stroke:#333333;stroke-width:1px;}#exp-1780552356768-4-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1780552356768-4-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1780552356768-4-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1780552356768-4-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1780552356768-4-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1780552356768-4-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1780552356768-4-0 .cluster text{fill:#333;}#exp-1780552356768-4-0 .cluster span{color:#333;}#exp-1780552356768-4-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1780552356768-4-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1780552356768-4-0 rect.text{fill:none;stroke-width:0;}#exp-1780552356768-4-0 .icon-shape,#exp-1780552356768-4-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1780552356768-4-0 .icon-shape p,#exp-1780552356768-4-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1780552356768-4-0 .icon-shape .label rect,#exp-1780552356768-4-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1780552356768-4-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1780552356768-4-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1780552356768-4-0 .node .neo-node{stroke:#667eea;}#exp-1780552356768-4-0 [data-look=\"neo\"].node rect,#exp-1780552356768-4-0 [data-look=\"neo\"].cluster rect,#exp-1780552356768-4-0 [data-look=\"neo\"].node polygon{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356768-4-0 [data-look=\"neo\"].node path{stroke:#667eea;stroke-width:1px;}#exp-1780552356768-4-0 [data-look=\"neo\"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356768-4-0 [data-look=\"neo\"].node .neo-line path{stroke:#667eea;filter:none;}#exp-1780552356768-4-0 [data-look=\"neo\"].node circle{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356768-4-0 [data-look=\"neo\"].node circle .state-start{fill:#000000;}#exp-1780552356768-4-0 [data-look=\"neo\"].icon-shape .icon{fill:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356768-4-0 [data-look=\"neo\"].icon-shape .icon-neo path{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356768-4-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1780552356768-4-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-pointEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"11.5\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"10.5\" markerHeight=\"14\" orient=\"auto\"><path d=\"M 0 0 L 11.5 7 L 0 14 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-pointStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"1\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11.5\" markerHeight=\"14\" orient=\"auto\"><polygon points=\"0,7 11.5,14 11.5,0\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></polygon></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-circleEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refY=\"5\" refX=\"12.25\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-circleStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-2\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-crossEnd-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"17.7\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5;\"></path></marker><marker id=\"exp-1780552356768-4-0_flowchart-v2-crossStart-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"-3.5\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M234.734,44L247.454,44C260.174,44,285.615,44,314.221,49.933C342.827,55.867,374.6,67.734,390.487,73.667L406.373,79.6\" id=\"exp-1780552356768-4-0-L_PUB1_BROKER_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_PUB1_BROKER_0\" data-points=\"W3sieCI6MjM0LjczNDM3NSwieSI6NDR9LHsieCI6MzExLjA1NDY4NzUsInkiOjQ0fSx7IngiOjQxMC4xMjAxOTcyMzM2MDY2LCJ5Ijo4MX1d\" data-look=\"classic\" marker-end=\"url(#exp-1780552356768-4-0_flowchart-v2-pointEnd)\"></path><path d=\"M220.793,166L235.837,166C250.88,166,280.967,166,311.897,160.067C342.827,154.133,374.6,142.266,390.487,136.333L406.373,130.4\" id=\"exp-1780552356768-4-0-L_PUB2_BROKER_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_PUB2_BROKER_0\" data-points=\"W3sieCI6MjIwLjc5Mjk2ODc1LCJ5IjoxNjZ9LHsieCI6MzExLjA1NDY4NzUsInkiOjE2Nn0seyJ4Ijo0MTAuMTIwMTk3MjMzNjA2NiwieSI6MTI5fV0=\" data-look=\"classic\" marker-end=\"url(#exp-1780552356768-4-0_flowchart-v2-pointEnd)\"></path><path d=\"M538.638,81L555.149,74.833C571.659,68.667,604.681,56.333,634.391,50.167C664.1,44,690.497,44,703.696,44L716.895,44\" id=\"exp-1780552356768-4-0-L_BROKER_SUB1_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_BROKER_SUB1_0\" data-points=\"W3sieCI6NTM4LjYzNzYxNTI2NjM5MzUsInkiOjgxfSx7IngiOjYzNy43MDMxMjUsInkiOjQ0fSx7IngiOjcyMC44OTQ1MzEyNSwieSI6NDR9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1780552356768-4-0_flowchart-v2-pointEnd)\"></path><path d=\"M538.638,129L555.149,135.167C571.659,141.333,604.681,153.667,633.246,159.833C661.81,166,685.917,166,697.97,166L710.023,166\" id=\"exp-1780552356768-4-0-L_BROKER_SUB2_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_BROKER_SUB2_0\" data-points=\"W3sieCI6NTM4LjYzNzYxNTI2NjM5MzUsInkiOjEyOX0seyJ4Ijo2MzcuNzAzMTI1LCJ5IjoxNjZ9LHsieCI6NzE0LjAyMzQzNzUsInkiOjE2Nn1d\" data-look=\"classic\" marker-end=\"url(#exp-1780552356768-4-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\" transform=\"translate(311.0546875, 44)\"><g class=\"label\" data-id=\"L_PUB1_BROKER_0\" transform=\"translate(0, -18.799999237060547)\"><g><rect class=\"background\" style=\"\" x=\"-51.3203125\" y=\"-1.5\" width=\"102.640625\" height=\"40.599998474121094\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">publish</tspan></tspan><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">sensors/temp</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(311.0546875, 166)\"><g class=\"label\" data-id=\"L_PUB2_BROKER_0\" transform=\"translate(0, -18.799999237060547)\"><g><rect class=\"background\" style=\"\" x=\"-48.55078125\" y=\"-1.5\" width=\"97.1015625\" height=\"40.599998474121094\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">publish</tspan></tspan><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">sensors/hum</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(637.703125, 44)\"><g class=\"label\" data-id=\"L_BROKER_SUB1_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-51.3203125\" y=\"-1.5\" width=\"102.640625\" height=\"23\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">sensors/temp</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(637.703125, 166)\"><g class=\"label\" data-id=\"L_BROKER_SUB2_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-51.3203125\" y=\"-1.5\" width=\"102.640625\" height=\"23\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">sensors/temp</tspan></tspan></text></g></g></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"exp-1780552356768-4-0-flowchart-PUB1-0\" data-look=\"classic\" transform=\"translate(121.3671875, 44)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-113.3671875\" y=\"-36\" width=\"226.734375\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-89.3671875, -24)\"><rect></rect><foreignObject width=\"178.734375\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📡 Датчик температури<br>Publisher</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356768-4-0-flowchart-BROKER-1\" data-look=\"classic\" transform=\"translate(474.37890625, 105)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-87.00390625\" y=\"-24\" width=\"174.0078125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-63.00390625, -12)\"><rect></rect><foreignObject width=\"126.0078125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🖥️ MQTT-брокер</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356768-4-0-flowchart-PUB2-2\" data-look=\"classic\" transform=\"translate(121.3671875, 166)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-99.42578125\" y=\"-36\" width=\"198.8515625\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-75.42578125, -24)\"><rect></rect><foreignObject width=\"150.8515625\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📡 Датчик вологості<br>Publisher</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356768-4-0-flowchart-SUB1-5\" data-look=\"classic\" transform=\"translate(790.33984375, 44)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-69.4453125\" y=\"-36\" width=\"138.890625\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-45.4453125, -24)\"><rect></rect><foreignObject width=\"90.890625\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📊 Дашборд<br>Subscriber</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356768-4-0-flowchart-SUB2-7\" data-look=\"classic\" transform=\"translate(790.33984375, 166)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-76.31640625\" y=\"-36\" width=\"152.6328125\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-52.31640625, -24)\"><rect></rect><foreignObject width=\"104.6328125\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>💾 База даних<br>Subscriber</p></span></div></foreignObject></g></g></g></g></g><defs><filter id=\"exp-1780552356768-4-0-drop-shadow\" height=\"130%\" width=\"130%\"><feDropShadow dx=\"4\" dy=\"4\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs><defs><filter id=\"exp-1780552356768-4-0-drop-shadow-small\" height=\"150%\" width=\"150%\"><feDropShadow dx=\"2\" dy=\"2\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs></svg></div>\n<div class=\"success\"><strong>✅ Перевага розв'язаності</strong> <p>Один датчик температури може публікувати дані, навіть не знаючи, що їх одночасно споживають дашборд оператора, система журналювання та модуль сигналізації. Щоб додати нового споживача, не потрібно змінювати датчик — достатньо підписатися на ту саму тему.</p>\n</div>\n\n","<h1>🖥️ Брокер — серце MQTT-системи</h1>\n<p><strong>Головна ідея:</strong> Брокер — це центральний сервер, який приймає всі повідомлення, фільтрує їх за темами та доставляє відповідним підписникам.</p>\n<h2>🔧 Функції брокера</h2>\n<table>\n<thead>\n<tr>\n<th>Функція</th>\n<th>Опис</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>📥 Приймання повідомлень</td>\n<td>Отримує дані від усіх підключених видавців</td>\n</tr>\n<tr>\n<td>🗂️ Маршрутизація за темами</td>\n<td>Зіставляє тему повідомлення з підписками клієнтів</td>\n</tr>\n<tr>\n<td>📤 Доставка підписникам</td>\n<td>Надсилає копію повідомлення кожному відповідному підписнику</td>\n</tr>\n<tr>\n<td>🔐 Автентифікація та доступ</td>\n<td>Перевіряє облікові дані та права на теми</td>\n</tr>\n<tr>\n<td>💾 Збереження стану</td>\n<td>Зберігає retained-повідомлення та сесії клієнтів</td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 Популярні брокери</strong> <p><strong>Eclipse Mosquitto</strong> — легкий брокер з відкритим кодом, найчастіший вибір для навчання та невеликих систем. <strong>EMQX</strong> та <strong>HiveMQ</strong> — масштабовані брокери для промислових навантажень. Для швидких експериментів існують публічні тестові брокери, наприклад <code>test.mosquitto.org</code> та <code>broker.hivemq.com</code>.</p>\n</div>\n\n\n\n\n\n<div class=\"warning\"><strong>⚠️ Точка відмови</strong> <p>Оскільки весь обмін проходить через брокер, він є критичним компонентом: якщо брокер недоступний, обмін повідомленнями припиняється. У промислових системах брокери резервують (кластеризація, відмовостійкі конфігурації).</p>\n</div>\n\n","<h1>🗂️ Структура тем — Topics</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>Topic</strong> (тема) — текстовий ідентифікатор каналу, до якого прив'язується повідомлення. Теми мають <strong>ієрархічну структуру</strong> з рівнів, розділених символом <code>/</code>.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Продумана ієрархія тем робить систему зрозумілою та дозволяє гнучко підписуватися на потрібні групи даних.</p>\n\n<div class=\"mermaid\" data-source=\"graph TD\n    ROOT[&quot;factory&quot;] --&gt; A[&quot;line1&quot;]\n    ROOT --&gt; B[&quot;line2&quot;]\n    A --&gt; A1[&quot;temperature&quot;]\n    A --&gt; A2[&quot;pressure&quot;]\n    B --&gt; B1[&quot;temperature&quot;]\n    B --&gt; B2[&quot;status&quot;]\n    style ROOT fill:#fff9c4,stroke:#f9a825\n    style A fill:#e3f2fd,stroke:#1565c0\n    style B fill:#e3f2fd,stroke:#1565c0\n    style A1 fill:#e8f5e9,stroke:#388e3c\n    style A2 fill:#e8f5e9,stroke:#388e3c\n    style B1 fill:#e8f5e9,stroke:#388e3c\n    style B2 fill:#e8f5e9,stroke:#388e3c\"><svg id=\"exp-1780552356780-6-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 644.375px;\" viewBox=\"0 0 644.375 260\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1780552356780-6-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1780552356780-6-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1780552356780-6-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1780552356780-6-0 .error-icon{fill:#552222;}#exp-1780552356780-6-0 .error-text{fill:#552222;stroke:#552222;}#exp-1780552356780-6-0 .edge-thickness-normal{stroke-width:1px;}#exp-1780552356780-6-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1780552356780-6-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1780552356780-6-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1780552356780-6-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1780552356780-6-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1780552356780-6-0 .marker{fill:#333333;stroke:#333333;}#exp-1780552356780-6-0 .marker.cross{stroke:#333333;}#exp-1780552356780-6-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1780552356780-6-0 p{margin:0;}#exp-1780552356780-6-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1780552356780-6-0 .cluster-label text{fill:#333;}#exp-1780552356780-6-0 .cluster-label span{color:#333;}#exp-1780552356780-6-0 .cluster-label span p{background-color:transparent;}#exp-1780552356780-6-0 .label text,#exp-1780552356780-6-0 span{fill:#333;color:#333;}#exp-1780552356780-6-0 .node rect,#exp-1780552356780-6-0 .node circle,#exp-1780552356780-6-0 .node ellipse,#exp-1780552356780-6-0 .node polygon,#exp-1780552356780-6-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1780552356780-6-0 .rough-node .label text,#exp-1780552356780-6-0 .node .label text,#exp-1780552356780-6-0 .image-shape .label,#exp-1780552356780-6-0 .icon-shape .label{text-anchor:middle;}#exp-1780552356780-6-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1780552356780-6-0 .rough-node .label,#exp-1780552356780-6-0 .node .label,#exp-1780552356780-6-0 .image-shape .label,#exp-1780552356780-6-0 .icon-shape .label{text-align:center;}#exp-1780552356780-6-0 .node.clickable{cursor:pointer;}#exp-1780552356780-6-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1780552356780-6-0 .arrowheadPath{fill:#333333;}#exp-1780552356780-6-0 .edgePath .path{stroke:#333333;stroke-width:1px;}#exp-1780552356780-6-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1780552356780-6-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1780552356780-6-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1780552356780-6-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1780552356780-6-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1780552356780-6-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1780552356780-6-0 .cluster text{fill:#333;}#exp-1780552356780-6-0 .cluster span{color:#333;}#exp-1780552356780-6-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1780552356780-6-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1780552356780-6-0 rect.text{fill:none;stroke-width:0;}#exp-1780552356780-6-0 .icon-shape,#exp-1780552356780-6-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1780552356780-6-0 .icon-shape p,#exp-1780552356780-6-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1780552356780-6-0 .icon-shape .label rect,#exp-1780552356780-6-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1780552356780-6-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1780552356780-6-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1780552356780-6-0 .node .neo-node{stroke:#667eea;}#exp-1780552356780-6-0 [data-look=\"neo\"].node rect,#exp-1780552356780-6-0 [data-look=\"neo\"].cluster rect,#exp-1780552356780-6-0 [data-look=\"neo\"].node polygon{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356780-6-0 [data-look=\"neo\"].node path{stroke:#667eea;stroke-width:1px;}#exp-1780552356780-6-0 [data-look=\"neo\"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356780-6-0 [data-look=\"neo\"].node .neo-line path{stroke:#667eea;filter:none;}#exp-1780552356780-6-0 [data-look=\"neo\"].node circle{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356780-6-0 [data-look=\"neo\"].node circle .state-start{fill:#000000;}#exp-1780552356780-6-0 [data-look=\"neo\"].icon-shape .icon{fill:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356780-6-0 [data-look=\"neo\"].icon-shape .icon-neo path{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356780-6-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1780552356780-6-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-pointEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"11.5\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"10.5\" markerHeight=\"14\" orient=\"auto\"><path d=\"M 0 0 L 11.5 7 L 0 14 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-pointStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"1\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11.5\" markerHeight=\"14\" orient=\"auto\"><polygon points=\"0,7 11.5,14 11.5,0\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></polygon></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-circleEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refY=\"5\" refX=\"12.25\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-circleStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-2\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-crossEnd-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"17.7\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5;\"></path></marker><marker id=\"exp-1780552356780-6-0_flowchart-v2-crossStart-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"-3.5\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M283.709,46.347L263.719,52.122C243.73,57.898,203.751,69.449,183.761,78.724C163.771,88,163.771,95,163.771,98.5L163.771,102\" id=\"exp-1780552356780-6-0-L_ROOT_A_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_ROOT_A_0\" data-points=\"W3sieCI6MjgzLjcwODk4NDM3NSwieSI6NDYuMzQ2OTY4ODU5NDA2Njd9LHsieCI6MTYzLjc3MTQ4NDM3NSwieSI6ODF9LHsieCI6MTYzLjc3MTQ4NDM3NSwieSI6MTA2fV0=\" data-look=\"classic\" marker-end=\"url(#exp-1780552356780-6-0_flowchart-v2-pointEnd)\"></path><path d=\"M383.021,45.964L403.786,51.803C424.551,57.643,466.081,69.321,486.846,78.661C507.611,88,507.611,95,507.611,98.5L507.611,102\" id=\"exp-1780552356780-6-0-L_ROOT_B_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_ROOT_B_0\" data-points=\"W3sieCI6MzgzLjAyMTQ4NDM3NSwieSI6NDUuOTYzOTA3MDEwMTEwNTJ9LHsieCI6NTA3LjYxMTMyODEyNSwieSI6ODF9LHsieCI6NTA3LjYxMTMyODEyNSwieSI6MTA2fV0=\" data-look=\"classic\" marker-end=\"url(#exp-1780552356780-6-0_flowchart-v2-pointEnd)\"></path><path d=\"M123.604,152.591L115.778,156.993C107.952,161.394,92.3,170.197,84.474,178.099C76.648,186,76.648,193,76.648,196.5L76.648,200\" id=\"exp-1780552356780-6-0-L_A_A1_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_A_A1_0\" data-points=\"W3sieCI6MTIzLjYwMzUxNTYyNSwieSI6MTUyLjU5MTM4NzAwMjA0MDA1fSx7IngiOjc2LjY0ODQzNzUsInkiOjE3OX0seyJ4Ijo3Ni42NDg0Mzc1LCJ5IjoyMDR9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1780552356780-6-0_flowchart-v2-pointEnd)\"></path><path d=\"M203.939,152.591L211.765,156.993C219.591,161.394,235.243,170.197,243.069,178.099C250.895,186,250.895,193,250.895,196.5L250.895,200\" id=\"exp-1780552356780-6-0-L_A_A2_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_A_A2_0\" data-points=\"W3sieCI6MjAzLjkzOTQ1MzEyNSwieSI6MTUyLjU5MTM4NzAwMjA0MDA1fSx7IngiOjI1MC44OTQ1MzEyNSwieSI6MTc5fSx7IngiOjI1MC44OTQ1MzEyNSwieSI6MjA0fV0=\" data-look=\"classic\" marker-end=\"url(#exp-1780552356780-6-0_flowchart-v2-pointEnd)\"></path><path d=\"M467.218,154L460.205,158.167C453.192,162.333,439.166,170.667,432.153,178.333C425.141,186,425.141,193,425.141,196.5L425.141,200\" id=\"exp-1780552356780-6-0-L_B_B1_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_B_B1_0\" data-points=\"W3sieCI6NDY3LjIxNzUxNDM0OTQ4OTgsInkiOjE1NH0seyJ4Ijo0MjUuMTQwNjI1LCJ5IjoxNzl9LHsieCI6NDI1LjE0MDYyNSwieSI6MjA0fV0=\" data-look=\"classic\" marker-end=\"url(#exp-1780552356780-6-0_flowchart-v2-pointEnd)\"></path><path d=\"M548.005,154L555.018,158.167C562.031,162.333,576.056,170.667,583.069,178.333C590.082,186,590.082,193,590.082,196.5L590.082,200\" id=\"exp-1780552356780-6-0-L_B_B2_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_B_B2_0\" data-points=\"W3sieCI6NTQ4LjAwNTE0MTkwMDUxMDIsInkiOjE1NH0seyJ4Ijo1OTAuMDgyMDMxMjUsInkiOjE3OX0seyJ4Ijo1OTAuMDgyMDMxMjUsInkiOjIwNH1d\" data-look=\"classic\" marker-end=\"url(#exp-1780552356780-6-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_ROOT_A_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_ROOT_B_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_A_A1_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_A_A2_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_B_B1_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_B_B2_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"exp-1780552356780-6-0-flowchart-ROOT-0\" data-look=\"classic\" transform=\"translate(333.365234375, 32)\"><rect class=\"basic label-container\" style=\"fill:#fff9c4 !important;stroke:#f9a825 !important\" x=\"-49.65625\" y=\"-24\" width=\"99.3125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-25.65625, -12)\"><rect></rect><foreignObject width=\"51.3125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>factory</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356780-6-0-flowchart-A-1\" data-look=\"classic\" transform=\"translate(163.771484375, 130)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-40.16796875\" y=\"-24\" width=\"80.3359375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-16.16796875, -12)\"><rect></rect><foreignObject width=\"32.3359375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>line1</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356780-6-0-flowchart-B-3\" data-look=\"classic\" transform=\"translate(507.611328125, 130)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-41.28515625\" y=\"-24\" width=\"82.5703125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-17.28515625, -12)\"><rect></rect><foreignObject width=\"34.5703125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>line2</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356780-6-0-flowchart-A1-5\" data-look=\"classic\" transform=\"translate(76.6484375, 228)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-68.6484375\" y=\"-24\" width=\"137.296875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-44.6484375, -12)\"><rect></rect><foreignObject width=\"89.296875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>temperature</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356780-6-0-flowchart-A2-7\" data-look=\"classic\" transform=\"translate(250.89453125, 228)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-55.59765625\" y=\"-24\" width=\"111.1953125\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-31.59765625, -12)\"><rect></rect><foreignObject width=\"63.1953125\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>pressure</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356780-6-0-flowchart-B1-9\" data-look=\"classic\" transform=\"translate(425.140625, 228)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-68.6484375\" y=\"-24\" width=\"137.296875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-44.6484375, -12)\"><rect></rect><foreignObject width=\"89.296875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>temperature</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356780-6-0-flowchart-B2-11\" data-look=\"classic\" transform=\"translate(590.08203125, 228)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-46.29296875\" y=\"-24\" width=\"92.5859375\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-22.29296875, -12)\"><rect></rect><foreignObject width=\"44.5859375\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>status</p></span></div></foreignObject></g></g></g></g></g><defs><filter id=\"exp-1780552356780-6-0-drop-shadow\" height=\"130%\" width=\"130%\"><feDropShadow dx=\"4\" dy=\"4\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs><defs><filter id=\"exp-1780552356780-6-0-drop-shadow-small\" height=\"150%\" width=\"150%\"><feDropShadow dx=\"2\" dy=\"2\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs></svg></div>\n<pre><code class=\"language-text hljs language-plaintext\" data-highlighted=\"yes\">factory/line1/temperature     ← температура на лінії 1\nfactory/line1/pressure        ← тиск на лінії 1\nfactory/line2/temperature     ← температура на лінії 2\nhome/livingroom/light/status  ← стан світильника у вітальні</code></pre><div class=\"note\"><strong>📝 Правила іменування тем</strong> <p>Теми чутливі до регістру (<code>Temp</code> та <code>temp</code> — різні теми). Не варто починати тему з <code>/</code> та використовувати пробіли. Рекомендують короткі, послідовні англомовні назви рівнів, що відображають структуру системи: <code>&lt;зона&gt;/&lt;пристрій&gt;/&lt;параметр&gt;</code>.</p>\n</div>\n\n","<h1>🃏 Символи підстановки у підписках</h1>\n<p><strong>Головна ідея:</strong> Підписники можуть підписуватися не лише на конкретну тему, а й на цілі групи тем за допомогою символів підстановки (<strong>wildcards</strong>).</p>\n<h2>🔣 Два символи підстановки</h2>\n<table>\n<thead>\n<tr>\n<th>Символ</th>\n<th>Назва</th>\n<th>Дія</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>+</code></td>\n<td>Один рівень</td>\n<td>Замінює рівно один рівень ієрархії</td>\n</tr>\n<tr>\n<td><code>#</code></td>\n<td>Багато рівнів</td>\n<td>Замінює всі рівні нижче; має бути останнім символом теми</td>\n</tr>\n</tbody></table>\n<pre><code class=\"language-text hljs language-plaintext\" data-highlighted=\"yes\">factory/+/temperature   ← температура на БУДЬ-ЯКІЙ лінії:\n                           factory/line1/temperature ✅\n                           factory/line2/temperature ✅\n                           factory/line1/pressure    ❌ (інший параметр)\n\nfactory/line1/#         ← УСІ параметри лінії 1:\n                           factory/line1/temperature ✅\n                           factory/line1/pressure    ✅\n\nfactory/#               ← геть усе, що публікується під factory</code></pre><div class=\"warning\"><strong>⚠️ Важливі обмеження</strong> <p>Символи підстановки можна використовувати <strong>лише у підписках</strong>, а не під час публікації — видавець завжди вказує повну конкретну тему. Символ <code>#</code> дозволяється тільки в кінці теми (<code>factory/#</code>), а не всередині (<code>factory/#/temp</code> — помилка).</p>\n</div>\n\n","<h1>🎯 Рівні якості обслуговування — QoS</h1>\n<div class=\"info\"><strong>ℹ️ Визначення</strong> <p><strong>QoS</strong> (Quality of Service / Якість обслуговування) — параметр, що визначає, з якою гарантією повідомлення буде доставлене від відправника до отримувача.</p>\n</div>\n\n\n\n<p><strong>Головна ідея:</strong> Вищий рівень QoS дає надійнішу доставку, але потребує більше обміну службовими пакетами.</p>\n<h2>📊 Три рівні</h2>\n<table>\n<thead>\n<tr>\n<th>QoS</th>\n<th>Назва</th>\n<th>Гарантія</th>\n<th>Поведінка</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>0</code></td>\n<td>At most once</td>\n<td>Не більше одного разу</td>\n<td>«Надіслав і забув» — без підтвердження, можлива втрата</td>\n</tr>\n<tr>\n<td><code>1</code></td>\n<td>At least once</td>\n<td>Принаймні один раз</td>\n<td>З підтвердженням, але повідомлення може дублюватися</td>\n</tr>\n<tr>\n<td><code>2</code></td>\n<td>Exactly once</td>\n<td>Рівно один раз</td>\n<td>Чотириетапне підтвердження, без втрат і дублів</td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 Як обрати рівень</strong> <p><strong>QoS 0</strong> — для частих оновлень, де втрата окремого значення некритична (температура щосекунди). <strong>QoS 1</strong> — коли втрата неприпустима, а дублі обробляються (команди з ідемпотентною логікою). <strong>QoS 2</strong> — для критичних команд, які не можна ні втратити, ні виконати двічі (наприклад, фінансова операція). На практиці QoS 2 застосовують рідко через накладні витрати.</p>\n</div>\n\n","<h1>🧩 Спеціальні механізми MQTT</h1>\n<p><strong>Головна ідея:</strong> Окрім базового обміну, MQTT має механізми для надійної роботи у нестабільних мережах.</p>\n<h2>🔧 Ключові можливості</h2>\n<ul>\n<li>📌 <strong>Retained message</strong> (збережене повідомлення) — брокер запам'ятовує <strong>останнє</strong> повідомлення з цієї теми. Новий підписник одразу отримує актуальне значення, не чекаючи наступної публікації.</li>\n<li>⚰️ <strong>Last Will and Testament (LWT)</strong> — повідомлення, яке брокер публікує <strong>замість клієнта</strong>, якщо той несподівано відключився. Дозволяє іншим дізнатися про втрату зв'язку з пристроєм.</li>\n<li>💓 <strong>Keep Alive</strong> — інтервал, протягом якого клієнт має подати «ознаку життя» (<code>PINGREQ</code>). Якщо мовчить довше — брокер вважає його відключеним.</li>\n<li>🧹 <strong>Clean Session</strong> — визначає, чи зберігати підписки та неотримані повідомлення клієнта між підключеннями.</li>\n</ul>\n<div class=\"note\"><strong>📝 Практичний сценарій LWT</strong> <p>Датчик публікує статус <code>online</code> (retained) під час підключення та реєструє LWT-повідомлення <code>offline</code> для тієї самої теми. Якщо живлення датчика зникне, брокер автоматично опублікує <code>offline</code> — і оператор на дашборді миттєво побачить, що пристрій недоступний, навіть якщо сам датчик не встиг нічого надіслати.</p>\n</div>\n\n","<h1>⚖️ MQTT проти HTTP</h1>\n<p><strong>Головна ідея:</strong> MQTT і HTTP не конкурують, а доповнюють одне одного: кожен оптимальний для своїх задач.</p>\n<h2>📊 Порівняння</h2>\n<table>\n<thead>\n<tr>\n<th>Критерій</th>\n<th>MQTT</th>\n<th>HTTP</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Модель взаємодії</td>\n<td>Publish/Subscribe (через брокер)</td>\n<td>Запит — відповідь (напряму)</td>\n</tr>\n<tr>\n<td>Ініціатор обміну</td>\n<td>Будь-яка сторона (push)</td>\n<td>Лише клієнт (pull/polling)</td>\n</tr>\n<tr>\n<td>Обсяг службових даних</td>\n<td>Мінімальний (від 2 байтів)</td>\n<td>Значний (текстові заголовки)</td>\n</tr>\n<tr>\n<td>Багатоадресність</td>\n<td>Природна (один → багато)</td>\n<td>Складна, потребує надбудов</td>\n</tr>\n<tr>\n<td>Типове застосування</td>\n<td>Телеметрія, IoT, потоки даних</td>\n<td>Веб-сторінки, REST API</td>\n</tr>\n</tbody></table>\n<div class=\"success\"><strong>✅ Коли що обирати</strong> <p>Для <strong>періодичної телеметрії</strong>, подій реального часу та обміну з маломіжними пристроями обирають <strong>MQTT</strong>. Для <strong>запиту структурованих ресурсів на вимогу</strong> (отримати список, надіслати форму, викликати REST-метод) — <strong>HTTP</strong>. У реальних автоматизованих системах вони часто співіснують: дані з пристроїв надходять через MQTT, а зовнішні застосунки звертаються до системи через REST API.</p>\n</div>\n\n","<h1>🔌 MQTT у Node-RED: конфігурація брокера</h1>\n<p><strong>Головна ідея:</strong> Для роботи з MQTT у Node-RED використовують пару нод — <code>MQTT in</code> та <code>MQTT out</code>, які спираються на спільний <strong>конфігураційний вузол брокера</strong>.</p>\n<h2>⚙️ Налаштування вузла брокера (MQTT broker config)</h2>\n<table>\n<thead>\n<tr>\n<th>Параметр</th>\n<th>Призначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>Server</code> / <code>Port</code></td>\n<td>Адреса брокера та порт (<code>1883</code> — звичайний, <code>8883</code> — TLS)</td>\n</tr>\n<tr>\n<td><code>Client ID</code></td>\n<td>Унікальний ідентифікатор клієнта (або генерується автоматично)</td>\n</tr>\n<tr>\n<td><code>Keep Alive</code></td>\n<td>Інтервал підтримки з'єднання у секундах</td>\n</tr>\n<tr>\n<td><code>Use clean session</code></td>\n<td>Чи скидати збережений стан сесії при підключенні</td>\n</tr>\n<tr>\n<td><code>Security</code></td>\n<td>Ім'я користувача та пароль для автентифікації</td>\n</tr>\n<tr>\n<td><code>Will message</code></td>\n<td>Налаштування LWT — теми та повідомлення при втраті зв'язку</td>\n</tr>\n</tbody></table>\n<div class=\"tip\"><strong>💡 Один брокер — багато нод</strong> <p>Конфігураційний вузол брокера створюється один раз і може використовуватися одночасно багатьма нодами <code>MQTT in</code> та <code>MQTT out</code>. Це означає одне фізичне з'єднання з брокером для всіх потоків, що звертаються до нього.</p>\n</div>\n\n","<h1>📥 Нода MQTT In — підписка</h1>\n<p><strong>Головна ідея:</strong> Нода <code>MQTT in</code> підписується на задану тему і генерує нове повідомлення (<code>msg</code>) щоразу, коли брокер надсилає дані з цієї теми.</p>\n<h2>🔧 Що отримуємо на виході</h2>\n<p>Нода формує об'єкт <code>msg</code> із заповненими полями:</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Приклад msg, що надходить від MQTT in</span>\n{\n  <span class=\"hljs-attr\">topic</span>: <span class=\"hljs-string\">\"factory/line1/temperature\"</span>, <span class=\"hljs-comment\">// тема повідомлення</span>\n  <span class=\"hljs-attr\">payload</span>: <span class=\"hljs-string\">\"23.5\"</span>,                     <span class=\"hljs-comment\">// корисне навантаження</span>\n  <span class=\"hljs-attr\">qos</span>: <span class=\"hljs-number\">0</span>,                              <span class=\"hljs-comment\">// рівень QoS</span>\n  <span class=\"hljs-attr\">retain</span>: <span class=\"hljs-literal\">false</span>                        <span class=\"hljs-comment\">// ознака retained-повідомлення</span>\n}</code></pre><table>\n<thead>\n<tr>\n<th>Налаштування ноди</th>\n<th>Призначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>Topic</code></td>\n<td>Тема для підписки (можна з <code>+</code> та <code>#</code>)</td>\n</tr>\n<tr>\n<td><code>QoS</code></td>\n<td>Бажаний рівень якості доставки</td>\n</tr>\n<tr>\n<td><code>Output</code></td>\n<td>Формат <code>payload</code>: рядок, буфер або автоматичний розбір JSON</td>\n</tr>\n</tbody></table>\n<div class=\"note\"><strong>📝 Автоматичний розбір JSON</strong> <p>Якщо обрати вивід «a parsed JSON object», нода спробує перетворити текстовий <code>payload</code> на об'єкт JavaScript. Тоді у наступних нодах одразу доступні поля, наприклад <code>msg.payload.temperature</code>, без ручного виклику <code>JSON.parse()</code>.</p>\n</div>\n\n","<h1>📤 Нода MQTT Out — публікація</h1>\n<p><strong>Головна ідея:</strong> Нода <code>MQTT out</code> бере вміст <code>msg.payload</code> і публікує його у задану тему на брокері.</p>\n<h2>🔧 Як задати тему та параметри</h2>\n<p>Тему можна вказати <strong>у самій ноді</strong> або <strong>динамічно</strong> через <code>msg.topic</code>:</p>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Function-нода перед MQTT out: формуємо команду</span>\n<span class=\"hljs-comment\">// (Function-ноду ви вже використовували для логіки в потоці)</span>\nmsg.<span class=\"hljs-property\">topic</span> = <span class=\"hljs-string\">\"factory/line1/command\"</span>;\nmsg.<span class=\"hljs-property\">payload</span> = <span class=\"hljs-title class_\">JSON</span>.<span class=\"hljs-title function_\">stringify</span>({ <span class=\"hljs-attr\">action</span>: <span class=\"hljs-string\">\"stop\"</span> });\n<span class=\"hljs-keyword\">return</span> msg;</code></pre><table>\n<thead>\n<tr>\n<th>Налаштування ноди</th>\n<th>Призначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td><code>Topic</code></td>\n<td>Тема публікації (порожнє — береться з <code>msg.topic</code>)</td>\n</tr>\n<tr>\n<td><code>QoS</code></td>\n<td>Рівень якості доставки</td>\n</tr>\n<tr>\n<td><code>Retain</code></td>\n<td>Чи зберегти повідомлення як retained на брокері</td>\n</tr>\n</tbody></table>\n<div class=\"warning\"><strong>⚠️ Тип payload</strong> <p>Якщо <code>msg.payload</code> є об'єктом JavaScript, нода <code>MQTT out</code> автоматично перетворює його на рядок JSON перед публікацією. Явний виклик <code>JSON.stringify()</code> не є обов'язковим — він лише дає повний контроль над форматом серіалізації. Рядки публікуються як є, а буфери — як двійкові дані.</p>\n</div>\n\n","<h1>🏗️ Практичний приклад: моніторинг температури</h1>\n<p><strong>Головна ідея:</strong> Поєднання MQTT-нод із вже знайомими <code>Function</code> та <code>Switch</code> дозволяє побудувати реальний сценарій моніторингу з реакцією на перевищення порогу.</p>\n\n<div class=\"mermaid\" data-source=\"graph LR\n    A[&quot;🌡️ MQTT In&lt;br&gt;factory/line1/temperature&quot;] --&gt; B[&quot;⚙️ Function&lt;br&gt;розбір значення&quot;]\n    B --&gt; C[&quot;🔀 Switch&lt;br&gt;значення більше 80?&quot;]\n    C --&gt;|&quot;так&quot;| D[&quot;📤 MQTT Out&lt;br&gt;factory/line1/alert&quot;]\n    C --&gt;|&quot;ні&quot;| E[&quot;📊 Debug&quot;]\n    style A fill:#e3f2fd,stroke:#1565c0\n    style B fill:#fff3e0,stroke:#ef6c00\n    style C fill:#f3e5f5,stroke:#7b1fa2\n    style D fill:#fce4ec,stroke:#c2185b\n    style E fill:#e8f5e9,stroke:#388e3c\"><svg id=\"exp-1780552356793-14-0\" width=\"100%\" xmlns=\"http://www.w3.org/2000/svg\" class=\"flowchart\" style=\"max-width: 974.8984375px;\" viewBox=\"0 0 974.8984375 186\" role=\"graphics-document document\" aria-roledescription=\"flowchart-v2\"><style>#exp-1780552356793-14-0{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#exp-1780552356793-14-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#exp-1780552356793-14-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#exp-1780552356793-14-0 .error-icon{fill:#552222;}#exp-1780552356793-14-0 .error-text{fill:#552222;stroke:#552222;}#exp-1780552356793-14-0 .edge-thickness-normal{stroke-width:1px;}#exp-1780552356793-14-0 .edge-thickness-thick{stroke-width:3.5px;}#exp-1780552356793-14-0 .edge-pattern-solid{stroke-dasharray:0;}#exp-1780552356793-14-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#exp-1780552356793-14-0 .edge-pattern-dashed{stroke-dasharray:3;}#exp-1780552356793-14-0 .edge-pattern-dotted{stroke-dasharray:2;}#exp-1780552356793-14-0 .marker{fill:#333333;stroke:#333333;}#exp-1780552356793-14-0 .marker.cross{stroke:#333333;}#exp-1780552356793-14-0 svg{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:16px;}#exp-1780552356793-14-0 p{margin:0;}#exp-1780552356793-14-0 .label{font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;color:#333;}#exp-1780552356793-14-0 .cluster-label text{fill:#333;}#exp-1780552356793-14-0 .cluster-label span{color:#333;}#exp-1780552356793-14-0 .cluster-label span p{background-color:transparent;}#exp-1780552356793-14-0 .label text,#exp-1780552356793-14-0 span{fill:#333;color:#333;}#exp-1780552356793-14-0 .node rect,#exp-1780552356793-14-0 .node circle,#exp-1780552356793-14-0 .node ellipse,#exp-1780552356793-14-0 .node polygon,#exp-1780552356793-14-0 .node path{fill:#ECECFF;stroke:#667eea;stroke-width:1px;}#exp-1780552356793-14-0 .rough-node .label text,#exp-1780552356793-14-0 .node .label text,#exp-1780552356793-14-0 .image-shape .label,#exp-1780552356793-14-0 .icon-shape .label{text-anchor:middle;}#exp-1780552356793-14-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#exp-1780552356793-14-0 .rough-node .label,#exp-1780552356793-14-0 .node .label,#exp-1780552356793-14-0 .image-shape .label,#exp-1780552356793-14-0 .icon-shape .label{text-align:center;}#exp-1780552356793-14-0 .node.clickable{cursor:pointer;}#exp-1780552356793-14-0 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#exp-1780552356793-14-0 .arrowheadPath{fill:#333333;}#exp-1780552356793-14-0 .edgePath .path{stroke:#333333;stroke-width:1px;}#exp-1780552356793-14-0 .flowchart-link{stroke:#333333;fill:none;}#exp-1780552356793-14-0 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1780552356793-14-0 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#exp-1780552356793-14-0 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1780552356793-14-0 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#exp-1780552356793-14-0 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#exp-1780552356793-14-0 .cluster text{fill:#333;}#exp-1780552356793-14-0 .cluster span{color:#333;}#exp-1780552356793-14-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#exp-1780552356793-14-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#exp-1780552356793-14-0 rect.text{fill:none;stroke-width:0;}#exp-1780552356793-14-0 .icon-shape,#exp-1780552356793-14-0 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#exp-1780552356793-14-0 .icon-shape p,#exp-1780552356793-14-0 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#exp-1780552356793-14-0 .icon-shape .label rect,#exp-1780552356793-14-0 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#exp-1780552356793-14-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#exp-1780552356793-14-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#exp-1780552356793-14-0 .node .neo-node{stroke:#667eea;}#exp-1780552356793-14-0 [data-look=\"neo\"].node rect,#exp-1780552356793-14-0 [data-look=\"neo\"].cluster rect,#exp-1780552356793-14-0 [data-look=\"neo\"].node polygon{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356793-14-0 [data-look=\"neo\"].node path{stroke:#667eea;stroke-width:1px;}#exp-1780552356793-14-0 [data-look=\"neo\"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356793-14-0 [data-look=\"neo\"].node .neo-line path{stroke:#667eea;filter:none;}#exp-1780552356793-14-0 [data-look=\"neo\"].node circle{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356793-14-0 [data-look=\"neo\"].node circle .state-start{fill:#000000;}#exp-1780552356793-14-0 [data-look=\"neo\"].icon-shape .icon{fill:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356793-14-0 [data-look=\"neo\"].icon-shape .icon-neo path{stroke:#667eea;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#exp-1780552356793-14-0 :root{--mermaid-font-family:\"trebuchet ms\",verdana,arial,sans-serif;}</style><g><marker id=\"exp-1780552356793-14-0_flowchart-v2-pointEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-pointStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"4.5\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"8\" markerHeight=\"8\" orient=\"auto\"><path d=\"M 0 5 L 10 10 L 10 0 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-pointEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"11.5\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"10.5\" markerHeight=\"14\" orient=\"auto\"><path d=\"M 0 0 L 11.5 7 L 0 14 z\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-pointStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 11.5 14\" refX=\"1\" refY=\"7\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11.5\" markerHeight=\"14\" orient=\"auto\"><polygon points=\"0,7 11.5,14 11.5,0\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></polygon></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-circleEnd\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"11\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-circleStart\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 1; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-circleEnd-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refY=\"5\" refX=\"12.25\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-circleStart-margin\" class=\"marker flowchart-v2\" viewBox=\"0 0 10 10\" refX=\"-2\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"14\" markerHeight=\"14\" orient=\"auto\"><circle cx=\"5\" cy=\"5\" r=\"5\" class=\"arrowMarkerPath\" style=\"stroke-width: 0; stroke-dasharray: 1, 0;\"></circle></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-crossEnd\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"12\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-crossStart\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 11 11\" refX=\"-1\" refY=\"5.2\" markerUnits=\"userSpaceOnUse\" markerWidth=\"11\" markerHeight=\"11\" orient=\"auto\"><path d=\"M 1,1 l 9,9 M 10,1 l -9,9\" class=\"arrowMarkerPath\" style=\"stroke-width: 2; stroke-dasharray: 1, 0;\"></path></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-crossEnd-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"17.7\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5;\"></path></marker><marker id=\"exp-1780552356793-14-0_flowchart-v2-crossStart-margin\" class=\"marker cross flowchart-v2\" viewBox=\"0 0 15 15\" refX=\"-3.5\" refY=\"7.5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"12\" markerHeight=\"12\" orient=\"auto\"><path d=\"M 1,1 L 14,14 M 1,14 L 14,1\" class=\"arrowMarkerPath\" style=\"stroke-width: 2.5; stroke-dasharray: 1, 0;\"></path></marker><g class=\"root\"><g class=\"clusters\"></g><g class=\"edgePaths\"><path d=\"M237.211,99L241.378,99C245.544,99,253.878,99,261.544,99C269.211,99,276.211,99,279.711,99L283.211,99\" id=\"exp-1780552356793-14-0-L_A_B_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_A_B_0\" data-points=\"W3sieCI6MjM3LjIxMDkzNzUsInkiOjk5fSx7IngiOjI2Mi4yMTA5Mzc1LCJ5Ijo5OX0seyJ4IjoyODcuMjEwOTM3NSwieSI6OTl9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1780552356793-14-0_flowchart-v2-pointEnd)\"></path><path d=\"M459.539,99L463.706,99C467.872,99,476.206,99,483.872,99C491.539,99,498.539,99,502.039,99L505.539,99\" id=\"exp-1780552356793-14-0-L_B_C_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_B_C_0\" data-points=\"W3sieCI6NDU5LjUzOTA2MjUsInkiOjk5fSx7IngiOjQ4NC41MzkwNjI1LCJ5Ijo5OX0seyJ4Ijo1MDkuNTM5MDYyNSwieSI6OTl9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1780552356793-14-0_flowchart-v2-pointEnd)\"></path><path d=\"M705.91,63L714.112,59.833C722.315,56.667,738.72,50.333,752.813,47.167C766.906,44,778.688,44,784.578,44L790.469,44\" id=\"exp-1780552356793-14-0-L_C_D_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_C_D_0\" data-points=\"W3sieCI6NzA1LjkwOTg3MjE1OTA5MDksInkiOjYzfSx7IngiOjc1NS4xMjUsInkiOjQ0fSx7IngiOjc5NC40Njg3NSwieSI6NDR9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1780552356793-14-0_flowchart-v2-pointEnd)\"></path><path d=\"M705.91,135L714.112,138.167C722.315,141.333,738.72,147.667,757.49,150.833C776.26,154,797.396,154,807.964,154L818.531,154\" id=\"exp-1780552356793-14-0-L_C_E_0\" class=\" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link\" style=\";\" data-edge=\"true\" data-et=\"edge\" data-id=\"L_C_E_0\" data-points=\"W3sieCI6NzA1LjkwOTg3MjE1OTA5MDksInkiOjEzNX0seyJ4Ijo3NTUuMTI1LCJ5IjoxNTR9LHsieCI6ODIyLjUzMTI1LCJ5IjoxNTR9XQ==\" data-look=\"classic\" marker-end=\"url(#exp-1780552356793-14-0_flowchart-v2-pointEnd)\"></path></g><g class=\"edgeLabels\"><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_A_B_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\"><g class=\"label\" data-id=\"L_B_C_0\" transform=\"translate(0, 0)\"><text y=\"-10.1\" text-anchor=\"middle\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"></tspan></text></g></g><g><rect class=\"background\" style=\"stroke: none\"></rect></g><g class=\"edgeLabel\" transform=\"translate(755.125, 44)\"><g class=\"label\" data-id=\"L_C_D_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-14.34375\" y=\"-1.5\" width=\"28.6875\" height=\"23\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">так</tspan></tspan></text></g></g></g><g class=\"edgeLabel\" transform=\"translate(755.125, 154)\"><g class=\"label\" data-id=\"L_C_E_0\" transform=\"translate(0, -10)\"><g><rect class=\"background\" style=\"\" x=\"-8.5234375\" y=\"-1.5\" width=\"17.046875\" height=\"23\"></rect><text y=\"-10.1\" text-anchor=\"middle\" style=\"\"><tspan class=\"text-outer-tspan row\" x=\"0\" y=\"-0.1em\" dy=\"1.1em\" text-anchor=\"middle\"><tspan font-style=\"normal\" class=\"text-inner-tspan\" font-weight=\"normal\">ні</tspan></tspan></text></g></g></g></g><g class=\"nodes\"><g class=\"node default  \" id=\"exp-1780552356793-14-0-flowchart-A-0\" data-look=\"classic\" transform=\"translate(122.60546875, 99)\"><rect class=\"basic label-container\" style=\"fill:#e3f2fd !important;stroke:#1565c0 !important\" x=\"-114.60546875\" y=\"-36\" width=\"229.2109375\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-90.60546875, -24)\"><rect></rect><foreignObject width=\"181.2109375\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🌡️ MQTT In<br>factory/line1/temperature</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356793-14-0-flowchart-B-1\" data-look=\"classic\" transform=\"translate(373.375, 99)\"><rect class=\"basic label-container\" style=\"fill:#fff3e0 !important;stroke:#ef6c00 !important\" x=\"-86.1640625\" y=\"-36\" width=\"172.328125\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-62.1640625, -24)\"><rect></rect><foreignObject width=\"124.328125\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>⚙️ Function<br>розбір значення</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356793-14-0-flowchart-C-3\" data-look=\"classic\" transform=\"translate(612.66015625, 99)\"><rect class=\"basic label-container\" style=\"fill:#f3e5f5 !important;stroke:#7b1fa2 !important\" x=\"-103.12109375\" y=\"-36\" width=\"206.2421875\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-79.12109375, -24)\"><rect></rect><foreignObject width=\"158.2421875\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>🔀 Switch<br>значення більше 80?</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356793-14-0-flowchart-D-5\" data-look=\"classic\" transform=\"translate(880.68359375, 44)\"><rect class=\"basic label-container\" style=\"fill:#fce4ec !important;stroke:#c2185b !important\" x=\"-86.21484375\" y=\"-36\" width=\"172.4296875\" height=\"72\"></rect><g class=\"label\" style=\"\" transform=\"translate(-62.21484375, -24)\"><rect></rect><foreignObject width=\"124.4296875\" height=\"48\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📤 MQTT Out<br>factory/line1/alert</p></span></div></foreignObject></g></g><g class=\"node default  \" id=\"exp-1780552356793-14-0-flowchart-E-7\" data-look=\"classic\" transform=\"translate(880.68359375, 154)\"><rect class=\"basic label-container\" style=\"fill:#e8f5e9 !important;stroke:#388e3c !important\" x=\"-58.15234375\" y=\"-24\" width=\"116.3046875\" height=\"48\"></rect><g class=\"label\" style=\"\" transform=\"translate(-34.15234375, -12)\"><rect></rect><foreignObject width=\"68.3046875\" height=\"24\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;\"><span class=\"nodeLabel \"><p>📊 Debug</p></span></div></foreignObject></g></g></g></g></g><defs><filter id=\"exp-1780552356793-14-0-drop-shadow\" height=\"130%\" width=\"130%\"><feDropShadow dx=\"4\" dy=\"4\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs><defs><filter id=\"exp-1780552356793-14-0-drop-shadow-small\" height=\"150%\" width=\"150%\"><feDropShadow dx=\"2\" dy=\"2\" stdDeviation=\"0\" flood-opacity=\"0.06\" flood-color=\"#000000\"></feDropShadow></filter></defs></svg></div>\n<pre><code class=\"language-javascript hljs\" data-highlighted=\"yes\"><span class=\"hljs-comment\">// Function-нода: перетворюємо текст на число для подальшого порівняння</span>\n<span class=\"hljs-keyword\">const</span> temperature = <span class=\"hljs-title class_\">Number</span>(msg.<span class=\"hljs-property\">payload</span>);\n\n<span class=\"hljs-comment\">// Якщо дані некоректні — припиняємо обробку</span>\n<span class=\"hljs-keyword\">if</span> (<span class=\"hljs-title class_\">Number</span>.<span class=\"hljs-built_in\">isNaN</span>(temperature)) {\n  <span class=\"hljs-keyword\">return</span> <span class=\"hljs-literal\">null</span>;\n}\n\nmsg.<span class=\"hljs-property\">payload</span> = temperature; <span class=\"hljs-comment\">// далі Switch порівнює число з порогом 80</span>\n<span class=\"hljs-keyword\">return</span> msg;</code></pre><div class=\"success\"><strong>✅ Що демонструє приклад</strong> <p>Дані надходять через <code>MQTT in</code>, нормалізуються у <code>Function</code>, перевіряються у <code>Switch</code>, і за перевищення порогу публікується сигнал тривоги через <code>MQTT out</code>. Такий самий потік легко доповнити вузлами дашборду, щоб оператор бачив значення та попередження у реальному часі.</p>\n</div>\n\n","<h1>🛰️ Типові сценарії інтеграції з IoT</h1>\n<p><strong>Головна ідея:</strong> MQTT у поєднанні з Node-RED покриває більшість задач збирання даних і керування в автоматизованих системах.</p>\n<h2>🔧 Поширені сценарії</h2>\n<ul>\n<li>📈 <strong>Збирання телеметрії</strong> — датчики публікують показники (температура, вологість, тиск), Node-RED агрегує їх та відображає на дашборді</li>\n<li>🎛️ <strong>Дистанційне керування</strong> — оператор натискає елемент дашборду, Node-RED публікує команду в тему пристрою через <code>MQTT out</code></li>\n<li>🔔 <strong>Сигналізація за подіями</strong> — потік аналізує дані та публікує сповіщення в окрему тему <code>alerts/...</code> при відхиленнях</li>\n<li>🌉 <strong>Шлюз між протоколами</strong> — Node-RED приймає дані по MQTT і пересилає їх у зовнішній REST API (та навпаки)</li>\n<li>💾 <strong>Журналювання</strong> — підписник зберігає всі повідомлення з теми у файл або базу даних для подальшого аналізу</li>\n</ul>\n<div class=\"note\"><strong>📝 Роль Node-RED у цих сценаріях</strong> <p>В усіх випадках Node-RED виступає <strong>інтеграційним вузлом</strong>: він одночасно є MQTT-клієнтом (підписником і видавцем), обробником логіки та джерелом веб-інтерфейсу. Це робить його зручним «клеєм» між польовими пристроями та застосунками верхнього рівня.</p>\n</div>\n\n","<h1>🔐 Безпека MQTT-з'єднань</h1>\n<p><strong>Головна ідея:</strong> За замовчуванням MQTT передає дані у відкритому вигляді, тому у реальних системах застосовують кілька рівнів захисту.</p>\n<h2>🛡️ Базові механізми захисту</h2>\n<table>\n<thead>\n<tr>\n<th>Механізм</th>\n<th>Призначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>🔑 Автентифікація</td>\n<td>Ім'я користувача та пароль для підключення до брокера</td>\n</tr>\n<tr>\n<td>🔒 Шифрування TLS</td>\n<td>Захищене з'єднання через порт <code>8883</code> замість відкритого <code>1883</code></td>\n</tr>\n<tr>\n<td>📋 Контроль доступу (ACL)</td>\n<td>Обмеження прав клієнтів на публікацію/підписку для певних тем</td>\n</tr>\n<tr>\n<td>✅ Валідація вхідних даних</td>\n<td>Перевірка <code>payload</code> у <code>Function</code>-ноді перед використанням</td>\n</tr>\n</tbody></table>\n<div class=\"danger\"><strong>🚫 Поширена помилка</strong> <p>Підключення до брокера через відкритий порт <code>1883</code> без автентифікації допустиме лише для навчальних експериментів у локальній мережі. У будь-якій реальній системі обов'язкові автентифікація та TLS — інакше дані та команди можуть бути перехоплені або підроблені.</p>\n</div>\n\n\n\n\n\n<div class=\"warning\"><strong>⚠️ Не довіряйте вхідним даним</strong> <p>Повідомлення з MQTT надходять із зовнішніх пристроїв, тому їх слід вважати ненадійними так само, як і дані HTTP-запитів. Перед використанням значення обов'язково перевіряють: тип, діапазон, наявність обов'язкових полів. Це захищає логіку потоку від некоректних або шкідливих даних.</p>\n</div>\n\n","<h1>✅ Ключові висновки</h1>\n<div class=\"success\"><strong>✅ Підсумок лекції</strong> <p><strong>📌 Що ми вивчили:</strong></p>\n<ol>\n<li><p><strong>MQTT</strong> — легкий протокол для IoT, що працює поверх TCP/IP (порти <code>1883</code> та <code>8883</code>) і мінімізує службовий трафік</p>\n</li>\n<li><p><strong>Publish/Subscribe</strong> — видавці й підписники не взаємодіють напряму, а обмінюються через <strong>брокера</strong>, що забезпечує розв'язаність компонентів</p>\n</li>\n<li><p><strong>Брокер</strong> — центральний посередник, який маршрутизує повідомлення за темами; популярний приклад — Eclipse Mosquitto</p>\n</li>\n<li><p><strong>Topics</strong> — ієрархічні теми з рівнями через <code>/</code>; символи підстановки <code>+</code> (один рівень) та <code>#</code> (багато рівнів) застосовуються лише у підписках</p>\n</li>\n<li><p><strong>QoS</strong> — три рівні гарантії доставки (<code>0</code>, <code>1</code>, <code>2</code>) з компромісом між надійністю та накладними витратами</p>\n</li>\n<li><p><strong>Спеціальні механізми</strong> — retained-повідомлення, LWT, Keep Alive дають надійність у нестабільних мережах</p>\n</li>\n<li><p><strong>Node-RED</strong> — ноди <code>MQTT in</code> і <code>MQTT out</code> зі спільним вузлом брокера дозволяють будувати потоки збирання даних і керування</p>\n</li>\n<li><p><strong>Безпека</strong> — TLS, автентифікація та валідація вхідних даних є обов'язковими у реальних системах</p>\n</li>\n</ol>\n</div>\n\n","<h1>❓ Контрольні питання</h1>\n<ol>\n<li><p>🤔 Чому модель «запит — відповідь» HTTP погано підходить для систем з тисячами IoT-пристроїв? Які переваги дає MQTT?</p>\n</li>\n<li><p>🤔 Поясніть модель Publish/Subscribe. Яку роль виконує брокер і чому видавець не знає своїх підписників?</p>\n</li>\n<li><p>🤔 Як побудована ієрархія тем у MQTT? Чим відрізняються символи підстановки <code>+</code> та <code>#</code> і де їх можна застосовувати?</p>\n</li>\n<li><p>🤔 Опишіть три рівні QoS. У яких ситуаціях доцільно обирати кожен з них?</p>\n</li>\n<li><p>🤔 Що таке retained-повідомлення та LWT? Який практичний сценарій вирішує кожен з цих механізмів?</p>\n</li>\n<li><p>🤔 Які поля об'єкта <code>msg</code> формує нода <code>MQTT in</code>? Як опублікувати повідомлення у динамічно задану тему через <code>MQTT out</code>?</p>\n</li>\n<li><p>🤔 Які заходи безпеки слід застосувати під час підключення до MQTT-брокера у реальній автоматизованій системі?</p>\n</li>\n</ol>\n","<h1>📖 Глосарій термінів</h1>\n<table>\n<thead>\n<tr>\n<th>Термін</th>\n<th>English</th>\n<th>Визначення</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>Брокер</td>\n<td>Broker</td>\n<td>Центральний сервер, що приймає та маршрутизує повідомлення за темами</td>\n</tr>\n<tr>\n<td>Видавець</td>\n<td>Publisher</td>\n<td>Клієнт, який надсилає (публікує) повідомлення у тему</td>\n</tr>\n<tr>\n<td>Підписник</td>\n<td>Subscriber</td>\n<td>Клієнт, який отримує повідомлення з тем, на які підписаний</td>\n</tr>\n<tr>\n<td>Тема</td>\n<td>Topic</td>\n<td>Ієрархічний ідентифікатор каналу, до якого прив'язане повідомлення</td>\n</tr>\n<tr>\n<td>Корисне навантаження</td>\n<td>Payload</td>\n<td>Власне вміст (дані) повідомлення MQTT</td>\n</tr>\n<tr>\n<td>Символ підстановки</td>\n<td>Wildcard</td>\n<td>Символ (<code>+</code> або <code>#</code>), що дозволяє підписку на групу тем</td>\n</tr>\n<tr>\n<td>Збережене повідомлення</td>\n<td>Retained message</td>\n<td>Останнє повідомлення теми, яке брокер зберігає для нових підписників</td>\n</tr>\n<tr>\n<td>Останнє волевиявлення</td>\n<td>Last Will (LWT)</td>\n<td>Повідомлення, яке брокер публікує при несподіваному відключенні клієнта</td>\n</tr>\n<tr>\n<td>Підтримка з'єднання</td>\n<td>Keep Alive</td>\n<td>Інтервал, протягом якого клієнт має підтвердити активність з'єднання</td>\n</tr>\n<tr>\n<td>Чиста сесія</td>\n<td>Clean Session</td>\n<td>Режим, що визначає збереження стану клієнта між підключеннями</td>\n</tr>\n<tr>\n<td>Якість обслуговування</td>\n<td>Quality of Service</td>\n<td>Рівень гарантії доставки повідомлення (<code>0</code>, <code>1</code>, <code>2</code>)</td>\n</tr>\n</tbody></table>\n","<h1>📖 Глосарій абревіатур</h1>\n<table>\n<thead>\n<tr>\n<th>Абревіатура</th>\n<th>Розшифровка</th>\n<th>Переклад</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>MQTT</td>\n<td>MQ Telemetry Transport</td>\n<td>Назва протоколу передавання повідомлень</td>\n</tr>\n<tr>\n<td>IoT</td>\n<td>Internet of Things</td>\n<td>Інтернет речей</td>\n</tr>\n<tr>\n<td>QoS</td>\n<td>Quality of Service</td>\n<td>Якість обслуговування</td>\n</tr>\n<tr>\n<td>LWT</td>\n<td>Last Will and Testament</td>\n<td>Останнє волевиявлення</td>\n</tr>\n<tr>\n<td>TCP</td>\n<td>Transmission Control Protocol</td>\n<td>Протокол керування передаванням</td>\n</tr>\n<tr>\n<td>IP</td>\n<td>Internet Protocol</td>\n<td>Міжмережевий протокол</td>\n</tr>\n<tr>\n<td>TLS</td>\n<td>Transport Layer Security</td>\n<td>Протокол захисту транспортного рівня</td>\n</tr>\n<tr>\n<td>ACL</td>\n<td>Access Control List</td>\n<td>Список контролю доступу</td>\n</tr>\n<tr>\n<td>HMI</td>\n<td>Human-Machine Interface</td>\n<td>Людино-машинний інтерфейс</td>\n</tr>\n<tr>\n<td>АС</td>\n<td>—</td>\n<td>Автоматизована система</td>\n</tr>\n<tr>\n<td>JSON</td>\n<td>JavaScript Object Notation</td>\n<td>Об'єктна нотація JavaScript</td>\n</tr>\n<tr>\n<td>HTTP</td>\n<td>HyperText Transfer Protocol</td>\n<td>Протокол передавання гіпертексту</td>\n</tr>\n</tbody></table>\n"];let currentSlideIndex=0;
+function renderMath(root){if(typeof renderMathInElement!=="function"||!root)return;try{renderMathInElement(root,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false,strict:"ignore",ignoredTags:["script","noscript","style","textarea","pre","code"]});}catch(e){console.warn("Math render error:",e);}}
+function showSlide(i){if(i<0||i>=slides.length)return;currentSlideIndex=i;const el=document.getElementById("current-slide");el.innerHTML=slides[i];el.scrollTop=0;renderMath(el);document.getElementById("progress-bar").style.width=((i+1)/slides.length*100)+"%";document.getElementById("slide-number").textContent=(i+1)+" / "+slides.length;updateSidebarActive();}
+function nextSlide(){if(currentSlideIndex<slides.length-1)showSlide(currentSlideIndex+1);}
+function previousSlide(){if(currentSlideIndex>0)showSlide(currentSlideIndex-1);}
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleHelp(){document.getElementById("help-overlay").classList.toggle("hidden");}
+function toggleFullscreen(){if(!document.fullscreenElement){const pc=document.getElementById("presentation-container");if(pc.requestFullscreen)pc.requestFullscreen();else if(pc.webkitRequestFullscreen)pc.webkitRequestFullscreen();else if(pc.msRequestFullscreen)pc.msRequestFullscreen();else if(pc.mozRequestFullScreen)pc.mozRequestFullScreen();}else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();else if(document.msExitFullscreen)document.msExitFullscreen();else if(document.mozCancelFullScreen)document.mozCancelFullScreen();}}
+function generateSidebar(){const sc=document.getElementById("sidebar-content");sc.innerHTML="";slides.forEach((html,idx)=>{const t=document.createElement("div");t.className="slide-thumbnail";if(idx===0)t.classList.add("active");const tmp=document.createElement("div");tmp.innerHTML=html;const title=tmp.querySelector("h1,h2");const titleText=title?title.textContent:("Слайд "+(idx+1));const textContent=tmp.textContent.replace(/s+/g," ").trim();const preview=textContent.substring(0,100)+(textContent.length>100?"...":"");t.innerHTML="<div class=\"slide-thumbnail-number\">"+(idx+1)+"</div><div class=\"slide-thumbnail-title\">"+titleText+"</div><div class=\"slide-thumbnail-content\">"+preview+"</div>";t.onclick=()=>{showSlide(idx);if(window.innerWidth<1024)toggleSidebar();};sc.appendChild(t);});}
+function updateSidebarActive(){document.querySelectorAll(".slide-thumbnail").forEach((th,idx)=>{if(idx===currentSlideIndex){th.classList.add("active");th.scrollIntoView({behavior:"smooth",block:"nearest"});}else th.classList.remove("active");});}
+document.addEventListener("keydown",e=>{switch(e.key){case"ArrowLeft":previousSlide();break;case"ArrowRight":case" ":e.preventDefault();nextSlide();break;case"f":case"F":toggleFullscreen();break;case"s":case"S":toggleSidebar();break;case"?":toggleHelp();break;case"Escape":const sb=document.getElementById("sidebar");const ho=document.getElementById("help-overlay");if(sb.classList.contains("open"))toggleSidebar();else if(!ho.classList.contains("hidden"))ho.classList.add("hidden");break;}});
+generateSidebar();showSlide(0);</script></body></html>
